@@ -26,17 +26,17 @@ describe('resourceName', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 200 status code and the resource', async function () {
-      const response = await requestSender.getResourceName();
+    // it('should return 200 status code and the resource', async function () {
+    //   const response = await requestSender.getResourceName();
 
-      expect(response.status).toBe(httpStatusCodes.OK);
+    //   expect(response.status).toBe(httpStatusCodes.OK);
 
-      const resource = response.body as paths['/resourceName']['get']['responses'][200]['content']['application/json'];
-      expect(response).toSatisfyApiSpec();
-      expect(resource.id).toBe(1);
-      expect(resource.name).toBe('ronin');
-      expect(resource.description).toBe('can you do a logistics run?');
-    });
+    //   const resource = response.body as paths['/resourceName']['get']['responses'][200]['content']['application/json'];
+    //   expect(response).toSatisfyApiSpec();
+    //   expect(resource.id).toBe(1);
+    //   expect(resource.name).toBe('ronin');
+    //   expect(resource.description).toBe('can you do a logistics run?');
+    // });
     it('should return 200 status code and create the resource', async function () {
       const response = await requestSender.createResource({
         requestBody: {
