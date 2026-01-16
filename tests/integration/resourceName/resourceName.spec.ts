@@ -26,6 +26,7 @@ describe('resourceName', function () {
   });
 
   describe('Happy Path', function () {
+    // eslint-disable-next-line jest/no-commented-out-tests
     // it('should return 200 status code and the resource', async function () {
     //   const response = await requestSender.getResourceName();
 
