@@ -19,7 +19,7 @@ paths:
       tags:
         - records
       summary: Get all extractable records for a site
-      operationId: listRecords
+      operationId: getRecords
       parameters:
         - name: X-Site-Id
           in: header
@@ -67,7 +67,7 @@ paths:
       tags:
         - records
       summary: Get extractable record by recordName
-      operationId: getRecordStatus
+      operationId: getRecord
       parameters:
         - name: recordName
           in: path
@@ -103,7 +103,7 @@ paths:
       tags:
         - records
       summary: Create record as extractable
-      operationId: setRecordExtractable
+      operationId: createRecord
       parameters:
         - name: recordName
           in: path
@@ -153,7 +153,7 @@ paths:
       tags:
         - records
       summary: Delete extractable record
-      operationId: deleteRecordStatus
+      operationId: deleteRecord
       parameters:
         - name: recordName
           in: path
@@ -190,7 +190,7 @@ paths:
       tags:
         - records
       summary: Validate record can be created
-      operationId: validateCreate
+      operationId: validateCreateRecord
       parameters:
         - name: recordName
           in: path
@@ -226,7 +226,7 @@ paths:
       tags:
         - records
       summary: Validate record can be deleted
-      operationId: validateDelete
+      operationId: validateDeleteRecord
       parameters:
         - name: recordName
           in: path
@@ -287,9 +287,9 @@ components:
           example: true
         data:
           type: object
+          additionalProperties: true
           example:
             productType: '3DPhotoRealistic'
-      additionalProperties: false
 
     extractable-record:
       type: object
@@ -343,29 +343,22 @@ components:
       properties:
         id:
           type: integer
-          example: 1
         site_id:
           type: integer
-          example: 100
         record_name:
           type: string
-          example: 'rec_A'
         credentials:
           type: string
-          example: 'john_doe'
         action:
           type: string
           enum:
             - CREATE
-            - UPDATE
+            - CREATE_VALIDATE
             - DELETE
-          example: 'CREATE'
+            - DELETE_VALIDATE
         created_at:
           type: string
           format: date-time
-          example: '2026-01-16T12:00:00Z'
         data:
           type: object
-          description: Metadata snapshot at the time of action
-          example:
-            productType: '3DPhotoRealistic'
+          additionalProperties: true

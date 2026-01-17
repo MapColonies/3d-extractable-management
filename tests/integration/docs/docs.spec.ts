@@ -25,7 +25,7 @@ describe('docs', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 200 status code and the resource', async function () {
+    it('should return 200 status code and the record', async function () {
       const response = await requestSender.getDocs();
 
       expect(response.status).toBe(httpStatusCodes.OK);

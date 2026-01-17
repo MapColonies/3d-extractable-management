@@ -6,7 +6,7 @@ import jsLogger from '@map-colonies/js-logger';
 import { InjectionObject, registerDependencies } from '@common/dependencyRegistration';
 import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
-import { resourceNameRouterFactory, RESOURCE_NAME_ROUTER_SYMBOL } from './resourceName/routes/resourceNameRouter';
+import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
 import { getConfig } from './common/config';
 
 export interface RegisterOptions {
@@ -30,7 +30,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
-    { token: RESOURCE_NAME_ROUTER_SYMBOL, provider: { useFactory: resourceNameRouterFactory } },
+    { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
     {
       token: 'onSignal',
       provider: {
