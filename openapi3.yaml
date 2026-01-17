@@ -121,14 +121,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/basic-payload'
-            examples:
-              example1:
-                summary: Sample creation payload
-                value:
-                  credentials: 'john_doe'
-                  extractable: true
-                  data:
-                    productType: '3DPhotoRealistic'
       responses:
         '201':
           description: Record created successfully
@@ -192,11 +184,6 @@ paths:
       summary: Validate record can be created
       operationId: validateCreateRecord
       parameters:
-        - name: recordName
-          in: path
-          required: true
-          schema:
-            type: string
         - name: X-Site-Id
           in: header
           required: true
@@ -228,8 +215,40 @@ paths:
       summary: Validate record can be deleted
       operationId: validateDeleteRecord
       parameters:
+        - name: X-Site-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/basic-payload'
+      responses:
+        '200':
+          description: Record can be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/job'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /records/audit:
+    get:
+      tags:
+        - records
+      summary: Get audit records for a record
+      operationId: getAuditRecords
+      parameters:
         - name: recordName
-          in: path
+          in: query
           required: true
           schema:
             type: string
@@ -240,13 +259,21 @@ paths:
             type: integer
       responses:
         '200':
-          description: Record can be deleted
+          description: Audit record list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/job'
+                type: array
+                items:
+                  $ref: '#/components/schemas/audit-record'
         '400':
-          description: Validation failed
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Unexpected error
           content:
             application/json:
               schema:
