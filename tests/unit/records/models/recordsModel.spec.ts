@@ -10,13 +10,17 @@ describe('RecordsManager', () => {
   });
 
   describe('#getRecord', () => {
-    it('should return the mocked record instance', () => {
-      const record = recordsManager.getRecord();
+    it('should return the mocked record instance when record exists', () => {
+      const record = recordsManager.getRecord(recordInstance.record_name);
 
+      expect(record).toBeDefined();
       expect(record).toEqual(recordInstance);
-      expect(record.id).toBe(recordInstance.id);
-      expect(record.record_name).toBe(recordInstance.record_name);
-      expect(record.credentials).toBe(recordInstance.credentials);
+    });
+
+    it('should return undefined when record does not exist', () => {
+      const record = recordsManager.getRecord('non_existing_record');
+
+      expect(record).toBeUndefined();
     });
   });
 
