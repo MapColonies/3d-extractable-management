@@ -23,7 +23,7 @@ export class RecordsController {
     });
   }
 
-  public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = (req, res, next) => {
+  public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = (req, res) => {
     const { recordName } = req.params;
 
     const record = this.manager.getRecord(recordName);
