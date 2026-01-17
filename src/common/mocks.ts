@@ -3,7 +3,7 @@ import { IExtractableRecord } from '@common/constants';
 /* eslint-disable @typescript-eslint/naming-convention */
 export const recordInstance: IExtractableRecord = {
   id: 101,
-  site_id: 5001,
+  site_id: '5001',
   record_name: 'rec_3DModel_001',
   credentials: 'alice_admin',
   extractable: true,
