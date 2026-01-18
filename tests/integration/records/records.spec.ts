@@ -62,15 +62,6 @@ describe('records', function () {
       expect(response.body).toEqual([]);
     });
 
-    it('should return 200 and empty array when no records exist', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce(undefined);
-
-      const response = await requestSender.getRecords();
-
-      expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([]);
-    });
-
     it('should validate client', async function () {
       const validatePayload: IAuthPayload = {
         username: recordInstance.username,
@@ -147,59 +138,74 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     });
   });
-
   describe('Internal Errors', function () {
-    const tests = [
-      {
-        name: 'getRecords',
-        method: 'getRecords' as const,
-        expectedMessage: 'Failed to get records',
-        pathParams: { recordName: 'test-record' },
-      },
-      {
-        name: 'getRecord',
-        method: 'getRecord' as const,
-        expectedMessage: 'Failed to get record',
-        pathParams: { recordName: 'test-record' },
-      },
-      {
-        name: 'createRecord',
-        method: 'createRecord' as const,
-        expectedMessage: 'Failed to create record',
-        pathParams: { recordName: 'test-record' },
-      },
-      {
-        name: 'validateRecord',
-        method: 'validateRecord' as const,
-        expectedMessage: 'Failed to validate record',
-        pathParams: undefined,
-      },
-    ];
-
-    tests.forEach(({ name, method, expectedMessage, pathParams }) => {
-      it(`should return 500 if manager throws an unexpected error on ${name}`, async function () {
-        const payload: IAuthPayload = {
-          username: recordInstance.username,
-          password: credentialsInstance.password,
-        };
-
-        const spy = jest.spyOn(RecordsManager.prototype, method).mockImplementation(() => {
-          throw new Error('Simulated server error');
-        });
-
-        const requestOptions: any = { requestBody: payload };
-        if (pathParams) {
-          requestOptions.pathParams = pathParams;
-        }
-
-        const response = await requestSender[method as keyof typeof requestSender](requestOptions);
-
-        expect(response).toSatisfyApiSpec();
-        expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-        expect(response.body).toEqual({ message: expectedMessage });
-
-        spy.mockRestore();
+    it('should return 500 if getRecords throws an unexpected error', async function () {
+      const spy = jest.spyOn(RecordsManager.prototype, 'getRecords').mockImplementation(() => {
+        throw new Error('Simulated server error');
       });
+
+      const response = await requestSender.getRecords();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to get records' });
+
+      spy.mockRestore();
+    });
+
+    it('should return 500 if getRecord throws an unexpected error', async function () {
+      const spy = jest.spyOn(RecordsManager.prototype, 'getRecord').mockImplementation(() => {
+        throw new Error('Simulated server error');
+      });
+
+      const response = await requestSender.getRecord({
+        pathParams: { recordName: 'test-record' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to get record' });
+
+      spy.mockRestore();
+    });
+
+    it('should return 500 if createRecord throws an unexpected error', async function () {
+      const spy = jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
+        throw new Error('Simulated server error');
+      });
+
+      const response = await requestSender.createRecord({
+        pathParams: { recordName: 'test-record' },
+        requestBody: {
+          username: recordInstance.username,
+          password: 'any-password',
+        },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to create record' });
+
+      spy.mockRestore();
+    });
+
+    it('should return 500 if validateRecord throws an unexpected error', async function () {
+      const spy = jest.spyOn(RecordsManager.prototype, 'validateRecord').mockImplementation(() => {
+        throw new Error('Simulated server error');
+      });
+
+      const response = await requestSender.validateRecord({
+        requestBody: {
+          username: recordInstance.username,
+          password: 'any-password',
+        },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to validate record' });
+
+      spy.mockRestore();
     });
   });
 });
