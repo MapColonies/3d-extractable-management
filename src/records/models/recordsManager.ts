@@ -1,8 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
-import { SERVICES, IExtractableRecord } from '@common/constants';
+import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
-import { IAuthPayload, IValidateResponse } from '@common/constants';
 import { recordInstance, credentialsInstance } from '../../common/mocks';
 
 function generateRandomId(): number {

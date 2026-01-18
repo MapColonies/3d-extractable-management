@@ -250,8 +250,6 @@ components:
           enum:
             - MISSING_CREDENTIALS
             - INVALID_CREDENTIALS
-            - OK
-          example: OK
 
     auth-payload:
       type: object

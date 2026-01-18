@@ -71,11 +71,8 @@ export type components = {
       isValid: boolean;
       /** @example Record can be created or deleted */
       message?: string;
-      /**
-       * @example OK
-       * @enum {string}
-       */
-      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'OK';
+      /** @enum {string} */
+      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS';
     };
     'auth-payload': {
       /** @example john_doe */

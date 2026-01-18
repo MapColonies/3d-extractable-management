@@ -38,9 +38,9 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.OK);
 
       const record = response.body as IExtractableRecord;
-      expect(record.id).toBe(101);
-      expect(record.username).toBe('username');
-      expect(record.data?.productType).toBe('3DPhotoRealistic');
+      expect(record.id).toBe(recordInstance.id);
+      expect(record.username).toBe(recordInstance.username);
+      expect(record.data?.productType).toBe(recordInstance.data?.productType);
     });
 
     it('should validate client', async function () {
@@ -121,25 +121,51 @@ describe('records', function () {
   });
 
   describe('Internal Errors', function () {
-    it('should return 500 if manager throws an unexpected error', async function () {
-      const validatePayload: IAuthPayload = {
-        username: recordInstance.username,
-        password: credentialsInstance.password,
-      };
+    const tests = [
+      {
+        name: 'createRecord',
+        method: 'createRecord' as const,
+        expectedMessage: 'Failed to create record',
+        pathParams: { recordName: 'test-record' },
+      },
+      {
+        name: 'getRecord',
+        method: 'getRecord' as const,
+        expectedMessage: 'Failed to get record',
+        pathParams: { recordName: 'test-record' },
+      },
+      {
+        name: 'validateRecord',
+        method: 'validateRecord' as const,
+        expectedMessage: 'Failed to validate record',
+        pathParams: undefined,
+      },
+    ];
 
-      const validateSpy = jest.spyOn(RecordsManager.prototype, 'validateRecord').mockImplementation(() => {
-        throw new Error('Simulated server error');
+    tests.forEach(({ name, method, expectedMessage, pathParams }) => {
+      it(`should return 500 if manager throws an unexpected error on ${name}`, async function () {
+        const payload: IAuthPayload = {
+          username: recordInstance.username,
+          password: credentialsInstance.password,
+        };
+
+        const spy = jest.spyOn(RecordsManager.prototype, method).mockImplementation(() => {
+          throw new Error('Simulated server error');
+        });
+
+        const requestOptions: any = { requestBody: payload };
+        if (pathParams) {
+          requestOptions.pathParams = pathParams;
+        }
+
+        const response = await requestSender[method as keyof typeof requestSender](requestOptions);
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+        expect(response.body).toEqual({ message: expectedMessage });
+
+        spy.mockRestore();
       });
-
-      const response = await requestSender.validateRecord({
-        requestBody: validatePayload,
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate record' });
-
-      validateSpy.mockRestore();
     });
   });
 });
