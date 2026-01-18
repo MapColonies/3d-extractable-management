@@ -22,7 +22,7 @@ export class RecordsManager {
     const logContext = { ...this.logContext, function: this.getRecords.name };
     this.logger.info({ msg: 'getting all records', logContext });
 
-    if (records?.length === 0 || records === undefined) {
+    if (!records || records.length === 0) {
       this.logger.warn({ msg: 'no records found', logContext });
       return undefined;
     }

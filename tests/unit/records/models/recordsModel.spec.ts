@@ -9,6 +9,38 @@ describe('RecordsManager', () => {
     recordsManager = new RecordsManager(jsLogger({ enabled: false }));
   });
 
+  describe('#getRecords', () => {
+    it('should return the records array when records exist', () => {
+      const spy = jest.spyOn(RecordsManager.prototype, 'getRecords');
+      const recordsArray = [recordInstance];
+
+      const result = recordsManager.getRecords(recordsArray);
+
+      expect(result).toBeDefined();
+      expect(result).toEqual(recordsArray);
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('should return undefined when records array is empty', () => {
+      const spy = jest.spyOn(RecordsManager.prototype, 'getRecords');
+      const result = recordsManager.getRecords([]);
+
+      expect(result).toBeUndefined();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('should return undefined when records is undefined', () => {
+      const spy = jest.spyOn(RecordsManager.prototype, 'getRecords');
+      const result = recordsManager.getRecords();
+
+      expect(result).toBeUndefined();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
+
   describe('#getRecord', () => {
     it('should return the mocked record instance when record exists', () => {
       const record = recordsManager.getRecord(recordInstance.record_name);

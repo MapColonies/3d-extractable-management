@@ -45,7 +45,6 @@ describe('records', function () {
 
     it('should return 200 and the available records', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce([recordInstance]);
-
       const response = await requestSender.getRecords();
 
       expect(response).toSatisfyApiSpec();
@@ -55,7 +54,6 @@ describe('records', function () {
 
     it('should return 200 and empty array when no records exist', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce(undefined);
-
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
