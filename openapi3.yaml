@@ -33,12 +33,6 @@ paths:
                 empty:
                   summary: No records
                   value: []
-        '401':
-          description: Unauthorized – invalid or missing credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/validateResponse'
         '500':
           description: Unexpected server error
           content:
@@ -71,12 +65,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/validateResponse'
         '500':
           description: Unexpected server error
           content:
