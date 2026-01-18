@@ -24,6 +24,24 @@ export class RecordsController {
     });
   }
 
+  public getRecords: TypedRequestHandlers['GET /records'] = (_req, res) => {
+    try {
+      const records = this.manager.getRecords();
+
+      if (!records || records === undefined) {
+        this.requestsCounter.inc({ status: '200' });
+        return res.status(httpStatus.OK).json([]);
+      }
+
+      this.requestsCounter.inc({ status: '200' });
+      return res.status(httpStatus.OK).json(records);
+    } catch (err) {
+      this.logger.error({ msg: 'Unexpected error getting records', error: err });
+      this.requestsCounter.inc({ status: '500' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get records' });
+    }
+  };
+
   public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = (req, res) => {
     try {
       const { recordName } = req.params;

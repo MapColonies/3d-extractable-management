@@ -31,7 +31,7 @@ describe('records', function () {
   describe('Happy Path', function () {
     it('should return 200 and the record', async function () {
       const response = await requestSender.getRecord({
-        pathParams: { recordName: 'rec_3DModel_001' },
+        pathParams: { recordName: recordInstance.record_name },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -41,6 +41,34 @@ describe('records', function () {
       expect(record.id).toBe(recordInstance.id);
       expect(record.username).toBe(recordInstance.username);
       expect(record.data?.productType).toBe(recordInstance.data?.productType);
+    });
+
+    it('should return 200 and the available records', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce([recordInstance]);
+
+      const response = await requestSender.getRecords();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([recordInstance]);
+    });
+
+    it('should return 200 and empty array when no records exist', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce(undefined);
+
+      const response = await requestSender.getRecords();
+
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([]);
+    });
+
+    it('should return 200 and empty array when no records exist', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce(undefined);
+
+      const response = await requestSender.getRecords();
+
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([]);
     });
 
     it('should validate client', async function () {
@@ -123,15 +151,21 @@ describe('records', function () {
   describe('Internal Errors', function () {
     const tests = [
       {
-        name: 'createRecord',
-        method: 'createRecord' as const,
-        expectedMessage: 'Failed to create record',
+        name: 'getRecords',
+        method: 'getRecords' as const,
+        expectedMessage: 'Failed to get records',
         pathParams: { recordName: 'test-record' },
       },
       {
         name: 'getRecord',
         method: 'getRecord' as const,
         expectedMessage: 'Failed to get record',
+        pathParams: { recordName: 'test-record' },
+      },
+      {
+        name: 'createRecord',
+        method: 'createRecord' as const,
+        expectedMessage: 'Failed to create record',
         pathParams: { recordName: 'test-record' },
       },
       {

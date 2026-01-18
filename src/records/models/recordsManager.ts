@@ -17,6 +17,19 @@ export class RecordsManager {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
+  // TODO: remove the ? from records when integrating with real DB
+  public getRecords(records?: IExtractableRecord[]): IExtractableRecord[] | undefined {
+    const logContext = { ...this.logContext, function: this.getRecords.name };
+    this.logger.info({ msg: 'getting all records', logContext });
+
+    if (records?.length === 0 || records === undefined) {
+      this.logger.warn({ msg: 'no records found', logContext });
+      return undefined;
+    }
+
+    return records;
+  }
+
   public getRecord(recordName: string): IExtractableRecord | undefined {
     const logContext = { ...this.logContext, function: this.getRecord.name };
     this.logger.info({ msg: 'getting record', recordId: recordInstance.id, logContext });
