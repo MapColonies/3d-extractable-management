@@ -3,7 +3,7 @@ import { IExtractableRecord, IAuthPayload } from '@common/constants';
 /* eslint-disable @typescript-eslint/naming-convention */
 export const recordInstance: IExtractableRecord = {
   id: 101,
-  record_name: 'rec_3DModel_001',
+  record_name: 'rec_name',
   username: 'username',
   created_at: '2026-01-16T12:00:00Z',
   data: {
