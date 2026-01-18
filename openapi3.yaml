@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: 3d-extractable-management-bff
-  description: Manage record extractability status with audit logs and multi-site support
+  description: Manage extractable records with validation and audit logging
   version: 1.0.0
   license:
     name: 3d-extractable-management repo link
@@ -18,18 +18,11 @@ paths:
     get:
       tags:
         - records
-      summary: Get all extractable records for a site
+      summary: Get all extractable records
       operationId: getRecords
-      parameters:
-        - name: X-Site-Id
-          in: header
-          required: true
-          schema:
-            type: string
-          description: Site / tenant ID
       responses:
         '200':
-          description: List of extractable records
+          description: List of extractable records (empty array if none found)
           content:
             application/json:
               schema:
@@ -37,26 +30,17 @@ paths:
                 items:
                   $ref: '#/components/schemas/extractable-record'
               examples:
-                example1:
-                  summary: Sample list
-                  value:
-                    - id: 1
-                      site_id: 'site_100'
-                      record_name: 'rec_A'
-                      credentials: 'john_doe'
-                      extractable: true
-                      created_at: '2026-01-16T12:00:00Z'
-                      updated_at: '2026-01-16T12:10:00Z'
-                      data:
-                        productType: '3DPhotoRealistic'
-        '400':
-          description: Bad request
+                empty:
+                  summary: No records
+                  value: []
+        '401':
+          description: Unauthorized – invalid or missing credentials
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
         '500':
-          description: Unexpected error
+          description: Unexpected server error
           content:
             application/json:
               schema:
@@ -66,16 +50,11 @@ paths:
     get:
       tags:
         - records
-      summary: Get extractable record by recordName
+      summary: Get extractable record by record name
       operationId: getRecord
       parameters:
         - name: recordName
           in: path
-          required: true
-          schema:
-            type: string
-        - name: X-Site-Id
-          in: header
           required: true
           schema:
             type: string
@@ -92,8 +71,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
         '500':
-          description: Unexpected error
+          description: Unexpected server error
           content:
             application/json:
               schema:
@@ -102,16 +87,11 @@ paths:
     post:
       tags:
         - records
-      summary: Create record as extractable
+      summary: Create extractable record
       operationId: createRecord
       parameters:
         - name: recordName
           in: path
-          required: true
-          schema:
-            type: string
-        - name: X-Site-Id
-          in: header
           required: true
           schema:
             type: string
@@ -120,7 +100,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/basic-payload'
+              $ref: '#/components/schemas/auth-payload'
       responses:
         '201':
           description: Record created successfully
@@ -129,13 +109,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/extractable-record'
         '400':
-          description: Validation failed (call /records/validate first)
+          description: Validation failed – call POST /records/validate first
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized – invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
         '500':
-          description: Unexpected error
+          description: Unexpected server error
           content:
             application/json:
               schema:
@@ -152,26 +138,33 @@ paths:
           required: true
           schema:
             type: string
-        - name: X-Site-Id
-          in: header
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload'
       responses:
         '200':
-          description: Record deleted (idempotent)
+          description: Record deleted successfully (idempotent)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/job'
         '400':
-          description: Validation failed (call /records/validateDelete first)
+          description: Validation failed – deletion not allowed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
         '500':
-          description: Unexpected error
+          description: Unexpected server error
           content:
             application/json:
               schema:
@@ -181,103 +174,43 @@ paths:
     post:
       tags:
         - records
-      summary: Validate record can be created
-      operationId: validateCreateRecord
-      parameters:
-        - name: X-Site-Id
-          in: header
-          required: true
-          schema:
-            type: string
+      summary: Validate record can be created or deleted
+      operationId: validateRecord
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/basic-payload'
+              $ref: '#/components/schemas/auth-payload'
       responses:
         '200':
-          description: Record is valid to create
+          description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/job'
+                $ref: '#/components/schemas/validateResponse'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
         '400':
           description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-
-    delete:
-      tags:
-        - records
-      summary: Validate record can be deleted
-      operationId: validateDeleteRecord
-      parameters:
-        - name: X-Site-Id
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/basic-payload'
-      responses:
-        '200':
-          description: Record can be deleted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/job'
-        '400':
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-
-  /records/audit:
-    get:
-      tags:
-        - records
-      summary: Get audit records for a record
-      operationId: getAuditRecords
-      parameters:
-        - name: recordName
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: X-Site-Id
-          in: header
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Audit record list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/audit-record'
-        '400':
-          description: Bad request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
         '500':
-          description: Unexpected error
+          description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to validate record
 
 components:
   schemas:
@@ -288,6 +221,7 @@ components:
       properties:
         message:
           type: string
+          example: Unauthorized – invalid username or password
 
     job:
       type: object
@@ -300,89 +234,91 @@ components:
             - Success
             - Failed
 
-    basic-payload:
+    validateResponse:
       type: object
       required:
-        - credentials
-        - extractable
+        - isValid
       properties:
-        credentials:
-          type: string
-          example: 'john_doe'
-        extractable:
+        isValid:
           type: boolean
           example: true
+        message:
+          type: string
+          example: Record can be created or deleted
+        code:
+          type: string
+          enum:
+            - MISSING_CREDENTIALS
+            - INVALID_CREDENTIALS
+            - OK
+          example: OK
+
+    auth-payload:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: john_doe
+        password:
+          type: string
+          example: secret123
         data:
           type: object
           additionalProperties: true
           example:
-            productType: '3DPhotoRealistic'
+            productType: 3DPhotoRealistic
 
     extractable-record:
       type: object
       required:
         - id
-        - site_id
         - record_name
-        - credentials
-        - extractable
+        - username
         - created_at
-        - updated_at
       properties:
         id:
           type: integer
           example: 1
-        site_id:
-          type: string
-          example: 'site_100'
         record_name:
           type: string
-          example: 'rec_A'
-        credentials:
+          example: rec_A
+        username:
           type: string
-          example: 'john_doe'
-        extractable:
-          type: boolean
-          example: true
+          example: john_doe
         created_at:
           type: string
           format: date-time
           example: '2026-01-16T12:00:00Z'
-        updated_at:
-          type: string
-          format: date-time
-          example: '2026-01-16T12:10:00Z'
         data:
           type: object
           description: Metadata stored in extractable_records.data
           example:
-            productType: '3DPhotoRealistic'
+            productType: 3DPhotoRealistic
 
     audit-record:
       type: object
       required:
         - id
-        - site_id
         - record_name
-        - credentials
+        - username
         - action
         - created_at
       properties:
         id:
           type: integer
-        site_id:
-          type: string
         record_name:
           type: string
-        credentials:
+        username:
           type: string
         action:
           type: string
           enum:
             - CREATE
-            - CREATE_VALIDATE
+            - UPDATE
             - DELETE
-            - DELETE_VALIDATE
         created_at:
           type: string
           format: date-time

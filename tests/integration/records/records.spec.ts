@@ -4,7 +4,9 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IExtractableRecord, ICreateRecordPayload } from '@common/constants';
+import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@common/constants';
+import { RecordsManager } from '@src/records/models/recordsManager';
+import { recordInstance, credentialsInstance } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
 describe('records', function () {
@@ -22,60 +24,88 @@ describe('records', function () {
       ],
       useChild: true,
     });
+
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
   });
 
   describe('Happy Path', function () {
-    it('should return 200 status code and the record', async function () {
+    it('should return 200 and the record', async function () {
       const response = await requestSender.getRecord({
         pathParams: { recordName: 'rec_3DModel_001' },
-        headers: { 'X-Site-Id': '5001' },
       });
 
+      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+
       const record = response.body as IExtractableRecord;
       expect(record.id).toBe(101);
-      expect(record.credentials).toBe('alice_admin');
+      expect(record.username).toBe('username');
       expect(record.data?.productType).toBe('3DPhotoRealistic');
     });
 
-    it('should return 201 status code and create the record', async function () {
-      const payload: ICreateRecordPayload = {
-        credentials: 'alice_admin',
-        extractable: true,
-        data: {
-          productType: '3DPhotoRealistic',
-          resolution: '4K',
-          source: 'drone_scan',
-          fileSizeMB: 350,
-        },
+    it('should validate client', async function () {
+      const validatePayload: IAuthPayload = {
+        username: recordInstance.username,
+        password: credentialsInstance.password,
       };
 
-      const response = await requestSender.createRecord({
-        pathParams: { recordName: `rec_${Date.now()}` },
-        headers: { 'X-Site-Id': '5001' },
-        requestBody: payload,
+      const validateResponse = await requestSender.validateRecord({
+        requestBody: validatePayload,
       });
 
-      expect(response.status).toBe(httpStatusCodes.CREATED);
-      const record = response.body as IExtractableRecord;
-      expect(record.credentials).toBe(payload.credentials);
-      expect(record.data?.resolution).toBe('4K');
+      expect(validateResponse).toSatisfyApiSpec();
+      expect(validateResponse.status).toBe(httpStatusCodes.OK);
+
+      const validation = validateResponse.body as IValidateResponse;
+      expect(validation.isValid).toBe(true);
+      expect(validation.message).toBe('Record can be created or deleted');
     });
   });
 
   describe('Bad Path', function () {
     it('should return 400 when payload is invalid', async function () {
-      const invalidPayload = {} as unknown as ICreateRecordPayload;
+      const invalidPayload = {} as unknown as IAuthPayload;
 
       const response = await requestSender.createRecord({
         pathParams: { recordName: 'rec_invalid' },
-        headers: { 'X-Site-Id': '5001' },
         requestBody: invalidPayload,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+    });
+
+    it('should return 400 if payload is missing', async function () {
+      const response = await requestSender.validateRecord({
+        requestBody: null as unknown as IAuthPayload,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+    });
+
+    it('should return 400 if username or password is missing', async function () {
+      const invalidPayload: IAuthPayload = { username: '', password: '' };
+      const response = await requestSender.validateRecord({
+        requestBody: invalidPayload,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+    });
+
+    it('should return 401 when credentials are invalid', async function () {
+      const payload: IAuthPayload = {
+        username: 'bad_user',
+        password: 'wrong_password',
+      };
+
+      const response = await requestSender.validateRecord({
+        requestBody: payload,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
     });
   });
 
@@ -83,11 +113,33 @@ describe('records', function () {
     it('should return 404 for non-existent record', async function () {
       const response = await requestSender.getRecord({
         pathParams: { recordName: 'rec_nonexistent' },
-        headers: { 'X-Site-Id': '5001' },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+    });
+  });
+
+  describe('Internal Errors', function () {
+    it('should return 500 if manager throws an unexpected error', async function () {
+      const validatePayload: IAuthPayload = {
+        username: recordInstance.username,
+        password: credentialsInstance.password,
+      };
+
+      const validateSpy = jest.spyOn(RecordsManager.prototype, 'validateRecord').mockImplementation(() => {
+        throw new Error('Simulated server error');
+      });
+
+      const response = await requestSender.validateRecord({
+        requestBody: validatePayload,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to validate record' });
+
+      validateSpy.mockRestore();
     });
   });
 });

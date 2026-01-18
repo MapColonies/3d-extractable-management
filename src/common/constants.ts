@@ -18,6 +18,6 @@ export const SERVICES = {
 
 export type IExtractableRecord = components['schemas']['extractable-record'];
 
-export type ICreateRecordPayload = components['schemas']['basic-payload'];
+export type IAuthPayload = components['schemas']['auth-payload'];
 
-export type IAuditRecord = components['schemas']['audit-record'];
+export type IValidateResponse = components['schemas']['validateResponse'];

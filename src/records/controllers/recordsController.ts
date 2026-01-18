@@ -43,4 +43,31 @@ export class RecordsController {
     this.createdRecordCounter.inc(1);
     return res.status(httpStatus.CREATED).json(createdRecord);
   };
+
+  public validateRecord: TypedRequestHandlers['POST /records/validate'] = (req, res) => {
+    try {
+      const payload = req.body;
+      if (!payload) {
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Request body is required' });
+      }
+
+      const validationResult = this.manager.validateRecord(payload);
+
+      if (!validationResult.isValid) {
+        switch (validationResult.code) {
+          case 'MISSING_CREDENTIALS':
+            return res.status(httpStatus.BAD_REQUEST).json(validationResult);
+          case 'INVALID_CREDENTIALS':
+            return res.status(httpStatus.UNAUTHORIZED).json(validationResult);
+          default:
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
+        }
+      }
+
+      return res.status(httpStatus.OK).json(validationResult);
+    } catch (err) {
+      this.logger.error({ msg: 'Unexpected error during validation', error: err });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
+    }
+  };
 }

@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { RecordsManager } from '@src/records/models/recordsManager';
-import { recordInstance } from '@src/common/mocks';
+import { recordInstance, credentialsInstance } from '@src/common/mocks';
 
 let recordsManager: RecordsManager;
 
@@ -25,20 +25,37 @@ describe('RecordsManager', () => {
   });
 
   describe('#createRecord', () => {
-    it('should return a new record with a new id', () => {
+    it('should create a new record with a generated id', () => {
       const createdRecord = recordsManager.createRecord(recordInstance);
 
       expect(createdRecord).not.toBe(recordInstance);
-      expect(createdRecord.id).toBeGreaterThanOrEqual(0);
-      expect(createdRecord.id).toBeLessThan(100);
 
-      expect(createdRecord.site_id).toBe(recordInstance.site_id);
+      expect(createdRecord.id).toBeGreaterThanOrEqual(0);
+
       expect(createdRecord.record_name).toBe(recordInstance.record_name);
-      expect(createdRecord.credentials).toBe(recordInstance.credentials);
-      expect(createdRecord.extractable).toBe(recordInstance.extractable);
+      expect(createdRecord.username).toBe(recordInstance.username);
       expect(createdRecord.created_at).toBe(recordInstance.created_at);
-      expect(createdRecord.updated_at).toBe(recordInstance.updated_at);
       expect(createdRecord.data).toEqual(recordInstance.data);
+    });
+  });
+
+  describe('#validateRecord', () => {
+    it('should fail if username/password missing', () => {
+      const result = recordsManager.validateRecord({ username: '', password: '' });
+      expect(result.isValid).toBe(false);
+      expect(result.message).toBe('Username and password are required');
+    });
+
+    it('should fail if credentials are invalid', () => {
+      const result = recordsManager.validateRecord({ username: 'wrong', password: 'wrong' });
+      expect(result.isValid).toBe(false);
+      expect(result.message).toBe('Invalid username or password');
+    });
+
+    it('should succeed with correct credentials', () => {
+      const result = recordsManager.validateRecord(credentialsInstance);
+      expect(result.isValid).toBe(true);
+      expect(result.message).toBe('Record can be created or deleted');
     });
   });
 });
