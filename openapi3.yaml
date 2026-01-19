@@ -259,17 +259,6 @@ components:
           type: string
           example: Unauthorized – invalid username or password
 
-    job:
-      type: object
-      required:
-        - status
-      properties:
-        status:
-          type: string
-          enum:
-            - Success
-            - Failed
-
     validateResponse:
       type: object
       required:
