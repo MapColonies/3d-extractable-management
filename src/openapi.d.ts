@@ -117,18 +117,6 @@ export type components = {
        */
       data?: Record<string, never>;
     };
-    'audit-record': {
-      id: string;
-      recordName: string;
-      username: string;
-      /** @enum {string} */
-      action: 'CREATE' | 'UPDATE' | 'DELETE';
-      /** Format: date-time */
-      created_at: string;
-      data?: {
-        [key: string]: unknown;
-      };
-    };
   };
   responses: never;
   parameters: never;

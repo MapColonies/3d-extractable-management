@@ -319,31 +319,3 @@ components:
           description: Metadata stored in extractable_records.data
           example:
             productType: 3DPhotoRealistic
-
-    audit-record:
-      type: object
-      required:
-        - id
-        - recordName
-        - username
-        - action
-        - created_at
-      properties:
-        id:
-          type: string
-        recordName:
-          type: string
-        username:
-          type: string
-        action:
-          type: string
-          enum:
-            - CREATE
-            - UPDATE
-            - DELETE
-        created_at:
-          type: string
-          format: date-time
-        data:
-          type: object
-          additionalProperties: true
