@@ -13,7 +13,7 @@ import { Registry } from 'prom-client';
 import type { ConfigType } from '@common/config';
 import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
-import { USERS_ROUTER_SYMBOL } from './records/routes/usersRouter';
+import { USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
 
 @injectable()
 export class ServerBuilder {

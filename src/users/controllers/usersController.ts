@@ -4,7 +4,7 @@ import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
-import { RecordsManager } from '../models/recordsManager';
+import { RecordsManager } from '../../records/models/recordsManager';
 
 @injectable()
 export class UsersController {

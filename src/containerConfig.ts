@@ -7,7 +7,7 @@ import { InjectionObject, registerDependencies } from '@common/dependencyRegistr
 import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
 import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
-import { usersRouterFactory, USERS_ROUTER_SYMBOL } from './records/routes/usersRouter';
+import { usersRouterFactory, USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
 
 import { getConfig } from './common/config';
 
