@@ -21,6 +21,7 @@ void getApp()
       .then(({ collectDefaultMetrics }) => collectDefaultMetrics({ register: metricsRegistry }))
       .catch((err) => logger.error({ msg: 'Failed to collect default metrics', error: err }));
 
+    /* eslint-disable @typescript-eslint/no-misused-promises */
     app.get('/metrics', async (_req, res) => {
       try {
         res.set('Content-Type', metricsRegistry.contentType);

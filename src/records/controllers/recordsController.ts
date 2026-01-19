@@ -3,9 +3,8 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
-import { SERVICES, IExtractableRecord } from '@common/constants';
+import { SERVICES } from '@common/constants';
 import { RecordsManager } from '../models/recordsManager';
-import { recordInstance } from '../../common/mocks';
 
 @injectable()
 export class RecordsController {
@@ -28,7 +27,7 @@ export class RecordsController {
     try {
       const records = this.manager.getRecords();
 
-      if (!records || records === undefined) {
+      if (!records) {
         this.requestsCounter.inc({ status: '200' });
         return res.status(httpStatus.OK).json([]);
       }
@@ -63,40 +62,64 @@ export class RecordsController {
 
   public createRecord: TypedRequestHandlers['POST /records/{recordName}'] = (req, res) => {
     try {
-      const payload: IExtractableRecord = recordInstance;
-      const createdRecord = this.manager.createRecord(payload);
+      const createdRecord = this.manager.createRecord(req.params.recordName);
 
       this.requestsCounter.inc({ status: '201' });
       return res.status(httpStatus.CREATED).json(createdRecord);
-    } catch (err) {
-      this.logger.error({ msg: 'Failed to create record', error: err });
+    } catch (error: unknown) {
+      const logContext = { recordName: req.params.recordName };
+
+      if (error instanceof Error) {
+        this.logger.error({ msg: 'Failed to create record', error, logContext });
+
+        if (error.message === 'Record not found') {
+          this.requestsCounter.inc({ status: '404' });
+          return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: error.message, code: 'INVALID_RECORD_NAME' });
+        }
+      } else {
+        this.logger.error({ msg: 'Unexpected error type', error, logContext });
+      }
+
       this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create record' });
     }
   };
 
-  public validateRecord: TypedRequestHandlers['POST /records/validate'] = (req, res) => {
+  public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = (req, res) => {
     try {
-      const validationResult = this.manager.validateRecord(req.body);
+      const result = this.manager.validate('CREATE', req.body);
 
-      if (!validationResult.isValid) {
-        switch (validationResult.code) {
-          case 'MISSING_CREDENTIALS':
-            this.requestsCounter.inc({ status: '400' });
-            return res.status(httpStatus.BAD_REQUEST).json(validationResult);
-          case 'INVALID_CREDENTIALS':
-            this.requestsCounter.inc({ status: '401' });
-            return res.status(httpStatus.UNAUTHORIZED).json(validationResult);
-          default:
-            this.requestsCounter.inc({ status: '500' });
-            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
-        }
+      if (!result.isValid) {
+        const status = result.code === 'MISSING_CREDENTIALS' ? httpStatus.BAD_REQUEST : httpStatus.UNAUTHORIZED;
+
+        this.requestsCounter.inc({ status: String(status) });
+        return res.status(status).json(result);
       }
 
       this.requestsCounter.inc({ status: '200' });
-      return res.status(httpStatus.OK).json(validationResult);
+      return res.status(httpStatus.OK).json(result);
     } catch (err) {
-      this.logger.error({ msg: 'Unexpected error during validation', error: err });
+      this.logger.error({ msg: 'Failed to validate create', error: err });
+      this.requestsCounter.inc({ status: '500' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
+    }
+  };
+
+  public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = (req, res) => {
+    try {
+      const result = this.manager.validate('DELETE', req.body);
+
+      if (!result.isValid) {
+        const status = result.code === 'MISSING_CREDENTIALS' ? httpStatus.BAD_REQUEST : httpStatus.UNAUTHORIZED;
+
+        this.requestsCounter.inc({ status: String(status) });
+        return res.status(status).json(result);
+      }
+
+      this.requestsCounter.inc({ status: '200' });
+      return res.status(httpStatus.OK).json(result);
+    } catch (err) {
+      this.logger.error({ msg: 'Failed to validate delete', error: err });
       this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
     }

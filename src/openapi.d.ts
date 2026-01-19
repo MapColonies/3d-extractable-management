@@ -37,7 +37,7 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
-  '/records/validate': {
+  '/records/validateCreate': {
     parameters: {
       query?: never;
       header?: never;
@@ -46,8 +46,25 @@ export type paths = {
     };
     get?: never;
     put?: never;
-    /** Validate record can be created or deleted */
-    post: operations['validateRecord'];
+    /** Validate record can be created */
+    post: operations['validateCreate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/records/validateDelete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Validate record can be deleted */
+    post: operations['validateDelete'];
     delete?: never;
     options?: never;
     head?: never;
@@ -72,27 +89,19 @@ export type components = {
       /** @example Record can be created or deleted */
       message?: string;
       /** @enum {string} */
-      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS';
+      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME';
     };
     'auth-payload': {
       /** @example john_doe */
       username: string;
       /** @example secret123 */
       password: string;
-      /**
-       * @example {
-       *       "productType": "3DPhotoRealistic"
-       *     }
-       */
-      data?: {
-        [key: string]: unknown;
-      };
     };
     'extractable-record': {
-      /** @example 1 */
-      id: number;
+      /** @example sdfsdfv3f3f3fwfcf23f */
+      id: string;
       /** @example rec_A */
-      record_name: string;
+      recordName: string;
       /** @example john_doe */
       username: string;
       /**
@@ -109,8 +118,8 @@ export type components = {
       data?: Record<string, never>;
     };
     'audit-record': {
-      id: number;
-      record_name: string;
+      id: string;
+      recordName: string;
       username: string;
       /** @enum {string} */
       action: 'CREATE' | 'UPDATE' | 'DELETE';
@@ -147,15 +156,6 @@ export interface operations {
           'application/json': components['schemas']['extractable-record'][];
         };
       };
-      /** @description Unauthorized – invalid or missing credentials */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['validateResponse'];
-        };
-      };
       /** @description Unexpected server error */
       500: {
         headers: {
@@ -185,15 +185,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['extractable-record'];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Record not found */
@@ -251,6 +242,15 @@ export interface operations {
       };
       /** @description Unauthorized – invalid username or password */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Record not found */
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -322,7 +322,7 @@ export interface operations {
       };
     };
   };
-  validateRecord: {
+  validateCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -335,7 +335,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Validation result */
+      /** @description Validation result for create */
       200: {
         headers: {
           [name: string]: unknown;
@@ -368,10 +368,58 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': {
-            /** @example Failed to validate record */
-            message?: string;
-          };
+          'application/json': components['schemas']['error'];
+        };
+      };
+    };
+  };
+  validateDelete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['auth-payload'];
+      };
+    };
+    responses: {
+      /** @description Validation result for delete */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Validation failed */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Unauthorized – invalid credentials */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
         };
       };
     };

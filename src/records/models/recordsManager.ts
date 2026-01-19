@@ -4,10 +4,7 @@ import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@
 import { LogContext } from '@common/interfaces';
 import { recordInstance, credentialsInstance } from '../../common/mocks';
 
-function generateRandomId(): number {
-  const rangeOfIds = 100;
-  return Math.floor(Math.random() * rangeOfIds);
-}
+type ValidationAction = 'CREATE' | 'DELETE';
 
 @injectable()
 export class RecordsManager {
@@ -17,7 +14,7 @@ export class RecordsManager {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
-  // TODO: remove the ? from records when integrating with real DB
+  // TODO: remove the ? when real DB is integrated
   public getRecords(records?: IExtractableRecord[]): IExtractableRecord[] | undefined {
     const logContext = { ...this.logContext, function: this.getRecords.name };
     this.logger.info({ msg: 'getting all records', logContext });
@@ -32,35 +29,43 @@ export class RecordsManager {
 
   public getRecord(recordName: string): IExtractableRecord | undefined {
     const logContext = { ...this.logContext, function: this.getRecord.name };
-    this.logger.info({ msg: 'getting record', recordId: recordInstance.id, logContext });
+    this.logger.info({ msg: 'getting record', recordName, logContext });
 
-    return recordName === recordInstance.record_name ? recordInstance : undefined;
+    return recordName === recordInstance.recordName ? recordInstance : undefined;
   }
 
-  public createRecord(record: IExtractableRecord): IExtractableRecord {
-    const logContext = { ...this.logContext, function: this.getRecord.name };
-    const recordId = generateRandomId();
+  public createRecord(recordName: string): IExtractableRecord {
+    const logContext = { ...this.logContext, function: this.createRecord.name };
 
-    this.logger.info({ msg: 'creating record', recordId, logContext });
+    // mock validation for now
+    if (recordName !== recordInstance.recordName) {
+      // 'rec_name'
+      this.logger.warn({ msg: 'record name not allowed', recordName, logContext });
+      throw new Error('Record not found');
+    }
+    const record: IExtractableRecord = { ...recordInstance, recordName: recordName };
 
-    return { ...record, id: recordId };
+    this.logger.info({ msg: 'record created', recordName, logContext });
+
+    return record;
   }
 
-  public validateRecord(payload: IAuthPayload): IValidateResponse {
-    const logContext = { ...this.logContext, function: this.validateRecord.name };
+  public validate(action: ValidationAction, payload: IAuthPayload): IValidateResponse {
+    const logContext = { ...this.logContext, function: this.validate.name, action };
 
     if (!payload.username || !payload.password) {
-      this.logger.warn({ msg: 'validation failed: missing credentials', logContext });
+      this.logger.warn({ msg: 'missing credentials', logContext });
       return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
     }
 
-    // simple authentication check against mock credentials
+    // mock for now(should be replaced with real auth)
     if (payload.username !== credentialsInstance.username || payload.password !== credentialsInstance.password) {
-      this.logger.warn({ msg: 'validation failed: invalid credentials', username: payload.username, logContext });
+      this.logger.warn({ msg: 'invalid credentials', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
 
-    this.logger.info({ msg: 'validation successful', username: payload.username, logContext });
-    return { isValid: true, message: 'Record can be created or deleted' };
+    this.logger.info({ msg: 'validation successful', action, logContext });
+
+    return { isValid: true, message: action === 'CREATE' ? 'Record can be created' : 'Record can be deleted' };
   }
 }

@@ -43,7 +43,7 @@ describe('RecordsManager', () => {
 
   describe('#getRecord', () => {
     it('should return the mocked record instance when record exists', () => {
-      const record = recordsManager.getRecord(recordInstance.record_name);
+      const record = recordsManager.getRecord(recordInstance.recordName);
 
       expect(record).toBeDefined();
       expect(record).toEqual(recordInstance);
@@ -57,37 +57,48 @@ describe('RecordsManager', () => {
   });
 
   describe('#createRecord', () => {
-    it('should create a new record with a generated id', () => {
-      const createdRecord = recordsManager.createRecord(recordInstance);
+    it('should create a record when recordName is valid', () => {
+      const createdRecord = recordsManager.createRecord(recordInstance.recordName);
 
-      expect(createdRecord).not.toBe(recordInstance);
+      expect(createdRecord).toBeDefined();
+      expect(createdRecord.recordName).toBe(recordInstance.recordName);
+      expect(createdRecord.id).toBeDefined();
+    });
 
-      expect(createdRecord.id).toBeGreaterThanOrEqual(0);
-
-      expect(createdRecord.record_name).toBe(recordInstance.record_name);
-      expect(createdRecord.username).toBe(recordInstance.username);
-      expect(createdRecord.created_at).toBe(recordInstance.created_at);
-      expect(createdRecord.data).toEqual(recordInstance.data);
+    it('should throw when recordName is invalid', () => {
+      expect(() => recordsManager.createRecord('rec_invalid')).toThrow('Record not found');
     });
   });
 
-  describe('#validateRecord', () => {
-    it('should fail if username/password missing', () => {
-      const result = recordsManager.validateRecord({ username: '', password: '' });
-      expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Username and password are required');
-    });
+  describe('#validate', () => {
+    it.each([
+      ['CREATE', 'Record can be created'],
+      ['DELETE', 'Record can be deleted'],
+    ])('should succeed for %s when credentials are valid', (action, expectedMessage) => {
+      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', credentialsInstance);
 
-    it('should fail if credentials are invalid', () => {
-      const result = recordsManager.validateRecord({ username: 'wrong', password: 'wrong' });
-      expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Invalid username or password');
-    });
-
-    it('should succeed with correct credentials', () => {
-      const result = recordsManager.validateRecord(credentialsInstance);
       expect(result.isValid).toBe(true);
-      expect(result.message).toBe('Record can be created or deleted');
+      expect(result.message).toBe(expectedMessage);
+    });
+
+    it.each([['CREATE'], ['DELETE']])('should fail for %s when credentials are missing', (action) => {
+      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', {
+        username: '',
+        password: '',
+      });
+
+      expect(result.isValid).toBe(false);
+      expect(result.code).toBe('MISSING_CREDENTIALS');
+    });
+
+    it.each([['CREATE'], ['DELETE']])('should fail for %s when credentials are invalid', (action) => {
+      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', {
+        username: 'bad',
+        password: 'bad',
+      });
+
+      expect(result.isValid).toBe(false);
+      expect(result.code).toBe('INVALID_CREDENTIALS');
     });
   });
 });

@@ -108,6 +108,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/validateResponse'
+        '404':
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
         '500':
           description: Unexpected server error
           content:
@@ -158,12 +164,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
-  /records/validate:
+  /records/validateCreate:
     post:
       tags:
         - records
-      summary: Validate record can be created or deleted
-      operationId: validateRecord
+      summary: Validate record can be created
+      operationId: validateCreate
       requestBody:
         required: true
         content:
@@ -172,7 +178,7 @@ paths:
               $ref: '#/components/schemas/auth-payload'
       responses:
         '200':
-          description: Validation result
+          description: Validation result for create
           content:
             application/json:
               schema:
@@ -194,11 +200,45 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Failed to validate record
+                $ref: '#/components/schemas/error'
+
+  /records/validateDelete:
+    post:
+      tags:
+        - records
+      summary: Validate record can be deleted
+      operationId: validateDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload'
+      responses:
+        '200':
+          description: Validation result for delete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 
 components:
   schemas:
@@ -238,6 +278,7 @@ components:
           enum:
             - MISSING_CREDENTIALS
             - INVALID_CREDENTIALS
+            - INVALID_RECORD_NAME
 
     auth-payload:
       type: object
@@ -251,24 +292,19 @@ components:
         password:
           type: string
           example: secret123
-        data:
-          type: object
-          additionalProperties: true
-          example:
-            productType: 3DPhotoRealistic
 
     extractable-record:
       type: object
       required:
         - id
-        - record_name
+        - recordName
         - username
         - created_at
       properties:
         id:
-          type: integer
-          example: 1
-        record_name:
+          type: string
+          example: 'sdfsdfv3f3f3fwfcf23f'
+        recordName:
           type: string
           example: rec_A
         username:
@@ -288,14 +324,14 @@ components:
       type: object
       required:
         - id
-        - record_name
+        - recordName
         - username
         - action
         - created_at
       properties:
         id:
-          type: integer
-        record_name:
+          type: string
+        recordName:
           type: string
         username:
           type: string
