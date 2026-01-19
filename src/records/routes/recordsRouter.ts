@@ -11,7 +11,7 @@ const recordsRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   router.post('/validateDelete', controller.validateDelete);
   router.get('/:recordName', controller.getRecord);
   router.post('/:recordName', controller.createRecord);
-  //router.delete('/:recordName', controller.deleteRecord);
+  router.delete('/:recordName', controller.deleteRecord);
 
   return router;
 };

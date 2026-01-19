@@ -109,6 +109,16 @@ describe('records', function () {
       expect(body.isValid).toBe(true);
       expect(body.message).toBe('Record can be deleted');
     });
+
+    it('should return 204 when recordName is valid and deleted successfully', async function () {
+      const response = await requestSender.deleteRecord({
+        pathParams: { recordName: recordInstance.recordName },
+        requestBody: { ...recordInstance, password: credentialsInstance.password },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+    });
   });
 
   describe('Bad Path', function () {
@@ -177,6 +187,21 @@ describe('records', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+    });
+
+    it('should return 404 when deleting a non-existing record', async function () {
+      const response = await requestSender.deleteRecord({
+        pathParams: { recordName: 'rec_invalid' },
+        requestBody: { ...recordInstance, password: credentialsInstance.password },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Record not found',
+        code: 'INVALID_RECORD_NAME',
+      });
     });
   });
 
@@ -372,5 +397,38 @@ describe('records', function () {
 
       jest.restoreAllMocks();
     });
+  });
+
+  it('should return 500 if deleteRecord throws an unexpected error', async function () {
+    const spy = jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockImplementation(() => {
+      throw new Error('Simulated server error');
+    });
+
+    const response = await requestSender.deleteRecord({
+      pathParams: { recordName: recordInstance.recordName },
+      requestBody: { ...recordInstance, password: credentialsInstance.password },
+    });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to delete record' });
+
+    spy.mockRestore();
+  });
+
+  it('should return 500 for deleteRecord with unknown error type', async function () {
+    jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockImplementation(() => {
+      throw new Error('not-an-error');
+    });
+
+    const response = await requestSender.deleteRecord({
+      pathParams: { recordName: recordInstance.recordName },
+      requestBody: { ...recordInstance, password: credentialsInstance.password },
+    });
+
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to delete record' });
+
+    jest.restoreAllMocks();
   });
 });

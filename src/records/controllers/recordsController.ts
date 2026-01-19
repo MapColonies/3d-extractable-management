@@ -124,4 +124,32 @@ export class RecordsController {
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
     }
   };
+
+  public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = (req, res) => {
+    const { recordName } = req.params;
+    const logContext = { recordName, function: 'deleteRecord' };
+
+    try {
+      const deleted = this.manager.deleteRecord(recordName);
+
+      if (!deleted) {
+        this.requestsCounter.inc({ status: '404' });
+        return res.status(httpStatus.NOT_FOUND).json({
+          isValid: false,
+          message: 'Record not found',
+          code: 'INVALID_RECORD_NAME',
+        });
+      }
+
+      this.requestsCounter.inc({ status: '204' });
+      return res.status(httpStatus.NO_CONTENT).send();
+    } catch (error: unknown) {
+      this.logger.error({ msg: 'Failed to delete record', error, logContext });
+
+      this.requestsCounter.inc({ status: '500' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to delete record',
+      });
+    }
+  };
 }

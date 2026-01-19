@@ -145,6 +145,15 @@ export interface operations {
         };
       };
       /** @description Unexpected server error */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Unexpected server error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -272,14 +281,12 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Record deleted successfully (idempotent) */
-      200: {
+      /** @description Record deleted successfully */
+      204: {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': components['schemas']['job'];
-        };
+        content?: never;
       };
       /** @description Validation failed – deletion not allowed */
       400: {
@@ -297,6 +304,15 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Record not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
         };
       };
       /** @description Unexpected server error */

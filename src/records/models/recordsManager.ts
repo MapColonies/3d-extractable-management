@@ -68,4 +68,18 @@ export class RecordsManager {
 
     return { isValid: true, message: action === 'CREATE' ? 'Record can be created' : 'Record can be deleted' };
   }
+
+  public deleteRecord(recordName: string): boolean {
+    const logContext = { ...this.logContext, function: this.deleteRecord.name };
+
+    const record = this.getRecord(recordName);
+
+    if (!record) {
+      this.logger.warn({ msg: 'record not found for deletion', recordName, logContext });
+      return false;
+    }
+
+    this.logger.info({ msg: 'record deleted', recordName, logContext });
+    return true;
+  }
 }

@@ -33,6 +33,12 @@ paths:
                 empty:
                   summary: No records
                   value: []
+        '400':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '500':
           description: Unexpected server error
           content:
@@ -139,12 +145,14 @@ paths:
             schema:
               $ref: '#/components/schemas/auth-payload'
       responses:
-        '200':
-          description: Record deleted successfully (idempotent)
+        '204':
+          description: Record deleted successfully
+        '404':
+          description: Record not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/job'
+                $ref: '#/components/schemas/error'
         '400':
           description: Validation failed – deletion not allowed
           content:

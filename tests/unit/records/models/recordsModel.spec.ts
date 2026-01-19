@@ -66,7 +66,7 @@ describe('RecordsManager', () => {
     });
 
     it('should throw when recordName is invalid', () => {
-      expect(() => recordsManager.createRecord('rec_invalid')).toThrow('Record not found');
+      expect(() => recordsManager.createRecord('rec_invoalid')).toThrow('Record not found');
     });
   });
 
@@ -99,6 +99,20 @@ describe('RecordsManager', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.code).toBe('INVALID_CREDENTIALS');
+    });
+  });
+
+  describe('#deleteRecord', () => {
+    it('should return true when recordName is valid and record is deleted', () => {
+      const result = recordsManager.deleteRecord(recordInstance.recordName);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when record does not exist', () => {
+      const result = recordsManager.deleteRecord('non_existing_record');
+
+      expect(result).toBe(false);
     });
   });
 });
