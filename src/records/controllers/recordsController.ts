@@ -134,11 +134,7 @@ export class RecordsController {
 
       if (!deleted) {
         this.requestsCounter.inc({ status: '404' });
-        return res.status(httpStatus.NOT_FOUND).json({
-          isValid: false,
-          message: 'Record not found',
-          code: 'INVALID_RECORD_NAME',
-        });
+        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: 'Record not found', code: 'INVALID_RECORD_NAME' });
       }
 
       this.requestsCounter.inc({ status: '204' });

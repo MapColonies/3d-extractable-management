@@ -7,6 +7,8 @@ import { InjectionObject, registerDependencies } from '@common/dependencyRegistr
 import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
 import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
+import { usersRouterFactory, USERS_ROUTER_SYMBOL } from './records/routes/usersRouter';
+
 import { getConfig } from './common/config';
 
 export interface RegisterOptions {
@@ -31,6 +33,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
+    { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
     {
       token: 'onSignal',
       provider: {

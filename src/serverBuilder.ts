@@ -13,6 +13,7 @@ import { Registry } from 'prom-client';
 import type { ConfigType } from '@common/config';
 import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
+import { USERS_ROUTER_SYMBOL } from './records/routes/usersRouter';
 
 @injectable()
 export class ServerBuilder {
@@ -22,7 +23,8 @@ export class ServerBuilder {
     @inject(SERVICES.CONFIG) private readonly config: ConfigType,
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry,
-    @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouter: Router
+    @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouter: Router,
+    @inject(USERS_ROUTER_SYMBOL) private readonly usersRouter: Router
   ) {
     this.serverInstance = express();
   }
@@ -46,6 +48,8 @@ export class ServerBuilder {
 
   private buildRoutes(): void {
     this.serverInstance.use('/records', this.recordsRouter);
+    this.serverInstance.use('/users', this.usersRouter);
+
     this.buildDocsRoutes();
   }
 

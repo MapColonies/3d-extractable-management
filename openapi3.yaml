@@ -248,6 +248,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
+  /users/validate:
+    post:
+      tags:
+        - users
+      summary: Validate a user's username and password
+      operationId: validateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload'
+      responses:
+        '200':
+          description: User credentials are valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+        '400':
+          description: Missing username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 components:
   schemas:
     error:

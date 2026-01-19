@@ -82,4 +82,8 @@ export class RecordsManager {
     this.logger.info({ msg: 'record deleted', recordName, logContext });
     return true;
   }
+
+  public validateUser(payload: IAuthPayload): IValidateResponse {
+    return this.validate('CREATE', payload);
+  }
 }
