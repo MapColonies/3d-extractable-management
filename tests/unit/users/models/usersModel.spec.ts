@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { RecordsManager } from '@src/records/models/recordsManager';
-import { recordInstance, validCredentials, invalidCredentials } from '@src/common/mocks';
+import { validCredentials, invalidCredentials } from '@src/common/mocks';
 
 let recordsManager: RecordsManager;
 
