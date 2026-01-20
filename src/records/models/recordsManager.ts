@@ -71,7 +71,6 @@ export class RecordsManager {
       return { isValid: true, message: 'User credentials are valid' };
     }
 
-    /* eslint-disable @typescript-eslint/strict-boolean-expressions */
     if (!('recordName' in payload) || !payload.recordName) {
       this.logger.warn({ msg: 'missing recordName', logContext });
       return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };

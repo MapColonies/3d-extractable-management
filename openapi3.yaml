@@ -41,7 +41,7 @@ paths:
                     - id: 'abc123'
                       recordName: rec_A
                       authorizedBy: john_doe
-                      authorized_at: '2026-01-16T12:00:00Z'
+                      authorizedAt: '2026-01-16T12:00:00Z'
                       data:
                         productType: 3DPhotoRealistic
         '400':
@@ -93,7 +93,7 @@ paths:
                     id: 'abc123'
                     recordName: rec_A
                     authorizedBy: john_doe
-                    authorized_at: '2026-01-16T12:00:00Z'
+                    authorizedAt: '2026-01-16T12:00:00Z'
                     data:
                       productType: 3DPhotoRealistic
         '404':
@@ -165,7 +165,7 @@ paths:
                     id: 'abc123'
                     recordName: rec_A
                     authorizedBy: john_doe
-                    authorized_at: '2026-01-16T12:00:00Z'
+                    authorizedAt: '2026-01-16T12:00:00Z'
                     data:
                       productType: 3DPhotoRealistic
         '400':
@@ -540,7 +540,7 @@ components:
         - id
         - recordName
         - authorizedBy
-        - authorized_at
+        - authorizedAt
       properties:
         id:
           type: string
@@ -548,7 +548,7 @@ components:
           type: string
         authorizedBy:
           type: string
-        authorized_at:
+        authorizedAt:
           type: string
           format: date-time
         data:
