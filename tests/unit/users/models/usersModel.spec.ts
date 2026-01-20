@@ -10,37 +10,27 @@ describe('RecordsManager', () => {
   });
 
   describe('#validateUser', () => {
-    it('should return true when record exists', () => {
-      const spy = jest.spyOn(RecordsManager.prototype, 'validateUser');
-
+    it('should succeed when credentials are valid', () => {
       const result = recordsManager.validateUser(validCredentials);
 
       expect(result.isValid).toBe(true);
-      expect(result.message).toBe('Record can be created');
-
-      spy.mockRestore();
+      expect(result.message).toBe('User credentials are valid');
     });
 
-    it('should return false when record does not exist', () => {
-      const spy = jest.spyOn(RecordsManager.prototype, 'validateUser');
-
+    it('should fail when credentials are invalid', () => {
       const result = recordsManager.validateUser(invalidCredentials);
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Invalid username or password');
-
-      spy.mockRestore();
+      expect(result.code).toBe('INVALID_CREDENTIALS');
     });
 
-    it('should return false when credentials are missing', () => {
-      const spy = jest.spyOn(RecordsManager.prototype, 'validateUser');
-
+    it('should fail when credentials are missing', () => {
       const result = recordsManager.validateUser({ username: '', password: '' });
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Username and password are required');
-
-      spy.mockRestore();
+      expect(result.code).toBe('MISSING_CREDENTIALS');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { IExtractableRecord, IAuthPayload } from '@common/constants';
+import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export const recordInstance: IExtractableRecord = {
@@ -14,12 +14,14 @@ export const recordInstance: IExtractableRecord = {
 };
 
 // mock valid credentials
-export const validCredentials: IAuthPayload = {
+export const validCredentials: IAuthPayloadWithRecord = {
   username: 'username',
   password: 'password',
+  recordName: recordInstance.recordName,
 };
 
-export const invalidCredentials: IAuthPayload = {
+export const invalidCredentials: IAuthPayloadWithRecord = {
   username: 'wrong',
   password: 'wrong',
+  recordName: recordInstance.recordName,
 };

@@ -32,7 +32,7 @@ export class UsersController {
         return res.status(httpStatus.BAD_REQUEST).json({ message: 'Username and password are required', code: 'MISSING_CREDENTIALS' });
       }
 
-      const result = this.manager.validate('CREATE', payload);
+      const result = this.manager.validate('USER', payload);
       const status = result.isValid ? httpStatus.OK : httpStatus.UNAUTHORIZED;
 
       this.requestsCounter.inc({ status: String(status) });

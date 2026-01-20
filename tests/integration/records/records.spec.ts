@@ -4,9 +4,9 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@common/constants';
+import { SERVICES, IExtractableRecord, IAuthPayloadWithRecord, IValidateResponse } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
-import { recordInstance, validCredentials } from '@src/common/mocks';
+import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
 describe('records', function () {
@@ -75,9 +75,10 @@ describe('records', function () {
     });
 
     it('should return 200 when credentials are valid in order to post', async function () {
-      const payload: IAuthPayload = {
+      const payload: IAuthPayloadWithRecord = {
         username: validCredentials.username,
         password: validCredentials.password,
+        recordName: validCredentials.recordName,
       };
 
       const response = await requestSender.validateCreate({
@@ -93,9 +94,10 @@ describe('records', function () {
     });
 
     it('should return 200 when credentials are valid', async function () {
-      const payload: IAuthPayload = {
+      const payload: IAuthPayloadWithRecord = {
         username: validCredentials.username,
         password: validCredentials.password,
+        recordName: recordInstance.recordName,
       };
 
       const response = await requestSender.validateDelete({
@@ -134,18 +136,44 @@ describe('records', function () {
 
     it('should return 400 when credentials are missing in order to post', async function () {
       const response = await requestSender.validateCreate({
-        requestBody: {} as IAuthPayload,
+        requestBody: {} as IAuthPayloadWithRecord,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
+    it('should return 400 when credentials are missing in validateCreate', async () => {
+      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
+        isValid: false,
+        message: 'Missing credentials',
+        code: 'MISSING_CREDENTIALS',
+      });
+
+      const response = await requestSender.validateCreate({
+        requestBody: {
+          username: '',
+          password: '',
+          recordName: validCredentials.recordName,
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Missing credentials',
+        code: 'MISSING_CREDENTIALS',
+      });
+
+      jest.restoreAllMocks();
+    });
+
     it('should return 401 when credentials are invalid in order to post', async function () {
       const response = await requestSender.validateCreate({
         requestBody: {
-          username: 'bad_user',
-          password: 'bad_pass',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
         },
       });
 
@@ -155,7 +183,11 @@ describe('records', function () {
 
     it('should return 401 when credentials are invalid for validateCreate', async () => {
       const response = await requestSender.validateCreate({
-        requestBody: { username: 'wrong', password: 'wrong' },
+        requestBody: {
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
+        },
       });
 
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
@@ -163,18 +195,44 @@ describe('records', function () {
 
     it('should return 400 when credentials are missing', async function () {
       const response = await requestSender.validateDelete({
-        requestBody: null as unknown as IAuthPayload,
+        requestBody: null as unknown as IAuthPayloadWithRecord,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
+    it('should return 400 when credentials are missing in validateDelete', async () => {
+      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
+        isValid: false,
+        message: 'Missing credentials',
+        code: 'MISSING_CREDENTIALS',
+      });
+
+      const response = await requestSender.validateDelete({
+        requestBody: {
+          username: '',
+          password: '',
+          recordName: validCredentials.recordName,
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Missing credentials',
+        code: 'MISSING_CREDENTIALS',
+      });
+
+      jest.restoreAllMocks();
+    });
+
     it('should return 401 when credentials are invalid', async function () {
       const response = await requestSender.validateDelete({
         requestBody: {
-          username: 'wrong',
-          password: 'wrong',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
         },
       });
 
@@ -183,7 +241,11 @@ describe('records', function () {
     });
     it('should return 401 when credentials are invalid for validateDelete', async () => {
       const response = await requestSender.validateDelete({
-        requestBody: { username: 'wrong', password: 'wrong' },
+        requestBody: {
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
+        },
       });
 
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
@@ -203,9 +265,7 @@ describe('records', function () {
         code: 'INVALID_RECORD_NAME',
       });
     });
-  });
 
-  describe('Sad Path', function () {
     it('should return 404 for non-existent record', async function () {
       const response = await requestSender.getRecord({
         pathParams: { recordName: 'rec_nonexistent' },
@@ -214,8 +274,59 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     });
+
+    it('should return 404 when validateCreate returns INVALID_RECORD_NAME', async () => {
+      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
+        isValid: false,
+        message: 'Record does not exist',
+        code: 'INVALID_RECORD_NAME',
+      });
+
+      const response = await requestSender.validateCreate({
+        requestBody: {
+          username: 'any-user',
+          password: 'any-password',
+          recordName: 'nonexistent-record',
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Record does not exist',
+        code: 'INVALID_RECORD_NAME',
+      });
+
+      jest.restoreAllMocks();
+    });
+
+    it('should return 404 when validateDelete returns INVALID_RECORD_NAME', async () => {
+      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
+        isValid: false,
+        message: 'Record does not exist',
+        code: 'INVALID_RECORD_NAME',
+      });
+
+      const response = await requestSender.validateDelete({
+        requestBody: {
+          username: 'any-user',
+          password: 'any-password',
+          recordName: 'nonexistent-record',
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Record does not exist',
+        code: 'INVALID_RECORD_NAME',
+      });
+
+      jest.restoreAllMocks();
+    });
   });
-  describe('Internal Errors', function () {
+
+  describe('Sad Path', function () {
     it('should return 500 if getRecords throws an unexpected error', async function () {
       const spy = jest.spyOn(RecordsManager.prototype, 'getRecords').mockImplementation(() => {
         throw new Error('Simulated server error');
@@ -273,8 +384,9 @@ describe('records', function () {
 
       const response = await requestSender.validateCreate({
         requestBody: {
-          username: recordInstance.username,
+          username: validCredentials.username,
           password: 'any-password',
+          recordName: validCredentials.recordName,
         },
       });
 
@@ -292,8 +404,9 @@ describe('records', function () {
 
       const response = await requestSender.validateDelete({
         requestBody: {
-          username: recordInstance.username,
+          username: validCredentials.username,
           password: 'any-password',
+          recordName: validCredentials.recordName,
         },
       });
 
@@ -320,65 +433,21 @@ describe('records', function () {
       jest.restoreAllMocks();
     });
 
-    it('should return 400 when credentials are missing in validateCreate', async () => {
-      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
-        isValid: false,
-        message: 'Missing credentials',
-        code: 'MISSING_CREDENTIALS',
-      });
-
-      const response = await requestSender.validateCreate({
-        requestBody: {
-          username: '',
-          password: '',
-        },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'Missing credentials',
-        code: 'MISSING_CREDENTIALS',
-      });
-
-      jest.restoreAllMocks();
-    });
-
     it('should return 500 for validateCreate with unknown error type', async () => {
       jest.spyOn(RecordsManager.prototype, 'validate').mockImplementation(() => {
         throw new Error('non-error object');
       });
 
       const response = await requestSender.validateCreate({
-        requestBody: { username: 'user', password: 'pass' },
+        requestBody: {
+          username: 'any-username',
+          password: 'any-password',
+          recordName: 'any-recordName',
+        },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record' });
-
-      jest.restoreAllMocks();
-    });
-
-    it('should return 400 when credentials are missing in validateDelete', async () => {
-      jest.spyOn(RecordsManager.prototype, 'validate').mockReturnValueOnce({
-        isValid: false,
-        message: 'Missing credentials',
-        code: 'MISSING_CREDENTIALS',
-      });
-
-      const response = await requestSender.validateDelete({
-        requestBody: {
-          username: '',
-          password: '',
-        },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'Missing credentials',
-        code: 'MISSING_CREDENTIALS',
-      });
 
       jest.restoreAllMocks();
     });
@@ -389,7 +458,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.validateDelete({
-        requestBody: { username: 'user', password: 'pass' },
+        requestBody: {
+          username: 'any-username',
+          password: 'any-password',
+          recordName: 'any-recordName',
+        },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -414,6 +487,22 @@ describe('records', function () {
     expect(response.body).toEqual({ message: 'Failed to delete record' });
 
     spy.mockRestore();
+  });
+
+  it('should return 500 for createRecord when thrown error is not an instance of Error', async () => {
+    jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
+      throw { weird: 'object' } as unknown as Error;
+    });
+
+    const response = await requestSender.createRecord({
+      pathParams: { recordName: recordInstance.recordName },
+      requestBody: { ...recordInstance, password: validCredentials.password },
+    });
+
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to create record' });
+
+    jest.restoreAllMocks();
   });
 
   it('should return 500 for deleteRecord with unknown error type', async function () {

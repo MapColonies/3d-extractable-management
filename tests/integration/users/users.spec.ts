@@ -39,7 +39,7 @@ describe('users', function () {
 
       const body = response.body as IValidateResponse;
       expect(body.isValid).toBe(true);
-      expect(body.message).toBe('Record can be created');
+      expect(body.message).toBe('User credentials are valid');
     });
   });
 
@@ -78,6 +78,7 @@ describe('users', function () {
       const body = response.body as IValidateResponse;
       expect(body.isValid).toBe(false);
       expect(body.code).toBe('INVALID_CREDENTIALS');
+      expect(body.message).toBe('Invalid username or password');
     });
   });
 

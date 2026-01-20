@@ -93,41 +93,30 @@ export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
     error: {
-      /** @example Unauthorized – invalid username or password */
       message: string;
     };
     validateResponse: {
-      /** @example true */
       isValid: boolean;
-      /** @example Record can be created or deleted */
-      message?: string;
+      message: string;
       /** @enum {string} */
       code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME';
     };
     'auth-payload': {
-      /** @example john_doe */
       username: string;
-      /** @example secret123 */
       password: string;
     };
-    'extractable-record': {
-      /** @example sdfsdfv3f3f3fwfcf23f */
-      id: string;
-      /** @example rec_A */
-      recordName: string;
-      /** @example john_doe */
+    'auth-payload-with-record': {
       username: string;
-      /**
-       * Format: date-time
-       * @example 2026-01-16T12:00:00Z
-       */
+      password: string;
+      recordName?: string;
+    };
+    'extractable-record': {
+      id: string;
+      recordName: string;
+      username: string;
+      /** Format: date-time */
       created_at: string;
-      /**
-       * @description Metadata stored in extractable_records.data
-       * @example {
-       *       "productType": "3DPhotoRealistic"
-       *     }
-       */
+      /** @description Metadata stored in extractable_records.data */
       data?: Record<string, never>;
     };
   };
@@ -157,7 +146,7 @@ export interface operations {
           'application/json': components['schemas']['extractable-record'][];
         };
       };
-      /** @description Unexpected server error */
+      /** @description Bad request */
       400: {
         headers: {
           [name: string]: unknown;
@@ -166,7 +155,7 @@ export interface operations {
           'application/json': components['schemas']['error'];
         };
       };
-      /** @description Unexpected server error */
+      /** @description Internal server error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -206,7 +195,7 @@ export interface operations {
           'application/json': components['schemas']['error'];
         };
       };
-      /** @description Unexpected server error */
+      /** @description Internal server error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -268,7 +257,7 @@ export interface operations {
           'application/json': components['schemas']['validateResponse'];
         };
       };
-      /** @description Unexpected server error */
+      /** @description Internal server error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -328,7 +317,7 @@ export interface operations {
           'application/json': components['schemas']['error'];
         };
       };
-      /** @description Unexpected server error */
+      /** @description Internal server error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -348,7 +337,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload'];
+        'application/json': components['schemas']['auth-payload-with-record'];
       };
     };
     responses: {
@@ -361,7 +350,7 @@ export interface operations {
           'application/json': components['schemas']['validateResponse'];
         };
       };
-      /** @description Validation failed */
+      /** @description Validation failed – missing fields */
       400: {
         headers: {
           [name: string]: unknown;
@@ -399,7 +388,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload'];
+        'application/json': components['schemas']['auth-payload-with-record'];
       };
     };
     responses: {
@@ -412,7 +401,7 @@ export interface operations {
           'application/json': components['schemas']['validateResponse'];
         };
       };
-      /** @description Validation failed */
+      /** @description Validation failed – missing fields */
       400: {
         headers: {
           [name: string]: unknown;

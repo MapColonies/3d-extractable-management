@@ -87,17 +87,19 @@ export class RecordsController {
 
   public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = (req, res) => {
     try {
-      const result = this.manager.validate('CREATE', req.body);
+      const { username, password, recordName } = req.body;
+      const result = this.manager.validate('CREATE', { username, password, recordName });
 
-      if (!result.isValid) {
-        const status = result.code === 'MISSING_CREDENTIALS' ? httpStatus.BAD_REQUEST : httpStatus.UNAUTHORIZED;
+      const status = result.isValid
+        ? httpStatus.OK
+        : result.code === 'MISSING_CREDENTIALS'
+          ? httpStatus.BAD_REQUEST
+          : result.code === 'INVALID_RECORD_NAME'
+            ? httpStatus.NOT_FOUND
+            : httpStatus.UNAUTHORIZED;
 
-        this.requestsCounter.inc({ status: String(status) });
-        return res.status(status).json(result);
-      }
-
-      this.requestsCounter.inc({ status: '200' });
-      return res.status(httpStatus.OK).json(result);
+      this.requestsCounter.inc({ status: String(status) });
+      return res.status(status).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Failed to validate create', error: err });
       this.requestsCounter.inc({ status: '500' });
@@ -107,24 +109,25 @@ export class RecordsController {
 
   public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = (req, res) => {
     try {
-      const result = this.manager.validate('DELETE', req.body);
+      const { username, password, recordName } = req.body;
+      const result = this.manager.validate('DELETE', { username, password, recordName });
 
-      if (!result.isValid) {
-        const status = result.code === 'MISSING_CREDENTIALS' ? httpStatus.BAD_REQUEST : httpStatus.UNAUTHORIZED;
+      const status = result.isValid
+        ? httpStatus.OK
+        : result.code === 'MISSING_CREDENTIALS'
+          ? httpStatus.BAD_REQUEST
+          : result.code === 'INVALID_RECORD_NAME'
+            ? httpStatus.NOT_FOUND
+            : httpStatus.UNAUTHORIZED;
 
-        this.requestsCounter.inc({ status: String(status) });
-        return res.status(status).json(result);
-      }
-
-      this.requestsCounter.inc({ status: '200' });
-      return res.status(httpStatus.OK).json(result);
+      this.requestsCounter.inc({ status: String(status) });
+      return res.status(status).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Failed to validate delete', error: err });
       this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record' });
     }
   };
-
   public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = (req, res) => {
     const { recordName } = req.params;
     const logContext = { recordName, function: 'deleteRecord' };
