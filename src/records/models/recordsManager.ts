@@ -2,7 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
-import { recordInstance, credentialsInstance } from '../../common/mocks';
+import { recordInstance, validCredentials } from '../../common/mocks';
 
 type ValidationAction = 'CREATE' | 'DELETE';
 
@@ -40,7 +40,7 @@ export class RecordsManager {
     // mock validation for now
     if (recordName !== recordInstance.recordName) {
       // 'rec_name'
-      this.logger.warn({ msg: 'record name not allowed', recordName, logContext });
+      this.logger.warn({ msg: `record name '${recordName}' not allowed`, recordName, logContext });
       throw new Error('Record not found');
     }
     const record: IExtractableRecord = { ...recordInstance, recordName: recordName };
@@ -59,7 +59,7 @@ export class RecordsManager {
     }
 
     // mock for now(should be replaced with real auth)
-    if (payload.username !== credentialsInstance.username || payload.password !== credentialsInstance.password) {
+    if (payload.username !== validCredentials.username || payload.password !== validCredentials.password) {
       this.logger.warn({ msg: 'invalid credentials', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
@@ -79,7 +79,7 @@ export class RecordsManager {
       return false;
     }
 
-    this.logger.info({ msg: 'record deleted', recordName, logContext });
+    this.logger.info({ msg: `record '${record.recordName}' deleted`, recordName, logContext });
     return true;
   }
 

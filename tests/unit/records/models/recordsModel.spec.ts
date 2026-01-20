@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { RecordsManager } from '@src/records/models/recordsManager';
-import { recordInstance, credentialsInstance } from '@src/common/mocks';
+import { recordInstance, validCredentials, invalidCredentials } from '@src/common/mocks';
 
 let recordsManager: RecordsManager;
 
@@ -75,7 +75,7 @@ describe('RecordsManager', () => {
       ['CREATE', 'Record can be created'],
       ['DELETE', 'Record can be deleted'],
     ])('should succeed for %s when credentials are valid', (action, expectedMessage) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', credentialsInstance);
+      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', validCredentials);
 
       expect(result.isValid).toBe(true);
       expect(result.message).toBe(expectedMessage);
@@ -93,8 +93,8 @@ describe('RecordsManager', () => {
 
     it.each([['CREATE'], ['DELETE']])('should fail for %s when credentials are invalid', (action) => {
       const result = recordsManager.validate(action as 'CREATE' | 'DELETE', {
-        username: 'bad',
-        password: 'bad',
+        username: invalidCredentials.username,
+        password: invalidCredentials.password,
       });
 
       expect(result.isValid).toBe(false);

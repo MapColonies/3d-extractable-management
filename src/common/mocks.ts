@@ -13,7 +13,13 @@ export const recordInstance: IExtractableRecord = {
   },
 };
 
-export const credentialsInstance: IAuthPayload = {
+// mock valid credentials
+export const validCredentials: IAuthPayload = {
   username: 'username',
   password: 'password',
+};
+
+export const invalidCredentials: IAuthPayload = {
+  username: 'wrong',
+  password: 'wrong',
 };

@@ -6,7 +6,7 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES, IExtractableRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
-import { recordInstance, credentialsInstance } from '@src/common/mocks';
+import { recordInstance, validCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
 describe('records', function () {
@@ -32,7 +32,7 @@ describe('records', function () {
     it('should return 201 when recordName is valid', async function () {
       const response = await requestSender.createRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: credentialsInstance.password },
+        requestBody: { ...recordInstance, password: validCredentials.password },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -76,8 +76,8 @@ describe('records', function () {
 
     it('should return 200 when credentials are valid in order to post', async function () {
       const payload: IAuthPayload = {
-        username: credentialsInstance.username,
-        password: credentialsInstance.password,
+        username: validCredentials.username,
+        password: validCredentials.password,
       };
 
       const response = await requestSender.validateCreate({
@@ -94,8 +94,8 @@ describe('records', function () {
 
     it('should return 200 when credentials are valid', async function () {
       const payload: IAuthPayload = {
-        username: credentialsInstance.username,
-        password: credentialsInstance.password,
+        username: validCredentials.username,
+        password: validCredentials.password,
       };
 
       const response = await requestSender.validateDelete({
@@ -113,7 +113,7 @@ describe('records', function () {
     it('should return 204 when recordName is valid and deleted successfully', async function () {
       const response = await requestSender.deleteRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: credentialsInstance.password },
+        requestBody: { ...recordInstance, password: validCredentials.password },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -125,7 +125,7 @@ describe('records', function () {
     it('should return 404 when recordName is invalid', async function () {
       const response = await requestSender.createRecord({
         pathParams: { recordName: 'rec_invalid' },
-        requestBody: { ...recordInstance, password: credentialsInstance.password },
+        requestBody: { ...recordInstance, password: validCredentials.password },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -192,7 +192,7 @@ describe('records', function () {
     it('should return 404 when deleting a non-existing record', async function () {
       const response = await requestSender.deleteRecord({
         pathParams: { recordName: 'rec_invalid' },
-        requestBody: { ...recordInstance, password: credentialsInstance.password },
+        requestBody: { ...recordInstance, password: validCredentials.password },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -311,7 +311,7 @@ describe('records', function () {
 
       const response = await requestSender.createRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: credentialsInstance.password },
+        requestBody: { ...recordInstance, password: validCredentials.password },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -406,7 +406,7 @@ describe('records', function () {
 
     const response = await requestSender.deleteRecord({
       pathParams: { recordName: recordInstance.recordName },
-      requestBody: { ...recordInstance, password: credentialsInstance.password },
+      requestBody: { ...recordInstance, password: validCredentials.password },
     });
 
     expect(response).toSatisfyApiSpec();
@@ -423,7 +423,7 @@ describe('records', function () {
 
     const response = await requestSender.deleteRecord({
       pathParams: { recordName: recordInstance.recordName },
-      requestBody: { ...recordInstance, password: credentialsInstance.password },
+      requestBody: { ...recordInstance, password: validCredentials.password },
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
