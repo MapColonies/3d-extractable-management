@@ -32,7 +32,13 @@ describe('records', function () {
     it('should return 201 when recordName is valid', async function () {
       const response = await requestSender.createRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: validCredentials.password },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -53,7 +59,7 @@ describe('records', function () {
 
       const record = response.body as IExtractableRecord;
       expect(record.id).toBe(recordInstance.id);
-      expect(record.username).toBe(recordInstance.username);
+      expect(record.authorizedBy).toBe(recordInstance.authorizedBy);
       expect(record.data?.productType).toBe(recordInstance.data?.productType);
     });
 
@@ -115,7 +121,13 @@ describe('records', function () {
     it('should return 204 when recordName is valid and deleted successfully', async function () {
       const response = await requestSender.deleteRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: validCredentials.password },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -127,7 +139,13 @@ describe('records', function () {
     it('should return 404 when recordName is invalid', async function () {
       const response = await requestSender.createRecord({
         pathParams: { recordName: 'rec_invalid' },
-        requestBody: { ...recordInstance, password: validCredentials.password },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -254,7 +272,13 @@ describe('records', function () {
     it('should return 404 when deleting a non-existing record', async function () {
       const response = await requestSender.deleteRecord({
         pathParams: { recordName: 'rec_invalid' },
-        requestBody: { ...recordInstance, password: validCredentials.password },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -365,8 +389,11 @@ describe('records', function () {
       const response = await requestSender.createRecord({
         pathParams: { recordName: 'test-record' },
         requestBody: {
-          username: recordInstance.username,
-          password: 'any-password',
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
         },
       });
 
@@ -424,7 +451,13 @@ describe('records', function () {
 
       const response = await requestSender.createRecord({
         pathParams: { recordName: recordInstance.recordName },
-        requestBody: { ...recordInstance, password: validCredentials.password },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -479,7 +512,13 @@ describe('records', function () {
 
     const response = await requestSender.deleteRecord({
       pathParams: { recordName: recordInstance.recordName },
-      requestBody: { ...recordInstance, password: validCredentials.password },
+      requestBody: {
+        ...recordInstance,
+        username: validCredentials.username,
+        password: validCredentials.password,
+        authorizedBy: recordInstance.authorizedBy,
+        data: recordInstance.data,
+      },
     });
 
     expect(response).toSatisfyApiSpec();
@@ -496,7 +535,13 @@ describe('records', function () {
 
     const response = await requestSender.createRecord({
       pathParams: { recordName: recordInstance.recordName },
-      requestBody: { ...recordInstance, password: validCredentials.password },
+      requestBody: {
+        ...recordInstance,
+        username: validCredentials.username,
+        password: validCredentials.password,
+        authorizedBy: recordInstance.authorizedBy,
+        data: recordInstance.data,
+      },
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -512,7 +557,13 @@ describe('records', function () {
 
     const response = await requestSender.deleteRecord({
       pathParams: { recordName: recordInstance.recordName },
-      requestBody: { ...recordInstance, password: validCredentials.password },
+      requestBody: {
+        ...recordInstance,
+        username: validCredentials.username,
+        password: validCredentials.password,
+        authorizedBy: recordInstance.authorizedBy,
+        data: recordInstance.data,
+      },
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);

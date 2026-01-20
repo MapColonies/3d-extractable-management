@@ -40,8 +40,8 @@ paths:
                   value:
                     - id: 'abc123'
                       recordName: rec_A
-                      username: john_doe
-                      created_at: '2026-01-16T12:00:00Z'
+                      authorizedBy: john_doe
+                      authorized_at: '2026-01-16T12:00:00Z'
                       data:
                         productType: 3DPhotoRealistic
         '400':
@@ -92,8 +92,8 @@ paths:
                   value:
                     id: 'abc123'
                     recordName: rec_A
-                    username: john_doe
-                    created_at: '2026-01-16T12:00:00Z'
+                    authorizedBy: john_doe
+                    authorized_at: '2026-01-16T12:00:00Z'
                     data:
                       productType: 3DPhotoRealistic
         '404':
@@ -135,7 +135,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/auth-payload'
+              type: object
+              required:
+                - username
+                - password
+                - authorizedBy
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                authorizedBy:
+                  type: string
+                  description: 'User authorizing this record creation'
+                data:
+                  type: object
+                  description: 'Optional metadata for the record'
       responses:
         '201':
           description: Record created successfully
@@ -149,8 +164,8 @@ paths:
                   value:
                     id: 'abc123'
                     recordName: rec_A
-                    username: john_doe
-                    created_at: '2026-01-16T12:00:00Z'
+                    authorizedBy: john_doe
+                    authorized_at: '2026-01-16T12:00:00Z'
                     data:
                       productType: 3DPhotoRealistic
         '400':
@@ -218,7 +233,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/auth-payload'
+              type: object
+              required:
+                - username
+                - password
+                - authorizedBy
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                authorizedBy:
+                  type: string
+                  description: 'User authorizing this deletion'
+                data:
+                  type: object
+                  description: 'Optional metadata related to deletion'
       responses:
         '204':
           description: Record deleted successfully
@@ -495,6 +525,7 @@ components:
       required:
         - username
         - password
+        - recordName
       properties:
         username:
           type: string
@@ -508,16 +539,16 @@ components:
       required:
         - id
         - recordName
-        - username
-        - created_at
+        - authorizedBy
+        - authorized_at
       properties:
         id:
           type: string
         recordName:
           type: string
-        username:
+        authorizedBy:
           type: string
-        created_at:
+        authorized_at:
           type: string
           format: date-time
         data:

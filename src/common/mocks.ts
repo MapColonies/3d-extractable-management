@@ -4,8 +4,8 @@ import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 export const recordInstance: IExtractableRecord = {
   id: 'a101',
   recordName: 'rec_name',
-  username: 'username',
-  created_at: '2026-01-16T12:00:00Z',
+  authorizedBy: 'username',
+  authorized_at: '2026-01-16T12:00:00Z',
   data: {
     productType: '3DPhotoRealistic' as never,
     resolution: '4K' as never,

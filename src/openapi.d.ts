@@ -108,14 +108,14 @@ export type components = {
     'auth-payload-with-record': {
       username: string;
       password: string;
-      recordName?: string;
+      recordName: string;
     };
     'extractable-record': {
       id: string;
       recordName: string;
-      username: string;
+      authorizedBy: string;
       /** Format: date-time */
-      created_at: string;
+      authorized_at: string;
       /** @description Metadata stored in extractable_records.data */
       data?: Record<string, never>;
     };
@@ -217,7 +217,14 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload'];
+        'application/json': {
+          username: string;
+          password: string;
+          /** @description User authorizing this record creation */
+          authorizedBy: string;
+          /** @description Optional metadata for the record */
+          data?: Record<string, never>;
+        };
       };
     };
     responses: {
@@ -279,7 +286,14 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload'];
+        'application/json': {
+          username: string;
+          password: string;
+          /** @description User authorizing this deletion */
+          authorizedBy: string;
+          /** @description Optional metadata related to deletion */
+          data?: Record<string, never>;
+        };
       };
     };
     responses: {
