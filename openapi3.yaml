@@ -246,9 +246,6 @@ paths:
                 authorizedBy:
                   type: string
                   description: 'User authorizing this deletion'
-                data:
-                  type: object
-                  description: 'Optional metadata related to deletion'
       responses:
         '204':
           description: Record deleted successfully
