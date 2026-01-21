@@ -487,11 +487,10 @@ describe('records', function () {
   });
 
   describe('Sad Path', function () {
-    let spies: jest.SpyInstance[] = [];
-
     afterEach(function () {
-      spies.forEach((s) => s.mockRestore());
-      spies = [];
+      jest.clearAllMocks();
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
     });
 
     it('should return 500 if getRecords throws an unexpected error', async function () {
