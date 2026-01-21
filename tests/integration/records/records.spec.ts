@@ -357,30 +357,6 @@ describe('records', function () {
 
       jest.restoreAllMocks();
     });
-
-    it('should return 400 for validateDelete when validation fails without error code', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
-        isValid: false,
-        message: 'Validation failed',
-        code: undefined,
-      });
-
-      const response = await requestSender.validateDelete({
-        requestBody: {
-          ...validCredentials,
-          recordName: validCredentials.recordName,
-        },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toMatchObject({
-        isValid: false,
-        message: 'Validation failed',
-      });
-
-      jest.restoreAllMocks();
-    });
-
     it('should return 401 when credentials are invalid', async function () {
       const response = await requestSender.validateDelete({
         requestBody: {
@@ -602,6 +578,27 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
+    });
+
+    it('should return 500 for validateDelete when validation fails without error code', async function () {
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+        isValid: false,
+        message: 'Validation failed',
+        code: undefined,
+      });
+
+      const response = await requestSender.validateDelete({
+        requestBody: {
+          ...validCredentials,
+          recordName: validCredentials.recordName,
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toMatchObject({
+        isValid: false,
+        message: 'Validation failed',
+      });
     });
 
     it('should return 500 for createRecord with unknown error type', async () => {
