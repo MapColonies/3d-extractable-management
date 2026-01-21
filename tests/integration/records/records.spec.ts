@@ -48,6 +48,7 @@ describe('records', function () {
         body: expect.objectContaining({
           ...recordInstance,
           recordName: recordInstance.recordName,
+          authorizedAt: expect.any(String),
         }),
       });
     });
@@ -65,6 +66,8 @@ describe('records', function () {
         body: expect.objectContaining({
           ...recordInstance,
           recordName: recordInstance.recordName,
+          authorizedAt: expect.any(String),
+          data: recordInstance.data,
         }),
       });
     });
@@ -508,8 +511,15 @@ describe('records', function () {
   });
 
   describe('Sad Path', function () {
+    let spies: jest.SpyInstance[] = [];
+
+    afterEach(function () {
+      spies.forEach((s) => s.mockRestore());
+      spies = [];
+    });
+
     it('should return 500 if getRecords throws an unexpected error', async function () {
-      const spy = jest.spyOn(RecordsManager.prototype, 'getRecords').mockImplementation(() => {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
@@ -518,12 +528,10 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to get records', code: 'INTERNAL_ERROR' });
-
-      spy.mockRestore();
     });
 
     it('should return 500 if getRecord throws an unexpected error', async function () {
-      const spy = jest.spyOn(RecordsManager.prototype, 'getRecord').mockImplementation(() => {
+      jest.spyOn(RecordsManager.prototype, 'getRecord').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
@@ -534,8 +542,6 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to get record', code: 'INTERNAL_ERROR' });
-
-      spy.mockRestore();
     });
 
     it('should return 500 if createRecord throws an unexpected error', async function () {
@@ -544,7 +550,7 @@ describe('records', function () {
         message: 'Record can be created',
       });
 
-      const spy = jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
+      jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
@@ -560,12 +566,10 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
-
-      spy.mockRestore();
     });
 
     it('should return 500 if validateCreate throws an unexpected error', async function () {
-      const spy = jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockImplementation(() => {
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
@@ -580,12 +584,10 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
-
-      spy.mockRestore();
     });
 
     it('should return 500 if validateDelete throws an unexpected error', async function () {
-      const spy = jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockImplementation(() => {
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
@@ -600,8 +602,6 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
-
-      spy.mockRestore();
     });
 
     it('should return 500 for createRecord with unknown error type', async () => {
@@ -620,8 +620,6 @@ describe('records', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
-
-      jest.restoreAllMocks();
     });
 
     it('should return 500 for validateCreate with unknown error type', async () => {
@@ -639,8 +637,6 @@ describe('records', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
-
-      jest.restoreAllMocks();
     });
 
     it('should return 500 for validateDelete with unknown error type', async () => {
@@ -658,13 +654,11 @@ describe('records', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
-
-      jest.restoreAllMocks();
     });
   });
 
   it('should return 500 if deleteRecord throws an unexpected error', async function () {
-    const spy = jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockImplementation(() => {
+    jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockImplementation(() => {
       throw new Error('Simulated server error');
     });
 
@@ -681,8 +675,6 @@ describe('records', function () {
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
-
-    spy.mockRestore();
   });
 
   it('should return 500 for createRecord when thrown error is not an instance of Error', async () => {
@@ -703,8 +695,6 @@ describe('records', function () {
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
-
-    jest.restoreAllMocks();
   });
 
   it('should return 500 for deleteRecord when thrown error is not an instance of Error', async () => {
@@ -724,8 +714,6 @@ describe('records', function () {
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
-
-    jest.restoreAllMocks();
   });
 
   it('should return 500 for deleteRecord with unknown error type', async function () {
@@ -745,8 +733,6 @@ describe('records', function () {
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
-
-    jest.restoreAllMocks();
   });
 
   it('should return 500 for validateDelete when INTERNAL_ERROR is returned', async function () {
@@ -768,8 +754,6 @@ describe('records', function () {
       isValid: false,
       code: 'INTERNAL_ERROR',
     });
-
-    jest.restoreAllMocks();
   });
 
   it('should return 500 for validateDelete with unknown validation code', async function () {
@@ -787,7 +771,5 @@ describe('records', function () {
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-
-    jest.restoreAllMocks();
   });
 });
