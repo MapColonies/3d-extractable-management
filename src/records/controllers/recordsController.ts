@@ -174,7 +174,7 @@ export class RecordsController {
           status = httpStatus.INTERNAL_SERVER_ERROR;
           break;
         case undefined:
-          status = result.isValid ? httpStatus.OK : httpStatus.BAD_REQUEST;
+          status = result.isValid ? httpStatus.OK : httpStatus.INTERNAL_SERVER_ERROR;
           break;
         default:
           status = httpStatus.INTERNAL_SERVER_ERROR;
