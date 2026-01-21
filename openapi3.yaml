@@ -150,6 +150,7 @@ paths:
                   description: 'User authorizing this record creation'
                 data:
                   type: object
+                  additionalProperties: true
                   description: 'Optional metadata for the record'
       responses:
         '201':
@@ -550,4 +551,5 @@ components:
           format: date-time
         data:
           type: object
+          additionalProperties: true
           description: Metadata stored in extractable_records.data

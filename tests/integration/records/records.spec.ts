@@ -126,7 +126,6 @@ describe('records', function () {
           username: validCredentials.username,
           password: validCredentials.password,
           authorizedBy: recordInstance.authorizedBy,
-          data: recordInstance.data,
         },
       });
 
@@ -277,7 +276,6 @@ describe('records', function () {
           username: validCredentials.username,
           password: validCredentials.password,
           authorizedBy: recordInstance.authorizedBy,
-          data: recordInstance.data,
         },
       });
 
@@ -517,7 +515,6 @@ describe('records', function () {
         username: validCredentials.username,
         password: validCredentials.password,
         authorizedBy: recordInstance.authorizedBy,
-        data: recordInstance.data,
       },
     });
 
@@ -562,7 +559,6 @@ describe('records', function () {
         username: validCredentials.username,
         password: validCredentials.password,
         authorizedBy: recordInstance.authorizedBy,
-        data: recordInstance.data,
       },
     });
 

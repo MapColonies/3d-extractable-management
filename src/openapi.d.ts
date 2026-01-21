@@ -117,7 +117,9 @@ export type components = {
       /** Format: date-time */
       authorizedAt: string;
       /** @description Metadata stored in extractable_records.data */
-      data?: Record<string, never>;
+      data?: {
+        [key: string]: unknown;
+      };
     };
   };
   responses: never;
@@ -223,7 +225,9 @@ export interface operations {
           /** @description User authorizing this record creation */
           authorizedBy: string;
           /** @description Optional metadata for the record */
-          data?: Record<string, never>;
+          data?: {
+            [key: string]: unknown;
+          };
         };
       };
     };
@@ -291,8 +295,6 @@ export interface operations {
           password: string;
           /** @description User authorizing this deletion */
           authorizedBy: string;
-          /** @description Optional metadata related to deletion */
-          data?: Record<string, never>;
         };
       };
     };
