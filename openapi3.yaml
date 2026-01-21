@@ -489,6 +489,13 @@ components:
       properties:
         message:
           type: string
+        code:
+          type: string
+          enum:
+            - INTERNAL_ERROR
+            - MISSING_CREDENTIALS
+            - INVALID_CREDENTIALS
+            - INVALID_RECORD_NAME
 
     validateResponse:
       type: object

@@ -30,9 +30,7 @@ export class UsersController {
       return res.status(status).json(result);
     } catch (error) {
       this.logger.error({ msg: 'Failed to validate user', error });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to validate user',
-      });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
     }
   };
 }

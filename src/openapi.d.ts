@@ -94,6 +94,8 @@ export type components = {
   schemas: {
     error: {
       message: string;
+      /** @enum {string} */
+      code?: 'INTERNAL_ERROR' | 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME';
     };
     validateResponse: {
       isValid: boolean;

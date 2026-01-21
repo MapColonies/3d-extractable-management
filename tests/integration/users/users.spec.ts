@@ -99,7 +99,7 @@ describe('users', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate user' });
+      expect(response.body).toEqual({ message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });

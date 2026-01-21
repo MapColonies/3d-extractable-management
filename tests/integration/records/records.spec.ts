@@ -517,7 +517,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to get records' });
+      expect(response.body).toEqual({ message: 'Failed to get records', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
@@ -528,12 +528,12 @@ describe('records', function () {
       });
 
       const response = await requestSender.getRecord({
-        pathParams: { recordName: 'test-record' },
+        pathParams: { recordName: validCredentials.recordName },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to get record' });
+      expect(response.body).toEqual({ message: 'Failed to get record', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
@@ -559,7 +559,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to create record' });
+      expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
@@ -579,7 +579,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate record' });
+      expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
@@ -599,7 +599,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate record' });
+      expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
@@ -619,7 +619,7 @@ describe('records', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to create record' });
+      expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
 
       jest.restoreAllMocks();
     });
@@ -638,7 +638,7 @@ describe('records', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate record' });
+      expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
 
       jest.restoreAllMocks();
     });
@@ -650,14 +650,14 @@ describe('records', function () {
 
       const response = await requestSender.validateDelete({
         requestBody: {
-          username: 'any-username',
-          password: 'any-password',
-          recordName: 'any-recordName',
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
         },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate record' });
+      expect(response.body).toEqual({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
 
       jest.restoreAllMocks();
     });
@@ -680,7 +680,7 @@ describe('records', function () {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to delete record' });
+    expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
 
     spy.mockRestore();
   });
@@ -702,7 +702,7 @@ describe('records', function () {
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to create record' });
+    expect(response.body).toEqual({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
 
     jest.restoreAllMocks();
   });
@@ -723,7 +723,7 @@ describe('records', function () {
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to delete record' });
+    expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
 
     jest.restoreAllMocks();
   });
@@ -744,7 +744,7 @@ describe('records', function () {
     });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to delete record' });
+    expect(response.body).toEqual({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
 
     jest.restoreAllMocks();
   });

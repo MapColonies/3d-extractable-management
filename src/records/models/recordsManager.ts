@@ -38,7 +38,6 @@ export class RecordsManager {
 
     // mock validation for now
     if (recordName !== recordInstance.recordName) {
-      // 'rec_name'
       this.logger.warn({ msg: `record name '${recordName}' not allowed`, recordName, logContext });
       throw new Error('Record not found');
     }
