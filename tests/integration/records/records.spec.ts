@@ -355,6 +355,29 @@ describe('records', function () {
       jest.restoreAllMocks();
     });
 
+    it('should return 400 for validateDelete when validation fails without error code', async function () {
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+        isValid: false,
+        message: 'Validation failed',
+        code: undefined,
+      });
+
+      const response = await requestSender.validateDelete({
+        requestBody: {
+          ...validCredentials,
+          recordName: validCredentials.recordName,
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toMatchObject({
+        isValid: false,
+        message: 'Validation failed',
+      });
+
+      jest.restoreAllMocks();
+    });
+
     it('should return 401 when credentials are invalid', async function () {
       const response = await requestSender.validateDelete({
         requestBody: {
@@ -722,6 +745,48 @@ describe('records', function () {
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to delete record' });
+
+    jest.restoreAllMocks();
+  });
+
+  it('should return 500 for validateDelete when INTERNAL_ERROR is returned', async function () {
+    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+      isValid: false,
+      code: 'INTERNAL_ERROR',
+      message: 'Internal validation error',
+    });
+
+    const response = await requestSender.validateDelete({
+      requestBody: {
+        ...validCredentials,
+        recordName: validCredentials.recordName,
+      },
+    });
+
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toMatchObject({
+      isValid: false,
+      code: 'INTERNAL_ERROR',
+    });
+
+    jest.restoreAllMocks();
+  });
+
+  it('should return 500 for validateDelete with unknown validation code', async function () {
+    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+      isValid: false,
+      code: 'UNKNOWN_CODE',
+      message: 'Unknown error',
+    } as never);
+
+    const response = await requestSender.validateDelete({
+      requestBody: {
+        ...validCredentials,
+        recordName: validCredentials.recordName,
+      },
+    });
+
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
 
     jest.restoreAllMocks();
   });
