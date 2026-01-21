@@ -1,13 +1,8 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
-import { SERVICES, IExtractableRecord, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
+import { SERVICES, IExtractableRecord } from '@common/constants';
 import { LogContext } from '@common/interfaces';
-import { recordInstance, validCredentials } from '../../common/mocks';
-
-type ValidationAction = 'CREATE' | 'DELETE' | 'USER';
-type ValidatePayload =
-  | IAuthPayload // USER
-  | IAuthPayloadWithRecord; // CREATE / DELETE
+import { recordInstance } from '../../common/mocks';
 
 @injectable()
 export class RecordsManager {
@@ -39,6 +34,7 @@ export class RecordsManager {
 
   public createRecord(recordName: string): IExtractableRecord {
     const logContext = { ...this.logContext, function: this.createRecord.name };
+    this.logger.info({ msg: `Starting to create record '${recordName}'`, recordName, logContext });
 
     // mock validation for now
     if (recordName !== recordInstance.recordName) {
@@ -53,46 +49,9 @@ export class RecordsManager {
     return record;
   }
 
-  public validate(action: ValidationAction, payload: ValidatePayload): IValidateResponse {
-    const logContext = { ...this.logContext, function: this.validate.name, action };
-
-    if (!payload.username || !payload.password) {
-      this.logger.warn({ msg: 'missing credentials', logContext });
-      return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
-    }
-
-    if (action === 'USER') {
-      if (payload.username !== validCredentials.username || payload.password !== validCredentials.password) {
-        this.logger.warn({ msg: 'invalid credentials', username: payload.username, logContext });
-        return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
-      }
-
-      this.logger.info({ msg: 'user validation successful', logContext });
-      return { isValid: true, message: 'User credentials are valid' };
-    }
-
-    if (!('recordName' in payload) || !payload.recordName) {
-      this.logger.warn({ msg: 'missing recordName', logContext });
-      return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };
-    }
-
-    const { recordName } = payload;
-    if (payload.username !== validCredentials.username || payload.password !== validCredentials.password) {
-      this.logger.warn({ msg: 'invalid credentials', username: payload.username, logContext });
-      return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
-    }
-
-    if (recordName !== recordInstance.recordName) {
-      this.logger.warn({ msg: `record not found for ${action.toLowerCase()}`, recordName, logContext });
-      return { isValid: false, message: `Record '${recordName}' not found`, code: 'INVALID_RECORD_NAME' };
-    }
-
-    this.logger.info({ msg: 'validation successful', action, recordName, logContext });
-    return { isValid: true, message: action === 'CREATE' ? 'Record can be created' : 'Record can be deleted' };
-  }
-
   public deleteRecord(recordName: string): boolean {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
+    this.logger.info({ msg: `Starting to delete record '${recordName}'`, recordName, logContext });
 
     const record = this.getRecord(recordName);
 
@@ -103,9 +62,5 @@ export class RecordsManager {
 
     this.logger.info({ msg: `record '${record.recordName}' deleted`, recordName, logContext });
     return true;
-  }
-
-  public validateUser(payload: IAuthPayload): IValidateResponse {
-    return this.validate('USER', payload);
   }
 }

@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: 3d-extractable-management-bff
+  title: 3d-extractable-management
   description: Manage extractable records with validation and audit logging
   version: 1.0.0
   license:
@@ -506,6 +506,7 @@ components:
             - MISSING_CREDENTIALS
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME
+            - INTERNAL ERROR
 
     auth-payload:
       type: object

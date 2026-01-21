@@ -1,12 +1,15 @@
 import jsLogger from '@map-colonies/js-logger';
 import { RecordsManager } from '@src/records/models/recordsManager';
+import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { recordInstance, validCredentials, invalidCredentials } from '@src/common/mocks';
 
 let recordsManager: RecordsManager;
+let validationsManager: ValidationsManager;
 
 describe('RecordsManager', () => {
   beforeEach(() => {
     recordsManager = new RecordsManager(jsLogger({ enabled: false }));
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
   });
 
   describe('#getRecords', () => {
@@ -62,69 +65,113 @@ describe('RecordsManager', () => {
     });
   });
 
-  describe('#validate', () => {
-    it.each([
-      ['CREATE', 'Record can be created'],
-      ['DELETE', 'Record can be deleted'],
-    ])('should succeed for %s with valid credentials and recordName', (action, expectedMessage) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', validCredentials);
-      expect(result.isValid).toBe(true);
-      expect(result.message).toBe(expectedMessage);
-    });
-
-    it.each([['CREATE'], ['DELETE']])('should fail for %s when username/password are missing', (action) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', { username: '', password: '', recordName: validCredentials.recordName });
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('MISSING_CREDENTIALS');
-    });
-
-    it.each([['CREATE'], ['DELETE']])('should fail for %s when credentials are invalid', (action) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', invalidCredentials);
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('INVALID_CREDENTIALS');
-    });
-
-    it.each([['CREATE'], ['DELETE']])('should fail for %s when recordName is missing', (action) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', {
-        username: validCredentials.username,
-        password: validCredentials.password,
+  describe('RecordsManager Validation', () => {
+    describe('#validateCreate', () => {
+      it('should succeed with valid credentials and recordName', () => {
+        const result = validationsManager.validateCreate({
+          ...validCredentials,
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(true);
+        expect(result.message).toBe('Record can be created');
       });
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('MISSING_CREDENTIALS');
-      expect(result.message).toBe('recordName is required');
-    });
 
-    it.each([['CREATE'], ['DELETE']])('should fail for %s when recordName is invalid', (action) => {
-      const result = recordsManager.validate(action as 'CREATE' | 'DELETE', {
-        username: validCredentials.username,
-        password: validCredentials.password,
-        recordName: 'wrong_name',
+      it('should fail when username/password are missing', () => {
+        const result = validationsManager.validateCreate({
+          username: '',
+          password: '',
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('MISSING_CREDENTIALS');
+        expect(result.message).toBe('Username and password are required');
       });
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('INVALID_RECORD_NAME');
-      expect(result.message).toBe("Record 'wrong_name' not found");
-    });
-  });
 
-  describe('#validateUser', () => {
-    it('should succeed with valid credentials', () => {
-      const result = recordsManager.validateUser(validCredentials);
-      expect(result.isValid).toBe(true);
-      expect(result.message).toBe('User credentials are valid');
+      it('should fail when credentials are invalid', () => {
+        const result = validationsManager.validateCreate({
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('INVALID_CREDENTIALS');
+      });
+
+      it('should fail when recordName is missing', () => {
+        const result = validationsManager.validateCreate({
+          username: validCredentials.username,
+          password: validCredentials.password,
+          recordName: '',
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('MISSING_CREDENTIALS');
+        expect(result.message).toBe('recordName is required');
+      });
+
+      it('should fail when recordName is invalid', () => {
+        const result = validationsManager.validateCreate({
+          username: validCredentials.username,
+          password: validCredentials.password,
+          recordName: invalidCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('INVALID_RECORD_NAME');
+        expect(result.message).toBe(`Record '${invalidCredentials.recordName}' not found`);
+      });
     });
 
-    it('should fail with invalid credentials', () => {
-      const result = recordsManager.validateUser(invalidCredentials);
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('INVALID_CREDENTIALS');
-      expect(result.message).toBe('Invalid username or password');
-    });
+    describe('#validateDelete', () => {
+      it('should succeed with valid credentials and recordName', () => {
+        const result = validationsManager.validateDelete({
+          ...validCredentials,
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(true);
+        expect(result.message).toBe('Record can be deleted');
+      });
 
-    it('should fail when credentials are missing', () => {
-      const result = recordsManager.validateUser({ username: '', password: '' });
-      expect(result.isValid).toBe(false);
-      expect(result.code).toBe('MISSING_CREDENTIALS');
-      expect(result.message).toBe('Username and password are required');
+      it('should fail when username/password are missing', () => {
+        const result = validationsManager.validateDelete({
+          username: '',
+          password: '',
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('MISSING_CREDENTIALS');
+        expect(result.message).toBe('Username and password are required');
+      });
+
+      it('should fail when credentials are invalid', () => {
+        const result = validationsManager.validateDelete({
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: validCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('INVALID_CREDENTIALS');
+      });
+
+      it('should fail when recordName is missing', () => {
+        const result = validationsManager.validateDelete({
+          username: validCredentials.username,
+          password: validCredentials.password,
+          recordName: '',
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('MISSING_CREDENTIALS');
+        expect(result.message).toBe('recordName is required');
+      });
+
+      it('should fail when recordName is invalid', () => {
+        const result = validationsManager.validateDelete({
+          username: validCredentials.username,
+          password: validCredentials.password,
+          recordName: invalidCredentials.recordName,
+        });
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe('INVALID_RECORD_NAME');
+        expect(result.message).toBe(`Record '${invalidCredentials.recordName}' not found`);
+      });
     });
   });
 });

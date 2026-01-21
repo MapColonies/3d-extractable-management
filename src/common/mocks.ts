@@ -1,3 +1,4 @@
+// TODO: remove this file
 import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 export const recordInstance: IExtractableRecord = {
@@ -22,5 +23,5 @@ export const validCredentials: IAuthPayloadWithRecord = {
 export const invalidCredentials: IAuthPayloadWithRecord = {
   username: 'wrong',
   password: 'wrong',
-  recordName: recordInstance.recordName,
+  recordName: 'rec_invalid',
 };

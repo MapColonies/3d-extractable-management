@@ -1,24 +1,24 @@
 import jsLogger from '@map-colonies/js-logger';
-import { RecordsManager } from '@src/records/models/recordsManager';
+import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
 
-let recordsManager: RecordsManager;
+let validationsManager: ValidationsManager;
 
 describe('RecordsManager', () => {
   beforeEach(() => {
-    recordsManager = new RecordsManager(jsLogger({ enabled: false }));
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
   });
 
   describe('#validateUser', () => {
     it('should succeed when credentials are valid', () => {
-      const result = recordsManager.validateUser(validCredentials);
+      const result = validationsManager.validateUser(validCredentials);
 
       expect(result.isValid).toBe(true);
       expect(result.message).toBe('User credentials are valid');
     });
 
     it('should fail when credentials are invalid', () => {
-      const result = recordsManager.validateUser(invalidCredentials);
+      const result = validationsManager.validateUser(invalidCredentials);
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Invalid username or password');
@@ -26,7 +26,7 @@ describe('RecordsManager', () => {
     });
 
     it('should fail when credentials are missing', () => {
-      const result = recordsManager.validateUser({ username: '', password: '' });
+      const result = validationsManager.validateUser({ username: '', password: '' });
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Username and password are required');

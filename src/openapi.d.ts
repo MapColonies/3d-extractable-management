@@ -99,7 +99,7 @@ export type components = {
       isValid: boolean;
       message: string;
       /** @enum {string} */
-      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME';
+      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME' | 'INTERNAL ERROR';
     };
     'auth-payload': {
       username: string;

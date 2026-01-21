@@ -5,7 +5,7 @@ import { createRequestSender, RequestSender } from '@map-colonies/openapi-helper
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload, IValidateResponse } from '@common/constants';
-import { RecordsManager } from '@src/records/models/recordsManager';
+import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
@@ -84,7 +84,7 @@ describe('users', function () {
 
   describe('Internal Errors', function () {
     it('should return 500 when validate throws an unexpected error', async function () {
-      const spy = jest.spyOn(RecordsManager.prototype, 'validate').mockImplementation(() => {
+      const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
