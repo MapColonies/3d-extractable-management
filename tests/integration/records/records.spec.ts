@@ -4,7 +4,7 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IExtractableRecord, IAuthPayloadWithRecord, IValidateResponse } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IValidateResponse } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
@@ -41,9 +41,10 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.CREATED);
 
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
       expect(response).toMatchObject({
-        status: httpStatusCodes.CREATED,
         body: expect.objectContaining({
           ...recordInstance,
           recordName: recordInstance.recordName,
@@ -57,9 +58,10 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
 
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
       expect(response).toMatchObject({
-        status: httpStatusCodes.OK,
         body: expect.objectContaining({
           ...recordInstance,
           recordName: recordInstance.recordName,
@@ -440,8 +442,8 @@ describe('records', function () {
 
       const response = await requestSender.validateCreate({
         requestBody: {
-          username: 'any-user',
-          password: 'any-password',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
           recordName: 'nonexistent-record',
         },
       });
@@ -465,8 +467,8 @@ describe('records', function () {
 
       const response = await requestSender.validateDelete({
         requestBody: {
-          username: 'any-user',
-          password: 'any-password',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
           recordName: 'nonexistent-record',
         },
       });

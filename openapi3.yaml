@@ -506,7 +506,7 @@ components:
             - MISSING_CREDENTIALS
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME
-            - INTERNAL ERROR
+            - INTERNAL_ERROR
 
     auth-payload:
       type: object

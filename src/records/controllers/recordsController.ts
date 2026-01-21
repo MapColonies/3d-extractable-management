@@ -162,19 +162,24 @@ export class RecordsController {
       const result = this.validationsManager.validateDelete(req.body);
 
       let status: number;
-      if (result.isValid) {
-        status = httpStatus.OK;
-      } else {
-        switch (result.code) {
-          case 'MISSING_CREDENTIALS':
-            status = httpStatus.BAD_REQUEST;
-            break;
-          case 'INVALID_RECORD_NAME':
-            status = httpStatus.NOT_FOUND;
-            break;
-          default:
-            status = httpStatus.UNAUTHORIZED;
-        }
+      switch (result.code) {
+        case 'MISSING_CREDENTIALS':
+          status = httpStatus.BAD_REQUEST;
+          break;
+        case 'INVALID_RECORD_NAME':
+          status = httpStatus.NOT_FOUND;
+          break;
+        case 'INVALID_CREDENTIALS':
+          status = httpStatus.UNAUTHORIZED;
+          break;
+        case 'INTERNAL_ERROR':
+          status = httpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        case undefined:
+          status = result.isValid ? httpStatus.OK : httpStatus.BAD_REQUEST;
+          break;
+        default:
+          status = httpStatus.INTERNAL_SERVER_ERROR;
       }
 
       return res.status(status).json(result);
