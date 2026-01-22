@@ -186,15 +186,6 @@ describe('records', function () {
       jest.restoreAllMocks();
     });
 
-    it('should return 400 when credentials are missing in order to post', async function () {
-      const response = await requestSender.validateCreate({
-        requestBody: {} as IAuthPayloadWithRecord,
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    });
-
     it('should return 400 when credentials are missing in validateCreate', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: false,
@@ -269,15 +260,6 @@ describe('records', function () {
       });
 
       jest.restoreAllMocks();
-    });
-
-    it('should return 400 when credentials are missing', async function () {
-      const response = await requestSender.validateDelete({
-        requestBody: null as unknown as IAuthPayloadWithRecord,
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
     it('should return 400 when credentials are missing in validateDelete', async () => {

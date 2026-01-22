@@ -43,7 +43,7 @@ paths:
                       authorizedBy: john_doe
                       authorizedAt: '2026-01-16T12:00:00Z'
                       data:
-                        productType: 3DPhotoRealistic
+                        kuku: 'kuku random data'
         '400':
           description: Bad request
           content:
@@ -95,7 +95,7 @@ paths:
                     authorizedBy: john_doe
                     authorizedAt: '2026-01-16T12:00:00Z'
                     data:
-                      productType: 3DPhotoRealistic
+                      kuku: 'kuku random data'
         '404':
           description: Record not found
           content:
@@ -168,7 +168,7 @@ paths:
                     authorizedBy: john_doe
                     authorizedAt: '2026-01-16T12:00:00Z'
                     data:
-                      productType: 3DPhotoRealistic
+                      kuku: 'kuku random data'
         '400':
           description: Validation failed – call POST /records/validate first
           content:
@@ -486,6 +486,7 @@ components:
       type: object
       required:
         - message
+        - code
       properties:
         message:
           type: string
