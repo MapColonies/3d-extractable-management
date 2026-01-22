@@ -1,65 +1,73 @@
-# Map Colonies typescript service template
+# 3D Extractable Management
 
-----------------------------------
+The service provides a REST API for managing 3d _extractable_ records with validation, audit logging, and user authentication. The service ensures proper authorization before creating or deleting records and stores relevant metadata for each record.
 
-This is a basic repo template for building new MapColonies web services in Typescript.
+---
 
-> [!IMPORTANT]
-> To regenerate the types on openapi change run the command `npm run generate:openapi-types`.
+## Functionality
 
-> [!WARNING]
-> After creating a new repo based on this template, you should delete the CODEOWNERS file.
+The service performs the following key tasks:
 
+- **Record Management:**  
+  Create, read, and delete extractable records. The server automatically assigns `id` and `authorizedAt`.
 
-## Development
-When in development you should use the command `npm run start:dev`. The main benefits are that it enables offline mode for the config package, and source map support for NodeJS errors.
+- **Validation:**  
+  Before creating or deleting records, requests go through a validation step to ensure authorization and correctness(the validation endpoints are open).
 
-### Template Features:
+- **User Authentication:**  
+  Verify user credentials for all record-related operations.
 
-- eslint configuration by [@map-colonies/eslint-config](https://github.com/MapColonies/eslint-config)
+- **Metadata Storage:**  
+  Optional JSON metadata can be stored alongside each record for additional context.
 
-- prettier configuration by [@map-colonies/prettier-config](https://github.com/MapColonies/prettier-config)
+- **Audit Logging:**  
+  Tracks who authorized each record creation or deletion along with timestamps.
 
-- jest
+---
 
-- .nvmrc
+``` mermaid
+flowchart TD
+    A["Client"] -->|GET only| G1["GET /records<br/>GET /records/{recordName}"]
 
-- Multi stage production-ready Dockerfile
+    A -->|Create / Delete| B["POST /users/validateUser<br/>username + password"]
 
-- commitlint
+    B --> C{"Login valid?"}
+    C -->|No| E1["401 Unauthorized"]
+    C -->|Yes| D["Client is logged in"]
 
-- git hooks
+    D --> E{"Operation type"}
 
-- logging by [@map-colonies/js-logger](https://github.com/MapColonies/js-logger)
+    E -->|Create| F1["POST /records/validateCreate<br/>username + password + recordName"]
+    E -->|Delete| F2["POST /records/validateDelete<br/>username + password + recordName"]
 
-- OpenAPI request validation
+    F1 --> V{"Validation passed?"}
+    F2 --> V
 
-- config load with [node-config](https://www.npmjs.com/package/node-config)
+    V -->|No| E2["Validation error<br/>(400 / 401)"]
+    V -->|Yes| H["Perform operation"]
 
-- Tracing and metrics by [@map-colonies/telemetry](https://github.com/MapColonies/telemetry)
+    H --> I1["POST /records<br/>username + password<br/>authorizedBy + data"]
+    H --> I2["DELETE /records<br/>username + password<br/>authorizedBy"]
 
-- github templates
+    I1 --> J["Store record<br/>+ audit log<br/>(authorizedBy, authorizedAt)"]
+    I2 --> J
 
-- bug report
+    J --> S["Success response"]
 
-- feature request
+    classDef public fill:#0d47a1,stroke:#000,color:#ffffff,stroke-width:2px
+    classDef auth fill:#e65100,stroke:#000,color:#ffffff,stroke-width:2px
+    classDef secure fill:#880e4f,stroke:#000,color:#ffffff,stroke-width:2px
+    classDef success fill:#1b5e20,stroke:#000,color:#ffffff,stroke-width:2px
+    classDef error fill:#b71c1c,stroke:#000,color:#ffffff,stroke-width:2px
 
-- pull request
+    class A,G1 public
+    class B,C,D,F1,F2,V auth
+    class I1,I2,J secure
+    class S success
+    class E1,E2 error
+```
 
-- github actions
-
-- on pull_request
-
-- LGTM
-
-- test
-
-- lint
-
-- snyk
-
-## API
-Checkout the OpenAPI spec [here](/openapi3.yaml)
+---
 
 ## Installation
 
@@ -67,6 +75,10 @@ Install deps with npm
 
 ```bash
 npm install
+```
+### Install Git Hooks
+```bash
+npx husky install
 ```
 
 ## Run Locally
