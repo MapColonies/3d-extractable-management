@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
 import type { Logger } from '@map-colonies/js-logger';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
