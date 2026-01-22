@@ -15,9 +15,9 @@ export class RecordsManager {
   // TODO: remove the ? when real DB is integrated
   public getRecords(records?: IExtractableRecord[]): IExtractableRecord[] | undefined {
     const logContext = { ...this.logContext, function: this.getRecords.name };
-    this.logger.info({ msg: 'getting all records', logContext });
+    this.logger.debug({ msg: 'getting all records', logContext });
 
-    if (!records || records.length === 0) {
+    if (!(Array.isArray(records) && records.length > 0)) {
       this.logger.warn({ msg: 'no records found', logContext });
       return undefined;
     }
@@ -27,7 +27,7 @@ export class RecordsManager {
 
   public getRecord(recordName: string): IExtractableRecord | undefined {
     const logContext = { ...this.logContext, function: this.getRecord.name };
-    this.logger.info({ msg: 'getting record', recordName, logContext });
+    this.logger.debug({ msg: 'getting record', recordName, logContext });
 
     return recordName === recordInstance.recordName ? recordInstance : undefined;
   }
@@ -36,11 +36,7 @@ export class RecordsManager {
     const logContext = { ...this.logContext, function: this.createRecord.name };
     this.logger.info({ msg: `Starting to create record '${recordName}'`, recordName, logContext });
 
-    // mock validation for now
-    if (recordName !== recordInstance.recordName) {
-      this.logger.warn({ msg: `record name '${recordName}' not allowed`, recordName, logContext });
-      throw new Error('Record not found');
-    }
+    // Db creation logic to be implemented
     const record: IExtractableRecord = { ...recordInstance, recordName: recordName };
 
     this.logger.info({ msg: 'record created', recordName, logContext });
@@ -52,14 +48,9 @@ export class RecordsManager {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     this.logger.info({ msg: `Starting to delete record '${recordName}'`, recordName, logContext });
 
-    const record = this.getRecord(recordName);
+    // Db deletion logic to be implemented
 
-    if (!record) {
-      this.logger.warn({ msg: 'record not found for deletion', recordName, logContext });
-      return false;
-    }
-
-    this.logger.info({ msg: `record '${record.recordName}' deleted`, recordName, logContext });
+    this.logger.info({ msg: `record '${recordName}' deleted`, recordName, logContext });
     return true;
   }
 }

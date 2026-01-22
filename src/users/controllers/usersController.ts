@@ -15,19 +15,26 @@ export class UsersController {
   public validateUser: TypedRequestHandlers['POST /users/validate'] = (req, res) => {
     try {
       const payload = req.body;
-
-      if (!payload.username || !payload.password) {
-        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Username and password are required', code: 'MISSING_CREDENTIALS' });
-      }
-
       const result = this.manager.validateUser(payload);
-      const status = result.isValid ? httpStatus.OK : httpStatus.UNAUTHORIZED;
 
+      let status: number;
       if (!result.isValid) {
-        this.logger.info({ msg: 'Unauthorized user validation attempt', username: payload.username, code: result.code });
+        switch (result.code) {
+          case 'MISSING_CREDENTIALS':
+            status = httpStatus.BAD_REQUEST;
+            break;
+          case 'INVALID_CREDENTIALS':
+            status = httpStatus.UNAUTHORIZED;
+            break;
+          default:
+            status = httpStatus.INTERNAL_SERVER_ERROR;
+            this.logger.error({ msg: 'Unexpected validation code', code: result.code });
+            break;
+        }
+        return res.status(status).json(result);
       }
 
-      return res.status(status).json(result);
+      return res.status(httpStatus.OK).json(result);
     } catch (error) {
       this.logger.error({ msg: 'Failed to validate user', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate user', code: 'INTERNAL_ERROR' });

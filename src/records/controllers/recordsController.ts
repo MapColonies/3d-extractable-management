@@ -28,11 +28,7 @@ export class RecordsController {
 
   public getRecords: TypedRequestHandlers['GET /records'] = (_req, res) => {
     try {
-      const records = this.manager.getRecords();
-
-      if (!records) {
-        return res.status(httpStatus.OK).json([]);
-      }
+      const records = this.manager.getRecords() ?? [];
 
       return res.status(httpStatus.OK).json(records);
     } catch (err) {
@@ -47,7 +43,7 @@ export class RecordsController {
       const record = this.manager.getRecord(recordName);
 
       if (!record) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: `Record ${recordName} not found` });
+        return res.status(httpStatus.NOT_FOUND).json({ message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
       }
 
       return res.status(httpStatus.OK).json(record);
@@ -64,13 +60,23 @@ export class RecordsController {
 
       const validation = this.validationsManager.validateCreate({ recordName, username, password });
 
+      let status: number;
       if (!validation.isValid) {
-        const status =
-          validation.code === 'MISSING_CREDENTIALS'
-            ? httpStatus.BAD_REQUEST
-            : validation.code === 'INVALID_RECORD_NAME'
-              ? httpStatus.NOT_FOUND
-              : httpStatus.UNAUTHORIZED;
+        switch (validation.code) {
+          case 'MISSING_CREDENTIALS':
+            status = httpStatus.BAD_REQUEST;
+            break;
+          case 'INVALID_RECORD_NAME':
+            status = httpStatus.NOT_FOUND;
+            break;
+          case 'INVALID_CREDENTIALS':
+            status = httpStatus.UNAUTHORIZED;
+            break;
+          default:
+            status = httpStatus.INTERNAL_SERVER_ERROR;
+            this.logger.error({ msg: 'Unexpected validation error code', code: validation.code });
+            break;
+        }
 
         this.requestsCounter.inc({ status: String(status) });
         return res.status(status).json(validation);
@@ -127,13 +133,23 @@ export class RecordsController {
 
       const validation = this.validationsManager.validateDelete({ recordName, username, password });
 
+      let status: number;
       if (!validation.isValid) {
-        const status =
-          validation.code === 'MISSING_CREDENTIALS'
-            ? httpStatus.BAD_REQUEST
-            : validation.code === 'INVALID_RECORD_NAME'
-              ? httpStatus.NOT_FOUND
-              : httpStatus.UNAUTHORIZED;
+        switch (validation.code) {
+          case 'MISSING_CREDENTIALS':
+            status = httpStatus.BAD_REQUEST;
+            break;
+          case 'INVALID_RECORD_NAME':
+            status = httpStatus.NOT_FOUND;
+            break;
+          case 'INVALID_CREDENTIALS':
+            status = httpStatus.UNAUTHORIZED;
+            break;
+          default:
+            status = httpStatus.INTERNAL_SERVER_ERROR;
+            this.logger.error({ msg: 'Unexpected validation error code', code: validation.code });
+            break;
+        }
 
         this.requestsCounter.inc({ status: String(status) });
         return res.status(status).json(validation);
@@ -173,11 +189,8 @@ export class RecordsController {
         case 'INTERNAL_ERROR':
           status = httpStatus.INTERNAL_SERVER_ERROR;
           break;
-        case undefined:
-          status = result.isValid ? httpStatus.OK : httpStatus.INTERNAL_SERVER_ERROR;
-          break;
         default:
-          status = httpStatus.INTERNAL_SERVER_ERROR;
+          status = result.isValid ? httpStatus.OK : httpStatus.INTERNAL_SERVER_ERROR;
       }
 
       return res.status(status).json(result);

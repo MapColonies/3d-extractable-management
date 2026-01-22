@@ -47,21 +47,12 @@ describe('RecordsManager', () => {
       const createdRecord = recordsManager.createRecord(recordInstance.recordName);
       expect(createdRecord.recordName).toBe(recordInstance.recordName);
     });
-
-    it('should throw when recordName is invalid', () => {
-      expect(() => recordsManager.createRecord('invalid')).toThrow('Record not found');
-    });
   });
 
   describe('#deleteRecord', () => {
     it('should return true when recordName is valid', () => {
       const result = recordsManager.deleteRecord(recordInstance.recordName);
       expect(result).toBe(true);
-    });
-
-    it('should return false when record does not exist', () => {
-      const result = recordsManager.deleteRecord('non_existing_record');
-      expect(result).toBe(false);
     });
   });
 

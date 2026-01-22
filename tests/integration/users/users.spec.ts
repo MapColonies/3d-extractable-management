@@ -30,9 +30,7 @@ describe('users', function () {
 
   describe('Happy Path', function () {
     it('should return 200 when credentials are valid', async function () {
-      const response = await requestSender.validateUser({
-        requestBody: validCredentials,
-      });
+      const response = await requestSender.validateUser({ requestBody: validCredentials });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
@@ -45,32 +43,21 @@ describe('users', function () {
 
   describe('Bad Path', function () {
     it('should return 400 when credentials are missing', async function () {
-      const payload: IAuthPayload = {
-        username: '',
-        password: '',
-      };
-
-      const response = await requestSender.validateUser({
-        requestBody: payload,
-      });
+      const payload: IAuthPayload = { username: '', password: '' };
+      const response = await requestSender.validateUser({ requestBody: payload });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
+        isValid: false,
         message: 'Username and password are required',
         code: 'MISSING_CREDENTIALS',
       });
     });
 
     it('should return 401 when credentials are invalid', async function () {
-      const payload: IAuthPayload = {
-        username: invalidCredentials.username,
-        password: invalidCredentials.password,
-      };
-
-      const response = await requestSender.validateUser({
-        requestBody: payload,
-      });
+      const payload: IAuthPayload = { username: invalidCredentials.username, password: invalidCredentials.password };
+      const response = await requestSender.validateUser({ requestBody: payload });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
@@ -80,22 +67,37 @@ describe('users', function () {
       expect(body.code).toBe('INVALID_CREDENTIALS');
       expect(body.message).toBe('Invalid username or password');
     });
+
+    it('should return 500 when validation returns an unknown code', async function () {
+      const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockReturnValue({
+        isValid: false,
+        message: 'Some unknown error',
+        code: 'INTERNAL_ERROR',
+      });
+
+      const payload: IAuthPayload = { username: 'anyuser', password: 'anypass' };
+      const response = await requestSender.validateUser({ requestBody: payload });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Some unknown error',
+        code: 'INTERNAL_ERROR',
+      });
+
+      spy.mockRestore();
+    });
   });
 
   describe('Internal Errors', function () {
-    it('should return 500 when validate throws an unexpected error', async function () {
+    it('should return 500 when validateUser throws an unexpected exception', async function () {
       const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-      };
-
-      const response = await requestSender.validateUser({
-        requestBody: payload,
-      });
+      const payload: IAuthPayload = { username: validCredentials.username, password: validCredentials.password };
+      const response = await requestSender.validateUser({ requestBody: payload });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
