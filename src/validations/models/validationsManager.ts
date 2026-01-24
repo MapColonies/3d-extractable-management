@@ -31,7 +31,7 @@ export class ValidationsManager {
     }
 
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
-    return { isValid: true, message: 'Record can be created', code: undefined };
+    return { isValid: true, message: 'Record can be created', code: 'SUCCESS' };
   }
 
   public validateDelete(payload: IAuthPayloadWithRecord): IValidateResponse {
@@ -53,7 +53,7 @@ export class ValidationsManager {
     }
 
     this.logger.debug({ msg: 'delete validation successful', recordName: payload.recordName, logContext });
-    return { isValid: true, message: 'Record can be deleted', code: undefined };
+    return { isValid: true, message: 'Record can be deleted', code: 'SUCCESS' };
   }
 
   public validateUser(payload: IAuthPayload): IValidateResponse {
@@ -70,6 +70,6 @@ export class ValidationsManager {
     }
 
     this.logger.debug({ msg: 'user validation successful', logContext });
-    return { isValid: true, message: 'User credentials are valid', code: undefined };
+    return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
   }
 }

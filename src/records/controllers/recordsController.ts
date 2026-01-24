@@ -34,7 +34,7 @@ export class RecordsController {
       return res.status(httpStatus.OK).json(records);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting records', error: err });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get records', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
     }
   };
 
@@ -44,13 +44,13 @@ export class RecordsController {
       const record = this.manager.getRecord(recordName);
 
       if (!record) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
+        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
       }
 
       return res.status(httpStatus.OK).json(record);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting record', error: err });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get record', code: 'INTERNAL_ERROR' });
     }
   };
 
@@ -102,7 +102,7 @@ export class RecordsController {
       }
 
       this.requestsCounter.inc({ status: '500' });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to create record', code: 'INTERNAL_ERROR' });
     }
   };
 
@@ -123,7 +123,7 @@ export class RecordsController {
     } catch (err) {
       this.logger.error({ msg: 'Failed to validate create', error: err });
       this.requestsCounter.inc({ status: '500' });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
     }
   };
 
@@ -168,7 +168,7 @@ export class RecordsController {
       }
 
       this.requestsCounter.inc({ status: '500' });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
     }
   };
 
@@ -197,7 +197,7 @@ export class RecordsController {
       return res.status(status).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Failed to validate delete', error: err });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
     }
   };
 }

@@ -49,23 +49,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 bad_request:
                   summary: Bad request
                   value:
+                    isValid: false
                     message: 'Bad request – invalid query or parameters'
+                    code: 'MISSING_CREDENTIALS'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
   /records/{recordName}:
     get:
@@ -101,23 +105,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 not_found:
                   summary: Record does not exist
                   value:
+                    isValid: false
                     message: "Record with name 'rec_X' not found"
+                    code: 'INVALID_RECORD_NAME'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
     post:
       tags:
@@ -174,12 +182,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 validation_failed:
                   summary: Validation missing
                   value:
+                    isValid: false
                     message: 'Cannot create record – validation required'
+                    code: 'MISSING_CREDENTIALS'
         '401':
           description: Unauthorized – invalid username or password
           content:
@@ -211,12 +221,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
     delete:
       tags:
@@ -255,23 +267,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 not_found:
                   summary: Record missing
                   value:
+                    isValid: false
                     message: "Cannot delete – record 'rec_X' not found"
+                    code: 'INVALID_RECORD_NAME'
         '400':
           description: Validation failed – deletion not allowed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 deletion_failed:
                   summary: Validation failed
                   value:
+                    isValid: false
                     message: 'Deletion not allowed for this record'
+                    code: 'MISSING_CREDENTIALS'
         '401':
           description: Unauthorized
           content:
@@ -290,12 +306,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
   /records/validateCreate:
     post:
@@ -322,6 +340,7 @@ paths:
                   value:
                     isValid: true
                     message: 'Record can be created'
+                    code: 'SUCCESS'
         '401':
           description: Unauthorized – invalid credentials
           content:
@@ -340,23 +359,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 missing_fields:
                   summary: Missing credentials or recordName
                   value:
+                    isValid: false
                     message: 'Username, password, and recordName are required'
+                    code: 'MISSING_CREDENTIALS'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
   /records/validateDelete:
     post:
@@ -383,6 +406,7 @@ paths:
                   value:
                     isValid: true
                     message: 'Record can be deleted'
+                    code: 'SUCCESS'
         '401':
           description: Unauthorized – invalid credentials
           content:
@@ -401,23 +425,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 missing_fields:
                   summary: Missing credentials or recordName
                   value:
+                    isValid: false
                     message: 'Username, password, and recordName are required'
+                    code: 'MISSING_CREDENTIALS'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
   /users/validate:
     post:
@@ -444,17 +472,20 @@ paths:
                   value:
                     isValid: true
                     message: 'User credentials are valid'
+                    code: 'SUCCESS'
         '400':
           description: Missing username or password
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 missing_fields:
                   summary: Missing credentials
                   value:
+                    isValid: false
                     message: 'Username and password are required'
+                    code: 'MISSING_CREDENTIALS'
         '401':
           description: Unauthorized – invalid credentials
           content:
@@ -473,36 +504,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
               examples:
                 internal_error:
                   summary: Unexpected server error
                   value:
+                    isValid: false
                     message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
 
 components:
   schemas:
-    error:
-      type: object
-      required:
-        - message
-        - code
-      properties:
-        message:
-          type: string
-        code:
-          type: string
-          enum:
-            - INTERNAL_ERROR
-            - MISSING_CREDENTIALS
-            - INVALID_CREDENTIALS
-            - INVALID_RECORD_NAME
-
     validateResponse:
       type: object
       required:
         - isValid
         - message
+        - code
       properties:
         isValid:
           type: boolean
@@ -511,6 +529,7 @@ components:
         code:
           type: string
           enum:
+            - SUCCESS
             - MISSING_CREDENTIALS
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME

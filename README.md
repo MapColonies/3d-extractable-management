@@ -27,42 +27,65 @@ The service performs the following key tasks:
 
 ``` mermaid
 flowchart TD
-    A["Client"] -->|GET only| G1["GET /records<br/>GET /records/{recordName}"]
+    A["Client"]
 
-    A -->|Create / Delete| B["POST /users/validateUser<br/>username + password"]
+    G1["GET /records<br/>GET /records/{recordName}"]
 
-    B --> C{"Login valid?"}
-    C -->|No| E1["401 Unauthorized"]
-    C -->|Yes| D["Client is logged in"]
+    B["POST /users/validate<br/>username + password"]
+    C{"Login valid?"}
+    D["Authenticated session"]
 
-    D --> E{"Operation type"}
+    F1["POST /records/validateCreate<br/>recordName"]
+    F2["POST /records/validateDelete<br/>recordName"]
+    V{"Validation passed?"}
 
-    E -->|Create| F1["POST /records/validateCreate<br/>username + password + recordName"]
-    E -->|Delete| F2["POST /records/validateDelete<br/>username + password + recordName"]
+    I1["POST /records<br/>username + password<br/>authorizedBy + data"]
+    I2["DELETE /records<br/>username + password<br/>authorizedBy"]
 
-    F1 --> V{"Validation passed?"}
+    J["DB: records + audit<br/>(authorizedBy, <b><i>authorizedAt...)</i></b>"]
+
+    S["200 OK / Success"]
+    E1["401 Unauthorized"]
+    E2["400 / 401 Validation error"]
+
+    A -->|GET only| G1
+
+    A -->|Create / Delete| B
+    B --> C
+    C -->|No| E1
+    C -->|Yes| D
+
+    D -->|Create| F1
+    D -->|Delete| F2
+
+    F1 --> V
     F2 --> V
 
-    V -->|No| E2["Validation error<br/>(400 / 401)"]
-    V -->|Yes| H["Perform operation"]
+    V -->|No| E2
+    V -->|Yes| I1
+    V -->|Yes| I2
 
-    H --> I1["POST /records<br/>username + password<br/>authorizedBy + data"]
-    H --> I2["DELETE /records<br/>username + password<br/>authorizedBy"]
-
-    I1 --> J["Store record<br/>+ audit log<br/>(authorizedBy, authorizedAt)"]
+    I1 --> J
     I2 --> J
+    J --> S
 
-    J --> S["Success response"]
+    classDef client fill:#eeeeee,stroke:#333,color:#000
+    classDef public fill:#1976d2,stroke:#0d47a1,color:#fff
+    classDef auth fill:#fb8c00,stroke:#e65100,color:#fff
+    classDef logic fill:#bbdefb,stroke:#1e88e5,color:#0d1b2a
+    classDef secure fill:#8e24aa,stroke:#4a148c,color:#fff
+    classDef storage fill:#00897b,stroke:#004d40,color:#fff
+    classDef success fill:#2e7d32,stroke:#1b5e20,color:#fff
+    classDef error fill:#c62828,stroke:#b71c1c,color:#fff
 
-    classDef public fill:#0d47a1,stroke:#000,color:#ffffff,stroke-width:2px
-    classDef auth fill:#e65100,stroke:#000,color:#ffffff,stroke-width:2px
-    classDef secure fill:#880e4f,stroke:#000,color:#ffffff,stroke-width:2px
-    classDef success fill:#1b5e20,stroke:#000,color:#ffffff,stroke-width:2px
-    classDef error fill:#b71c1c,stroke:#000,color:#ffffff,stroke-width:2px
+    class A client
+    class G1 public
 
-    class A,G1 public
-    class B,C,D,F1,F2,V auth
-    class I1,I2,J secure
+    class B,C auth
+    class D,F1,F2,V logic
+
+    class I1,I2 secure
+    class J storage
     class S success
     class E1,E2 error
 ```

@@ -92,16 +92,11 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
-    error: {
-      message: string;
-      /** @enum {string} */
-      code: 'INTERNAL_ERROR' | 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME';
-    };
     validateResponse: {
       isValid: boolean;
       message: string;
       /** @enum {string} */
-      code?: 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME' | 'INTERNAL_ERROR';
+      code: 'SUCCESS' | 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME' | 'INTERNAL_ERROR';
     };
     'auth-payload': {
       username: string;
@@ -156,7 +151,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Internal server error */
@@ -165,7 +160,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -196,7 +191,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Internal server error */
@@ -205,7 +200,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -249,7 +244,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Unauthorized – invalid username or password */
@@ -276,7 +271,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -314,7 +309,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Unauthorized */
@@ -332,7 +327,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Internal server error */
@@ -341,7 +336,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -374,7 +369,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Unauthorized – invalid credentials */
@@ -392,7 +387,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -425,7 +420,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Unauthorized – invalid credentials */
@@ -443,7 +438,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };
@@ -476,7 +471,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
       /** @description Unauthorized – invalid credentials */
@@ -494,7 +489,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['error'];
+          'application/json': components['schemas']['validateResponse'];
         };
       };
     };

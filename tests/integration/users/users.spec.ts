@@ -4,7 +4,7 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayload, IValidateResponse } from '@common/constants';
+import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
@@ -35,7 +35,7 @@ describe('users', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
 
-      const body = response.body as IValidateResponse;
+      const body = response.body;
       expect(body.isValid).toBe(true);
       expect(body.message).toBe('User credentials are valid');
     });
@@ -62,7 +62,7 @@ describe('users', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
 
-      const body = response.body as IValidateResponse;
+      const body = response.body;
       expect(body.isValid).toBe(false);
       expect(body.code).toBe('INVALID_CREDENTIALS');
       expect(body.message).toBe('Invalid username or password');
@@ -101,7 +101,7 @@ describe('users', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
+      expect(response.body).toEqual({ isValid: false, message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
     });
