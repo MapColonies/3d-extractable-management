@@ -12,8 +12,13 @@ void getApp()
     const logger = container.resolve<Logger>(SERVICES.LOGGER);
     const config = container.resolve<ConfigType>(SERVICES.CONFIG);
     const port = config.get('server.port');
+
     const stubHealthCheck = async (): Promise<void> => Promise.resolve();
-    const server = createTerminus(createServer(app), { healthChecks: { '/liveness': stubHealthCheck }, onSignal: container.resolve('onSignal') });
+
+    const server = createTerminus(createServer(app), {
+      healthChecks: { '/liveness': stubHealthCheck },
+      onSignal: container.resolve<() => Promise<void>>('onSignal'),
+    });
 
     server.listen(port, () => {
       logger.info(`app started on port ${port}`);
