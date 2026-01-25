@@ -61,25 +61,10 @@ export class RecordsController {
 
       const validation = this.validationsManager.validateCreate({ recordName, username, password });
 
-      let status: number;
       if (!validation.isValid) {
-        switch (validation.code) {
-          case 'MISSING_CREDENTIALS':
-            status = httpStatus.BAD_REQUEST;
-            break;
-          case 'INVALID_RECORD_NAME':
-            status = httpStatus.NOT_FOUND;
-            break;
-          case 'INVALID_CREDENTIALS':
-            status = httpStatus.UNAUTHORIZED;
-            break;
-          default:
-            status = httpStatus.INTERNAL_SERVER_ERROR;
-            this.logger.error({ msg: 'Unexpected validation error code', code: validation.code });
-            break;
-        }
-
+        const status = this.getStatusFromValidation(validation);
         this.requestsCounter.inc({ status: String(status) });
+
         return res.status(status).json(validation);
       }
 
@@ -110,13 +95,7 @@ export class RecordsController {
     try {
       const result = this.validationsManager.validateCreate(req.body);
 
-      const status = result.isValid
-        ? httpStatus.OK
-        : result.code === 'MISSING_CREDENTIALS'
-          ? httpStatus.BAD_REQUEST
-          : result.code === 'INVALID_RECORD_NAME'
-            ? httpStatus.NOT_FOUND
-            : httpStatus.UNAUTHORIZED;
+      const status = this.getStatusFromValidation(result);
 
       this.requestsCounter.inc({ status: String(status) });
       return res.status(status).json(result);
@@ -134,25 +113,10 @@ export class RecordsController {
 
       const validation = this.validationsManager.validateDelete({ recordName, username, password });
 
-      let status: number;
       if (!validation.isValid) {
-        switch (validation.code) {
-          case 'MISSING_CREDENTIALS':
-            status = httpStatus.BAD_REQUEST;
-            break;
-          case 'INVALID_RECORD_NAME':
-            status = httpStatus.NOT_FOUND;
-            break;
-          case 'INVALID_CREDENTIALS':
-            status = httpStatus.UNAUTHORIZED;
-            break;
-          default:
-            status = httpStatus.INTERNAL_SERVER_ERROR;
-            this.logger.error({ msg: 'Unexpected validation error code', code: validation.code });
-            break;
-        }
-
+        const status = this.getStatusFromValidation(validation);
         this.requestsCounter.inc({ status: String(status) });
+
         return res.status(status).json(validation);
       }
 
@@ -175,24 +139,7 @@ export class RecordsController {
   public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = (req, res) => {
     try {
       const result = this.validationsManager.validateDelete(req.body);
-
-      let status: number;
-      switch (result.code) {
-        case 'MISSING_CREDENTIALS':
-          status = httpStatus.BAD_REQUEST;
-          break;
-        case 'INVALID_RECORD_NAME':
-          status = httpStatus.NOT_FOUND;
-          break;
-        case 'INVALID_CREDENTIALS':
-          status = httpStatus.UNAUTHORIZED;
-          break;
-        case 'INTERNAL_ERROR':
-          status = httpStatus.INTERNAL_SERVER_ERROR;
-          break;
-        default:
-          status = result.isValid ? httpStatus.OK : httpStatus.INTERNAL_SERVER_ERROR;
-      }
+      const status = this.getStatusFromValidation(result);
 
       return res.status(status).json(result);
     } catch (err) {
@@ -200,4 +147,24 @@ export class RecordsController {
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
     }
   };
+
+  private getStatusFromValidation(result: { isValid: boolean; code?: string }): number {
+    if (result.isValid) {
+      return httpStatus.OK;
+    }
+
+    switch (result.code) {
+      case 'MISSING_CREDENTIALS':
+        return httpStatus.BAD_REQUEST;
+      case 'INVALID_RECORD_NAME':
+        return httpStatus.NOT_FOUND;
+      case 'INVALID_CREDENTIALS':
+        return httpStatus.UNAUTHORIZED;
+      case 'INTERNAL_ERROR':
+        return httpStatus.INTERNAL_SERVER_ERROR;
+      default:
+        this.logger.error({ msg: 'Unexpected validation error code', code: result.code });
+        return httpStatus.INTERNAL_SERVER_ERROR;
+    }
+  }
 }
