@@ -8,6 +8,7 @@ import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
+import { hashPassword, verifyPassword } from '@src/users/utils/password';
 
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -39,6 +40,26 @@ describe('users', function () {
       expect(body.isValid).toBe(true);
       expect(body.message).toBe('User credentials are valid');
     });
+    it('should generate a bcrypt hash and verify correctly', async function () {
+      const testHash = await hashPassword('test');
+
+      expect(typeof testHash).toBe('string');
+      expect(testHash).not.toBe('test');
+      expect(testHash.startsWith('$2b$')).toBe(true);
+
+      const isValid = await verifyPassword('test', testHash);
+      expect(isValid).toBe(true);
+    });
+
+    it('should generate different hashes for the same password', async function () {
+      const hash1 = await hashPassword('test');
+      const hash2 = await hashPassword('test');
+
+      expect(hash1).not.toBe(hash2);
+
+      expect(await verifyPassword('test', hash1)).toBe(true);
+      expect(await verifyPassword('test', hash2)).toBe(true);
+    });
   });
 
   describe('Bad Path', function () {
@@ -69,7 +90,7 @@ describe('users', function () {
     });
 
     it('should return 500 when validation returns an unknown code', async function () {
-      const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockReturnValue({
+      const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockResolvedValueOnce({
         isValid: false,
         message: 'Some unknown error',
         code: 'INTERNAL_ERROR',

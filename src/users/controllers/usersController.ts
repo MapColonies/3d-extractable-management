@@ -12,10 +12,10 @@ export class UsersController {
     @inject(ValidationsManager) private readonly manager: ValidationsManager
   ) {}
 
-  public validateUser: TypedRequestHandlers['POST /users/validate'] = (req, res) => {
+  public validateUser: TypedRequestHandlers['POST /users/validate'] = async (req, res) => {
     try {
       const payload = req.body;
-      const result = this.manager.validateUser(payload);
+      const result = await this.manager.validateUser(payload);
 
       let status: number;
       /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */

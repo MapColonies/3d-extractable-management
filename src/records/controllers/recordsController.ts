@@ -54,12 +54,12 @@ export class RecordsController {
     }
   };
 
-  public createRecord: TypedRequestHandlers['POST /records/{recordName}'] = (req, res) => {
+  public createRecord: TypedRequestHandlers['POST /records/{recordName}'] = async (req, res) => {
     try {
       const { recordName } = req.params;
       const { username, password } = req.body;
 
-      const validation = this.validationsManager.validateCreate({ recordName, username, password });
+      const validation = await this.validationsManager.validateCreate({ recordName, username, password });
 
       if (!validation.isValid) {
         const status = this.getStatusFromValidation(validation);
@@ -91,9 +91,9 @@ export class RecordsController {
     }
   };
 
-  public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = (req, res) => {
+  public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = async (req, res) => {
     try {
-      const result = this.validationsManager.validateCreate(req.body);
+      const result = await this.validationsManager.validateCreate(req.body);
 
       const status = this.getStatusFromValidation(result);
 
@@ -106,12 +106,12 @@ export class RecordsController {
     }
   };
 
-  public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = (req, res) => {
+  public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = async (req, res) => {
     try {
       const { recordName } = req.params;
       const { username, password } = req.body;
 
-      const validation = this.validationsManager.validateDelete({ recordName, username, password });
+      const validation = await this.validationsManager.validateDelete({ recordName, username, password });
 
       if (!validation.isValid) {
         const status = this.getStatusFromValidation(validation);
@@ -136,9 +136,9 @@ export class RecordsController {
     }
   };
 
-  public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = (req, res) => {
+  public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = async (req, res) => {
     try {
-      const result = this.validationsManager.validateDelete(req.body);
+      const result = await this.validationsManager.validateDelete(req.body);
       const status = this.getStatusFromValidation(result);
 
       return res.status(status).json(result);

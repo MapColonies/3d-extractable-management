@@ -58,17 +58,18 @@ describe('RecordsManager', () => {
 
   describe('RecordsManager Validation', () => {
     describe('#validateCreate', () => {
-      it('should succeed with valid credentials and recordName', () => {
-        const result = validationsManager.validateCreate({
+      it('should succeed with valid credentials and recordName', async () => {
+        const result = await validationsManager.validateCreate({
           ...validCredentials,
           recordName: validCredentials.recordName,
         });
         expect(result.isValid).toBe(true);
+        expect(result.code).toBe('SUCCESS');
         expect(result.message).toBe('Record can be created');
       });
 
-      it('should fail when username/password are missing', () => {
-        const result = validationsManager.validateCreate({
+      it('should fail when username/password are missing', async () => {
+        const result = await validationsManager.validateCreate({
           username: '',
           password: '',
           recordName: validCredentials.recordName,
@@ -78,8 +79,8 @@ describe('RecordsManager', () => {
         expect(result.message).toBe('Username and password are required');
       });
 
-      it('should fail when credentials are invalid', () => {
-        const result = validationsManager.validateCreate({
+      it('should fail when credentials are invalid', async () => {
+        const result = await validationsManager.validateCreate({
           username: invalidCredentials.username,
           password: invalidCredentials.password,
           recordName: validCredentials.recordName,
@@ -88,8 +89,8 @@ describe('RecordsManager', () => {
         expect(result.code).toBe('INVALID_CREDENTIALS');
       });
 
-      it('should fail when recordName is missing', () => {
-        const result = validationsManager.validateCreate({
+      it('should fail when recordName is missing', async () => {
+        const result = await validationsManager.validateCreate({
           username: validCredentials.username,
           password: validCredentials.password,
           recordName: '',
@@ -99,8 +100,8 @@ describe('RecordsManager', () => {
         expect(result.message).toBe('recordName is required');
       });
 
-      it('should fail when recordName is invalid', () => {
-        const result = validationsManager.validateCreate({
+      it('should fail when recordName is invalid', async () => {
+        const result = await validationsManager.validateCreate({
           username: validCredentials.username,
           password: validCredentials.password,
           recordName: invalidCredentials.recordName,
@@ -112,17 +113,18 @@ describe('RecordsManager', () => {
     });
 
     describe('#validateDelete', () => {
-      it('should succeed with valid credentials and recordName', () => {
-        const result = validationsManager.validateDelete({
+      it('should succeed with valid credentials and recordName', async () => {
+        const result = await validationsManager.validateDelete({
           ...validCredentials,
           recordName: validCredentials.recordName,
         });
         expect(result.isValid).toBe(true);
+        expect(result.code).toBe('SUCCESS');
         expect(result.message).toBe('Record can be deleted');
       });
 
-      it('should fail when username/password are missing', () => {
-        const result = validationsManager.validateDelete({
+      it('should fail when username/password are missing', async () => {
+        const result = await validationsManager.validateDelete({
           username: '',
           password: '',
           recordName: validCredentials.recordName,
@@ -132,8 +134,8 @@ describe('RecordsManager', () => {
         expect(result.message).toBe('Username and password are required');
       });
 
-      it('should fail when credentials are invalid', () => {
-        const result = validationsManager.validateDelete({
+      it('should fail when credentials are invalid', async () => {
+        const result = await validationsManager.validateDelete({
           username: invalidCredentials.username,
           password: invalidCredentials.password,
           recordName: validCredentials.recordName,
@@ -142,8 +144,8 @@ describe('RecordsManager', () => {
         expect(result.code).toBe('INVALID_CREDENTIALS');
       });
 
-      it('should fail when recordName is missing', () => {
-        const result = validationsManager.validateDelete({
+      it('should fail when recordName is missing', async () => {
+        const result = await validationsManager.validateDelete({
           username: validCredentials.username,
           password: validCredentials.password,
           recordName: '',
@@ -153,8 +155,8 @@ describe('RecordsManager', () => {
         expect(result.message).toBe('recordName is required');
       });
 
-      it('should fail when recordName is invalid', () => {
-        const result = validationsManager.validateDelete({
+      it('should fail when recordName is invalid', async () => {
+        const result = await validationsManager.validateDelete({
           username: validCredentials.username,
           password: validCredentials.password,
           recordName: invalidCredentials.recordName,

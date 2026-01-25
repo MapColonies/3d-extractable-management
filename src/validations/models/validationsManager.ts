@@ -2,6 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
+import { verifyPassword } from '@src/users/utils/password';
 import { recordInstance } from '../../common/mocks';
 import { users } from '../../users/config/validUsers';
 
@@ -13,10 +14,10 @@ export class ValidationsManager {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
   }
 
-  public validateCreate(payload: IAuthPayloadWithRecord): IValidateResponse {
+  public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
     const logContext = { ...this.logContext, function: 'validateCreate' };
 
-    const userValidation = this.validateUser(payload);
+    const userValidation = await this.validateUser(payload);
     if (!userValidation.isValid) {
       return userValidation;
     }
@@ -35,10 +36,10 @@ export class ValidationsManager {
     return { isValid: true, message: 'Record can be created', code: 'SUCCESS' };
   }
 
-  public validateDelete(payload: IAuthPayloadWithRecord): IValidateResponse {
+  public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
     const logContext = { ...this.logContext, function: 'validateDelete' };
 
-    const userValidation = this.validateUser(payload);
+    const userValidation = await this.validateUser(payload);
     if (!userValidation.isValid) {
       return userValidation;
     }
@@ -57,7 +58,7 @@ export class ValidationsManager {
     return { isValid: true, message: 'Record can be deleted', code: 'SUCCESS' };
   }
 
-  public validateUser(payload: IAuthPayload): IValidateResponse {
+  public async validateUser(payload: IAuthPayload): Promise<IValidateResponse> {
     const logContext = { ...this.logContext, function: 'validateUser' };
 
     if (!payload.username || !payload.password) {
@@ -65,10 +66,17 @@ export class ValidationsManager {
       return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const user = users.find((u) => u.username === payload.username && u.password === payload.password);
+    const user = users.find((u) => u.username === payload.username);
 
     if (!user) {
       this.logger.debug({ msg: 'user not found', username: payload.username, logContext });
+      return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
+    }
+
+    const isPasswordValid = await verifyPassword(payload.password, user.password);
+
+    if (!isPasswordValid) {
+      this.logger.debug({ msg: 'invalid password', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
 
