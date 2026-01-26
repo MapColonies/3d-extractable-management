@@ -18,6 +18,8 @@ describe('records', function () {
   });
 
   beforeEach(async function () {
+    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+
     const [app] = await getApp({
       override: [
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
@@ -27,6 +29,10 @@ describe('records', function () {
     });
 
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+  });
+
+  afterEach(() => {
+    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {

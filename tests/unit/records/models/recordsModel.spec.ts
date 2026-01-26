@@ -8,8 +8,14 @@ let validationsManager: ValidationsManager;
 
 describe('RecordsManager', () => {
   beforeEach(() => {
+    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+
     recordsManager = new RecordsManager(jsLogger({ enabled: false }));
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
+  });
+
+  afterEach(() => {
+    delete process.env.USERS_JSON;
   });
 
   describe('#getRecords', () => {

@@ -17,7 +17,13 @@ describe('users', function () {
     await initConfig(true);
   });
 
+  afterEach(() => {
+    delete process.env.USERS_JSON;
+  });
+
   beforeEach(async function () {
+    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+
     const [app] = await getApp({
       override: [
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
@@ -125,6 +131,78 @@ describe('users', function () {
       expect(response.body).toEqual({ isValid: false, message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
 
       spy.mockRestore();
+    });
+  });
+  describe('parseUsersJson integration behavior', function () {
+    it('should return 401 when USERS_JSON is not set', async function () {
+      delete process.env.USERS_JSON;
+
+      const payload: IAuthPayload = {
+        username: validCredentials.username,
+        password: validCredentials.password,
+      };
+
+      const response = await requestSender.validateUser({ requestBody: payload });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Invalid username or password',
+        code: 'INVALID_CREDENTIALS',
+      });
+    });
+
+    it('should return 401 when USERS_JSON is invalid JSON', async function () {
+      process.env.USERS_JSON = '{invalid-json';
+
+      const payload: IAuthPayload = {
+        username: validCredentials.username,
+        password: validCredentials.password,
+      };
+
+      const response = await requestSender.validateUser({ requestBody: payload });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.body.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('should return 401 when USERS_JSON is not an array', async function () {
+      process.env.USERS_JSON = JSON.stringify({
+        username: validCredentials.username,
+        password: validCredentials.password,
+      });
+
+      const payload: IAuthPayload = {
+        username: validCredentials.username,
+        password: validCredentials.password,
+      };
+
+      const response = await requestSender.validateUser({ requestBody: payload });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.body.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('should return 401 when USERS_JSON array has no valid users', async function () {
+      process.env.USERS_JSON = JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]);
+
+      const payload: IAuthPayload = {
+        username: validCredentials.username,
+        password: validCredentials.password,
+      };
+
+      const response = await requestSender.validateUser({ requestBody: payload });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Invalid username or password',
+        code: 'INVALID_CREDENTIALS',
+      });
     });
   });
 });

@@ -1,14 +1,20 @@
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
-import { hashPassword, verifyPassword } from '@src/users/utils/password';
+import { parseUsersJson } from '@src/users/config/validUsers';
 import { IAuthPayload } from '@src/common/constants';
 
 let validationsManager: ValidationsManager;
 
 describe('RecordsManager', () => {
   beforeEach(() => {
+    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
+  });
+
+  afterEach(() => {
+    delete process.env.USERS_JSON;
   });
 
   describe('#validateUser', () => {
@@ -54,47 +60,47 @@ describe('RecordsManager', () => {
 });
 
 describe('Password Utils', () => {
-  const plainPassword = 'mySecret123';
-  let passwordHash: string;
+  describe('parseUsersJson', () => {
+    it('should return users when USERS_JSON is valid', () => {
+      const users: IAuthPayload[] = [{ username: validCredentials.username, password: validCredentials.password }];
 
-  describe('#hashPassword', () => {
-    it('should generate a hash string for a password', async () => {
-      passwordHash = await hashPassword(plainPassword);
+      process.env.USERS_JSON = JSON.stringify(users);
 
-      expect(typeof passwordHash).toBe('string');
-      expect(passwordHash).not.toBe(plainPassword);
-      expect(passwordHash.startsWith('$2b$')).toBe(true);
+      const result = parseUsersJson();
+
+      expect(result).toEqual(users);
     });
 
-    it('should generate different hashes for the same password', async () => {
-      const hash1 = await hashPassword(plainPassword);
-      const hash2 = await hashPassword(plainPassword);
+    it('should return empty array when USERS_JSON is empty', () => {
+      delete process.env.USERS_JSON;
 
-      expect(hash1).not.toBe(hash2);
-    });
-  });
+      const result = parseUsersJson();
 
-  describe('#verifyPassword', () => {
-    beforeAll(async () => {
-      passwordHash = await hashPassword(plainPassword);
+      expect(result).toEqual([]);
     });
 
-    it('should return true for a matching password', async () => {
-      const result = await verifyPassword(plainPassword, passwordHash);
-      expect(result).toBe(true);
+    it('should return empty array when USERS_JSON is invalid JSON', () => {
+      process.env.USERS_JSON = '{invalid-json}';
+
+      const result = parseUsersJson();
+
+      expect(result).toEqual([]);
     });
 
-    it('should return false for a non-matching password', async () => {
-      const result = await verifyPassword('wrongPassword', passwordHash);
-      expect(result).toBe(false);
+    it('should return empty array when USERS_JSON is not an array', () => {
+      process.env.USERS_JSON = JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password });
+
+      const result = parseUsersJson();
+
+      expect(result).toEqual([]);
     });
 
-    it('should correctly verify multiple hashes of the same password', async () => {
-      const hash1 = await hashPassword(plainPassword);
-      const hash2 = await hashPassword(plainPassword);
+    it('should return empty array when array contains no valid users', () => {
+      process.env.USERS_JSON = JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]);
 
-      expect(await verifyPassword(plainPassword, hash1)).toBe(true);
-      expect(await verifyPassword(plainPassword, hash2)).toBe(true);
+      const result = parseUsersJson();
+
+      expect(result).toEqual([]);
     });
   });
 });

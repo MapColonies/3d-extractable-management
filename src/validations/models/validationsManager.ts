@@ -4,7 +4,7 @@ import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } fro
 import { LogContext } from '@common/interfaces';
 import { verifyPassword } from '@src/users/utils/password';
 import { recordInstance } from '../../common/mocks';
-import { users } from '../../users/config/validUsers';
+import { parseUsersJson } from '../../users/config/validUsers';
 
 @injectable()
 export class ValidationsManager {
@@ -66,7 +66,9 @@ export class ValidationsManager {
       return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const user = users.find((u) => u.username === payload.username);
+    const users = parseUsersJson();
+
+    const user = users.find((u) => u.username === payload.username && u.password === payload.password);
 
     if (!user) {
       this.logger.debug({ msg: 'user not found', username: payload.username, logContext });
