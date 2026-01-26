@@ -13,6 +13,9 @@ export const SERVICES = {
   CONFIG: Symbol('Config'),
   TRACER: Symbol('Tracer'),
   METRICS: Symbol('METRICS'),
+  HEALTH_CHECK: Symbol('HealthCheck'),
+  EXTRACTABLE_RECORD_REPOSITORY: Symbol('ExtractableRecordRepository'),
+  CONNECTION_MANAGER: Symbol('ConnectionManager'),
 } satisfies Record<string, symbol>;
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -23,3 +26,7 @@ export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-re
 export type IAuthPayload = components['schemas']['auth-payload'];
 
 export type IValidateResponse = components['schemas']['validateResponse'];
+
+export const DB_TIMEOUT = 5000;
+
+export const MAX_CONNECT_RETRIES = 3;

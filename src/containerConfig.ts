@@ -35,6 +35,18 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
     { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
     {
+      token: SERVICES.HEALTH_CHECK,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          return async () => {
+            await Promise.resolve(connectionManager.healthCheck());
+          };
+        },
+      },
+    },
+    { token: SERVICES.CONNECTION_MANAGER, provider: { useValue: connectionManager } },
+    {
       token: 'onSignal',
       provider: {
         useValue: async (): Promise<void> => {
