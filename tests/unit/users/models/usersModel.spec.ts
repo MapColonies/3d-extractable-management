@@ -1,7 +1,7 @@
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
-import { parseUsersJson } from '@src/users/config/validUsers';
+import { parseUsersJson } from '@src/users/utils/parser';
 import { IAuthPayload } from '@src/common/constants';
 
 let validationsManager: ValidationsManager;

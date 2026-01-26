@@ -3,7 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
 import { recordInstance } from '../../common/mocks';
-import { parseUsersJson } from '../../users/config/validUsers';
+import { parseUsersJson } from '../../users/utils/parser';
 
 @injectable()
 export class ValidationsManager {
