@@ -2,7 +2,6 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
-import { verifyPassword } from '@src/users/utils/password';
 import { recordInstance } from '../../common/mocks';
 import { parseUsersJson } from '../../users/config/validUsers';
 
@@ -14,10 +13,10 @@ export class ValidationsManager {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
   }
 
-  public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
+  public validateCreate(payload: IAuthPayloadWithRecord): IValidateResponse {
     const logContext = { ...this.logContext, function: 'validateCreate' };
 
-    const userValidation = await this.validateUser(payload);
+    const userValidation = this.validateUser(payload);
     if (!userValidation.isValid) {
       return userValidation;
     }
@@ -36,10 +35,10 @@ export class ValidationsManager {
     return { isValid: true, message: 'Record can be created', code: 'SUCCESS' };
   }
 
-  public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
+  public validateDelete(payload: IAuthPayloadWithRecord): IValidateResponse {
     const logContext = { ...this.logContext, function: 'validateDelete' };
 
-    const userValidation = await this.validateUser(payload);
+    const userValidation = this.validateUser(payload);
     if (!userValidation.isValid) {
       return userValidation;
     }
@@ -58,7 +57,7 @@ export class ValidationsManager {
     return { isValid: true, message: 'Record can be deleted', code: 'SUCCESS' };
   }
 
-  public async validateUser(payload: IAuthPayload): Promise<IValidateResponse> {
+  public validateUser(payload: IAuthPayload): IValidateResponse {
     const logContext = { ...this.logContext, function: 'validateUser' };
 
     if (!payload.username || !payload.password) {
@@ -72,13 +71,6 @@ export class ValidationsManager {
 
     if (!user) {
       this.logger.debug({ msg: 'user not found', username: payload.username, logContext });
-      return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
-    }
-
-    const isPasswordValid = await verifyPassword(payload.password, user.password);
-
-    if (!isPasswordValid) {
-      this.logger.debug({ msg: 'invalid password', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
 

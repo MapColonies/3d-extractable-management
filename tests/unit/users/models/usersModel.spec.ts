@@ -18,31 +18,31 @@ describe('RecordsManager', () => {
   });
 
   describe('#validateUser', () => {
-    it('should succeed when credentials are valid', async () => {
-      const result = await validationsManager.validateUser(validCredentials);
+    it('should succeed when credentials are valid', () => {
+      const result = validationsManager.validateUser(validCredentials);
 
       expect(result.isValid).toBe(true);
       expect(result.code).toBe('SUCCESS');
       expect(result.message).toBe('User credentials are valid');
     });
 
-    it('should fail when credentials are invalid', async () => {
-      const result = await validationsManager.validateUser(invalidCredentials);
+    it('should fail when credentials are invalid', () => {
+      const result = validationsManager.validateUser(invalidCredentials);
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Invalid username or password');
       expect(result.code).toBe('INVALID_CREDENTIALS');
     });
 
-    it('should fail when credentials are missing', async () => {
-      const result = await validationsManager.validateUser({ username: '', password: '' });
+    it('should fail when credentials are missing', () => {
+      const result = validationsManager.validateUser({ username: '', password: '' });
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Username and password are required');
       expect(result.code).toBe('MISSING_CREDENTIALS');
     });
 
-    it('should fail when the username exists but password is wrong', async () => {
+    it('should fail when the username exists but password is wrong', () => {
       const validUser = validCredentials;
 
       const payload: IAuthPayload = {
@@ -50,7 +50,7 @@ describe('RecordsManager', () => {
         password: 'wrongPassword',
       };
 
-      const result = await validationsManager.validateUser(payload);
+      const result = validationsManager.validateUser(payload);
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Invalid username or password');

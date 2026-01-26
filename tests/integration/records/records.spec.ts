@@ -164,7 +164,7 @@ describe('records', function () {
     });
 
     it('should return 404 when createRecord throws "Record not found"', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: true,
         message: 'Record can be created',
         code: 'SUCCESS',
@@ -194,7 +194,7 @@ describe('records', function () {
     });
 
     it('should return 400 when credentials are missing in validateCreate', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -244,7 +244,7 @@ describe('records', function () {
     });
 
     it('should return 401 when validation fails with non-specific code', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: false,
         message: 'Unauthorized',
         code: 'INVALID_CREDENTIALS',
@@ -270,7 +270,7 @@ describe('records', function () {
     });
 
     it('should return 400 when credentials are missing in validateDelete', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -295,7 +295,7 @@ describe('records', function () {
     });
 
     it('should return 400 when validation fails with MISSING_CREDENTIALS (createRecord)', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -322,7 +322,7 @@ describe('records', function () {
     });
 
     it('should return 400 when validation fails with MISSING_CREDENTIALS (deleteRecord)', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -371,7 +371,7 @@ describe('records', function () {
     });
 
     it('should return 401 when delete validation fails with INVALID_CREDENTIALS', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Invalid credentials',
         code: 'INVALID_CREDENTIALS',
@@ -425,7 +425,7 @@ describe('records', function () {
     });
 
     it('should return 404 when validateCreate returns INVALID_RECORD_NAME', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: false,
         message: 'Record does not exist',
         code: 'INVALID_RECORD_NAME',
@@ -450,7 +450,7 @@ describe('records', function () {
     });
 
     it('should return 404 when validateDelete returns INVALID_RECORD_NAME', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Record does not exist',
         code: 'INVALID_RECORD_NAME',
@@ -509,7 +509,7 @@ describe('records', function () {
     });
 
     it('should return 500 if createRecord throws an unexpected error', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
         isValid: true,
         message: 'Record can be created',
         code: 'SUCCESS',
@@ -570,7 +570,7 @@ describe('records', function () {
     });
 
     it('should return 500 for validateDelete when validation fails without error code', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Validation failed',
         code: 'SUCCESS',
@@ -722,7 +722,7 @@ describe('records', function () {
   });
 
   it('should return 500 for validateDelete when INTERNAL_ERROR is returned', async function () {
-    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
       isValid: false,
       code: 'INTERNAL_ERROR',
       message: 'Internal validation error',
