@@ -133,39 +133,52 @@ describe('users', function () {
   });
 
   describe('Config-driven users behavior', function () {
-    it('should return 401 when config users is empty', async function () {
-      mockedConfig.get.mockReturnValueOnce([]);
+    describe('Config-driven users behavior', function () {
+      async function createAppWithMockedConfig(usersMock?: unknown, shouldThrow = false) {
+        mockedConfig.get.mockReset();
 
-      const response = await requestSender.validateUser({
-        requestBody: validCredentials,
+        if (shouldThrow) {
+          mockedConfig.get.mockImplementation(() => {
+            throw new Error('missing config');
+          });
+        } else {
+          mockedConfig.get.mockReturnValue(usersMock);
+        }
+
+        const [app] = await getApp({
+          override: [
+            { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+            { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+          ],
+          useChild: true,
+        });
+
+        return createRequestSender<paths, operations>('openapi3.yaml', app);
+      }
+
+      it('should return 401 when config users is empty', async function () {
+        requestSender = await createAppWithMockedConfig([]);
+        const response = await requestSender.validateUser({ requestBody: validCredentials });
+
+        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+        expect(response.body.code).toBe('INVALID_CREDENTIALS');
       });
 
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-      expect(response.body.code).toBe('INVALID_CREDENTIALS');
-    });
+      it('should return 401 when config users is invalid', async function () {
+        requestSender = await createAppWithMockedConfig({ foo: 'bar' });
+        const response = await requestSender.validateUser({ requestBody: validCredentials });
 
-    it('should return 401 when config users is invalid', async function () {
-      mockedConfig.get.mockReturnValueOnce({ foo: 'bar' } as unknown);
-
-      const response = await requestSender.validateUser({
-        requestBody: validCredentials,
+        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+        expect(response.body.code).toBe('INVALID_CREDENTIALS');
       });
 
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-      expect(response.body.code).toBe('INVALID_CREDENTIALS');
-    });
+      it('should return 401 when config.get throws', async function () {
+        requestSender = await createAppWithMockedConfig(undefined, true);
+        const response = await requestSender.validateUser({ requestBody: validCredentials });
 
-    it('should return 401 when config.get throws', async function () {
-      mockedConfig.get.mockImplementationOnce(() => {
-        throw new Error('missing config');
+        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+        expect(response.body.code).toBe('INVALID_CREDENTIALS');
       });
-
-      const response = await requestSender.validateUser({
-        requestBody: validCredentials,
-      });
-
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-      expect(response.body.code).toBe('INVALID_CREDENTIALS');
     });
   });
 });

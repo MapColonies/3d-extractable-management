@@ -9,9 +9,11 @@ import { recordInstance } from '../../common/mocks'; // TODO: remove this refere
 @injectable()
 export class ValidationsManager {
   private readonly logContext: LogContext;
+  private readonly users: IAuthPayload[];
 
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
+    this.users = this.loadUsers();
   }
 
   public validateCreate(payload: IAuthPayloadWithRecord): IValidateResponse {
@@ -75,20 +77,26 @@ export class ValidationsManager {
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
   }
 
-  public parseUsersJson(): IAuthPayload[] {
-    try {
-      const users = config.get<IUser>('users');
-
-      const result = UsersSchema.safeParse(users);
-      return result.success ? result.data : [];
-    } catch {
-      return [];
-    }
+  private isValidUser(payload: IAuthPayload): boolean {
+    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 
-  private isValidUser(payload: IAuthPayload): boolean {
-    const users = this.parseUsersJson();
+  public loadUsers(): IAuthPayload[] {
+    try {
+      const usersConfig = config.get<IUser>('users');
+      const result = UsersSchema.safeParse(usersConfig);
 
-    return users.some((u) => u.username === payload.username && u.password === payload.password);
+      if (!result.success) {
+        this.logger.error({ msg: 'Invalid users configuration', errors: result.error, logContext: this.logContext });
+
+        return [];
+      }
+
+      return result.data;
+    } catch (err) {
+      this.logger.error({ msg: 'Failed to load users configuration', err, logContext: this.logContext });
+
+      return [];
+    }
   }
 }

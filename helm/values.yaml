@@ -124,5 +124,21 @@ ingress:
     origin: '*'
 
 usersSecret:
-  name: auth-secrets
+  name: extractable-management-secrets
   key: users-json
+
+dbSecrets:
+  - name: extractable-management-secrets
+    usernameKey: extractable-username
+    passwordKey: extractable-password
+  - name: extractable-management-secrets
+    usernameKey: audit-username
+    passwordKey: audit-password
+
+dbSecrets:
+  - name: extractable-management-secrets
+    usernameKey: extractable_records_test
+    passwordKey: extractable_records_password_test
+  - name: extractable-management-secrets
+    usernameKey: audit_logs_test
+    passwordKey: audit_logs_password_test

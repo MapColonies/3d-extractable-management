@@ -64,13 +64,13 @@ describe('RecordsManager', () => {
 });
 
 describe('Password Utils', () => {
-  describe('parseUsersJson', () => {
+  describe('loadUsers', () => {
     it('should return users when USERS_JSON is valid', () => {
       const users: IAuthPayload[] = [{ username: validCredentials.username, password: validCredentials.password }];
 
       mockedConfig.get.mockReturnValue(users);
 
-      const result = validationsManager.parseUsersJson();
+      const result = validationsManager.loadUsers();
 
       expect(result).toEqual(users);
     });
@@ -80,7 +80,7 @@ describe('Password Utils', () => {
         throw new Error('config error');
       });
 
-      const result = validationsManager.parseUsersJson();
+      const result = validationsManager.loadUsers();
 
       expect(result).toEqual([]);
     });
@@ -88,7 +88,7 @@ describe('Password Utils', () => {
     it('should return empty array when USERS_JSON is invalid JSON', () => {
       mockedConfig.get.mockReturnValue('{invalid-json}');
 
-      const result = validationsManager.parseUsersJson();
+      const result = validationsManager.loadUsers();
 
       expect(result).toEqual([]);
     });
@@ -96,7 +96,7 @@ describe('Password Utils', () => {
     it('should return empty array when USERS_JSON is not an array', () => {
       mockedConfig.get.mockReturnValue(JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password }));
 
-      const result = validationsManager.parseUsersJson();
+      const result = validationsManager.loadUsers();
 
       expect(result).toEqual([]);
     });
@@ -104,7 +104,7 @@ describe('Password Utils', () => {
     it('should return empty array when array contains no valid users', () => {
       mockedConfig.get.mockReturnValue(JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]));
 
-      const result = validationsManager.parseUsersJson();
+      const result = validationsManager.loadUsers();
 
       expect(result).toEqual([]);
     });
