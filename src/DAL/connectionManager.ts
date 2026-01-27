@@ -64,8 +64,11 @@ export class ConnectionManager {
         const dataSource = new DataSource(createConnectionOptions(config));
         await dataSource.initialize();
 
-        if (type === 'audit') this.auditDataSource = dataSource;
-        else this.extractableDataSource = dataSource;
+        if (type === 'audit') {
+          this.auditDataSource = dataSource;
+        } else {
+          this.extractableDataSource = dataSource;
+        }
 
         this.logger.info({ msg: `${type} Data Source successfully initialized`, logContext });
         connectionSuccess = true;
