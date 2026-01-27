@@ -2,7 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { LogContext } from '@common/interfaces';
-import { recordInstance } from '../../common/mocks';
+import { recordInstance } from '../../common/mocks'; // TODO: remove this reference
 import { parseUsersJson } from '../../users/utils/parser';
 
 @injectable()
@@ -65,16 +65,18 @@ export class ValidationsManager {
       return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const users = parseUsersJson();
-
-    const user = users.find((u) => u.username === payload.username && u.password === payload.password);
-
-    if (!user) {
+    if (!this.isValidUser(payload)) {
       this.logger.debug({ msg: 'user not found', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
 
     this.logger.debug({ msg: 'user validation successful', logContext });
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
+  }
+
+  private isValidUser(payload: IAuthPayload): boolean {
+    const users = parseUsersJson();
+
+    return users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 }

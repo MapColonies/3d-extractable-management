@@ -1,3 +1,4 @@
+import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
@@ -6,15 +7,19 @@ import { IAuthPayload } from '@src/common/constants';
 
 let validationsManager: ValidationsManager;
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('RecordsManager', () => {
   beforeEach(() => {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
   });
 
   afterEach(() => {
-    delete process.env.USERS_JSON;
+    jest.resetAllMocks();
   });
 
   describe('#validateUser', () => {
@@ -64,15 +69,17 @@ describe('Password Utils', () => {
     it('should return users when USERS_JSON is valid', () => {
       const users: IAuthPayload[] = [{ username: validCredentials.username, password: validCredentials.password }];
 
-      process.env.USERS_JSON = JSON.stringify(users);
+      mockedConfig.get.mockReturnValue(users);
 
       const result = parseUsersJson();
 
       expect(result).toEqual(users);
     });
 
-    it('should return empty array when USERS_JSON is empty', () => {
-      delete process.env.USERS_JSON;
+    it('should return empty array if config.get throws', () => {
+      mockedConfig.get.mockImplementation(() => {
+        throw new Error('config error');
+      });
 
       const result = parseUsersJson();
 
@@ -80,7 +87,7 @@ describe('Password Utils', () => {
     });
 
     it('should return empty array when USERS_JSON is invalid JSON', () => {
-      process.env.USERS_JSON = '{invalid-json}';
+      mockedConfig.get.mockReturnValue('{invalid-json}');
 
       const result = parseUsersJson();
 
@@ -88,7 +95,7 @@ describe('Password Utils', () => {
     });
 
     it('should return empty array when USERS_JSON is not an array', () => {
-      process.env.USERS_JSON = JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password });
+      mockedConfig.get.mockReturnValue(JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password }));
 
       const result = parseUsersJson();
 
@@ -96,7 +103,7 @@ describe('Password Utils', () => {
     });
 
     it('should return empty array when array contains no valid users', () => {
-      process.env.USERS_JSON = JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]);
+      mockedConfig.get.mockReturnValue(JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]));
 
       const result = parseUsersJson();
 

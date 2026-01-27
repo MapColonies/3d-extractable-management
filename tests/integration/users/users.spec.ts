@@ -1,5 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
+import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -9,6 +10,10 @@ import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
 
@@ -16,12 +21,8 @@ describe('users', function () {
     await initConfig(true);
   });
 
-  afterEach(() => {
-    delete process.env.USERS_JSON;
-  });
-
   beforeEach(async function () {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     const [app] = await getApp({
       override: [
@@ -34,22 +35,30 @@ describe('users', function () {
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe('Happy Path', function () {
     it('should return 200 when credentials are valid', async function () {
-      const response = await requestSender.validateUser({ requestBody: validCredentials });
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
+      });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-
-      const body = response.body;
-      expect(body.isValid).toBe(true);
-      expect(body.message).toBe('User credentials are valid');
+      expect(response.body).toEqual({
+        isValid: true,
+        message: 'User credentials are valid',
+        code: 'SUCCESS',
+      });
     });
   });
 
   describe('Bad Path', function () {
     it('should return 400 when credentials are missing', async function () {
       const payload: IAuthPayload = { username: '', password: '' };
+
       const response = await requestSender.validateUser({ requestBody: payload });
 
       expect(response).toSatisfyApiSpec();
@@ -62,18 +71,24 @@ describe('users', function () {
     });
 
     it('should return 401 when credentials are invalid', async function () {
-      const payload: IAuthPayload = { username: invalidCredentials.username, password: invalidCredentials.password };
+      const payload: IAuthPayload = {
+        username: invalidCredentials.username,
+        password: invalidCredentials.password,
+      };
+
       const response = await requestSender.validateUser({ requestBody: payload });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-
-      const body = response.body;
-      expect(body.isValid).toBe(false);
-      expect(body.code).toBe('INVALID_CREDENTIALS');
-      expect(body.message).toBe('Invalid username or password');
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Invalid username or password',
+        code: 'INVALID_CREDENTIALS',
+      });
     });
+  });
 
+  describe('Internal Errors', function () {
     it('should return 500 when validation returns an unknown code', async function () {
       const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockReturnValueOnce({
         isValid: false,
@@ -81,8 +96,9 @@ describe('users', function () {
         code: 'INTERNAL_ERROR',
       });
 
-      const payload: IAuthPayload = { username: 'anyuser', password: 'anypass' };
-      const response = await requestSender.validateUser({ requestBody: payload });
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
+      });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -94,94 +110,62 @@ describe('users', function () {
 
       spy.mockRestore();
     });
-  });
 
-  describe('Internal Errors', function () {
-    it('should return 500 when validateUser throws an unexpected exception', async function () {
+    it('should return 500 when validateUser throws', async function () {
       const spy = jest.spyOn(ValidationsManager.prototype, 'validateUser').mockImplementation(() => {
         throw new Error('Simulated server error');
       });
 
-      const payload: IAuthPayload = { username: validCredentials.username, password: validCredentials.password };
-      const response = await requestSender.validateUser({ requestBody: payload });
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
+      });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ isValid: false, message: 'Failed to validate user', code: 'INTERNAL_ERROR' });
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'Failed to validate user',
+        code: 'INTERNAL_ERROR',
+      });
 
       spy.mockRestore();
     });
   });
-  describe('parseUsersJson integration behavior', function () {
-    it('should return 401 when USERS_JSON is not set', async function () {
-      delete process.env.USERS_JSON;
 
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-      };
+  describe('Config-driven users behavior', function () {
+    it('should return 401 when config users is empty', async function () {
+      mockedConfig.get.mockReturnValueOnce([]);
 
-      const response = await requestSender.validateUser({ requestBody: payload });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'Invalid username or password',
-        code: 'INVALID_CREDENTIALS',
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
       });
-    });
 
-    it('should return 401 when USERS_JSON is invalid JSON', async function () {
-      process.env.USERS_JSON = '{invalid-json';
-
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-      };
-
-      const response = await requestSender.validateUser({ requestBody: payload });
-
-      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
       expect(response.body.code).toBe('INVALID_CREDENTIALS');
     });
 
-    it('should return 401 when USERS_JSON is not an array', async function () {
-      process.env.USERS_JSON = JSON.stringify({
-        username: validCredentials.username,
-        password: validCredentials.password,
+    it('should return 401 when config users is invalid', async function () {
+      mockedConfig.get.mockReturnValueOnce({ foo: 'bar' } as unknown);
+
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
       });
 
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-      };
-
-      const response = await requestSender.validateUser({ requestBody: payload });
-
-      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
       expect(response.body.code).toBe('INVALID_CREDENTIALS');
     });
 
-    it('should return 401 when USERS_JSON array has no valid users', async function () {
-      process.env.USERS_JSON = JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]);
-
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-      };
-
-      const response = await requestSender.validateUser({ requestBody: payload });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'Invalid username or password',
-        code: 'INVALID_CREDENTIALS',
+    it('should return 401 when config.get throws', async function () {
+      mockedConfig.get.mockImplementationOnce(() => {
+        throw new Error('missing config');
       });
+
+      const response = await requestSender.validateUser({
+        requestBody: validCredentials,
+      });
+
+      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.body.code).toBe('INVALID_CREDENTIALS');
     });
   });
 });
