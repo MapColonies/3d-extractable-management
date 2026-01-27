@@ -28,7 +28,7 @@ configManagement:
   offlineMode: true
   name: 'extractable-management'
   version: 'latest'
-  serverUrl: 'http://common-export-management-service.3d-dev.svc.cluster.local:8080/api'
+  serverUrl: 'http://localhost:8080/api'
 
 livenessProbe:
   enabled: true
