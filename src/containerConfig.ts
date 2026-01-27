@@ -35,6 +35,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
     { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
     {
+      // TODO: UPDATE
       token: SERVICES.HEALTH_CHECK,
       provider: {
         useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
