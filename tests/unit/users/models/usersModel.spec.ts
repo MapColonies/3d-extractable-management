@@ -2,7 +2,6 @@ import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
-import { parseUsersJson } from '@src/users/utils/parser';
 import { IAuthPayload } from '@src/common/constants';
 
 let validationsManager: ValidationsManager;
@@ -71,7 +70,7 @@ describe('Password Utils', () => {
 
       mockedConfig.get.mockReturnValue(users);
 
-      const result = parseUsersJson();
+      const result = validationsManager.parseUsersJson();
 
       expect(result).toEqual(users);
     });
@@ -81,7 +80,7 @@ describe('Password Utils', () => {
         throw new Error('config error');
       });
 
-      const result = parseUsersJson();
+      const result = validationsManager.parseUsersJson();
 
       expect(result).toEqual([]);
     });
@@ -89,7 +88,7 @@ describe('Password Utils', () => {
     it('should return empty array when USERS_JSON is invalid JSON', () => {
       mockedConfig.get.mockReturnValue('{invalid-json}');
 
-      const result = parseUsersJson();
+      const result = validationsManager.parseUsersJson();
 
       expect(result).toEqual([]);
     });
@@ -97,7 +96,7 @@ describe('Password Utils', () => {
     it('should return empty array when USERS_JSON is not an array', () => {
       mockedConfig.get.mockReturnValue(JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password }));
 
-      const result = parseUsersJson();
+      const result = validationsManager.parseUsersJson();
 
       expect(result).toEqual([]);
     });
@@ -105,7 +104,7 @@ describe('Password Utils', () => {
     it('should return empty array when array contains no valid users', () => {
       mockedConfig.get.mockReturnValue(JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]));
 
-      const result = parseUsersJson();
+      const result = validationsManager.parseUsersJson();
 
       expect(result).toEqual([]);
     });

@@ -1,9 +1,10 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
+import config from 'config';
+import { IUser, LogContext } from '@src/common/interfaces';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
-import { LogContext } from '@common/interfaces';
+import { UsersSchema } from '@src/users/utils/userSchema';
 import { recordInstance } from '../../common/mocks'; // TODO: remove this reference
-import { parseUsersJson } from '../../users/utils/parser';
 
 @injectable()
 export class ValidationsManager {
@@ -74,8 +75,19 @@ export class ValidationsManager {
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
   }
 
+  public parseUsersJson(): IAuthPayload[] {
+    try {
+      const users = config.get<IUser>('users');
+
+      const result = UsersSchema.safeParse(users);
+      return result.success ? result.data : [];
+    } catch {
+      return [];
+    }
+  }
+
   private isValidUser(payload: IAuthPayload): boolean {
-    const users = parseUsersJson();
+    const users = this.parseUsersJson();
 
     return users.some((u) => u.username === payload.username && u.password === payload.password);
   }
