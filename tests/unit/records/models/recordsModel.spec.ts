@@ -1,3 +1,4 @@
+import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
@@ -6,16 +7,20 @@ import { recordInstance, validCredentials, invalidCredentials } from '@src/commo
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('RecordsManager', () => {
   beforeEach(() => {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     recordsManager = new RecordsManager(jsLogger({ enabled: false }));
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
   });
 
   afterEach(() => {
-    delete process.env.USERS_JSON;
+    jest.resetAllMocks();
   });
 
   describe('#getRecords', () => {

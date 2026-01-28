@@ -28,7 +28,7 @@ configManagement:
   offlineMode: true
   name: 'extractable-management'
   version: 'latest'
-  serverUrl: 'http://127.0.0.1:8080/api'
+  serverUrl: 'http://localhost:8080/api'
 
 livenessProbe:
   enabled: true
@@ -70,7 +70,7 @@ caKey: 'ca.crt'
 
 image:
   repository: acrarolibotnonprod.azurecr.io/extractable-management
-  pullPolicy: IfNotPresent
+  tag:
 
 env:
   port: 8080
@@ -183,11 +183,20 @@ nginx:
       key: ''
       caCertificate: ''
 
-  ingress:
-    enabled: false
-    path: /api/v1
-    host: 'localhost'
-    domain: ""
-    tls: 
-      enabled: true
-      secretName: ''
+ingress:
+  enabled: false
+  path: /
+  host: 'localhost'
+  cors:
+    enabled: true
+    origin: '*'
+
+usersSecret:
+  name: extractable-management-secrets
+  key: users-json
+
+dbSecrets:
+  - name: extractable-management-secrets
+    usernameKey: extractable-username
+    passwordKey: extractable-password
+    dbNameKey: extractable_db_name

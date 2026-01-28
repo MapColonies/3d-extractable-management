@@ -1,5 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
+import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -10,6 +11,10 @@ import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
@@ -18,7 +23,7 @@ describe('records', function () {
   });
 
   beforeEach(async function () {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     const [app] = await getApp({
       override: [
@@ -32,7 +37,7 @@ describe('records', function () {
   });
 
   afterEach(() => {
-    delete process.env.USERS_JSON;
+    jest.resetAllMocks();
   });
 
   describe('Happy Path', function () {

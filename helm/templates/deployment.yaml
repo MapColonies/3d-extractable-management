@@ -74,6 +74,23 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.usersSecret.name }}
                   key: {{ .Values.usersSecret.key }}
+            {{- range .Values.dbSecrets }}
+            - name: {{ .usernameKey | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .usernameKey }}
+            - name: {{ .passwordKey | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .passwordKey }}
+            - name: {{ .dbNameKey | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .dbNameKey }}
+            {{- end }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
