@@ -77,10 +77,6 @@ export class ValidationsManager {
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
   }
 
-  private isValidUser(payload: IAuthPayload): boolean {
-    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
-  }
-
   public loadUsers(): IAuthPayload[] {
     try {
       const usersConfig = config.get<IUser>('users');
@@ -98,5 +94,9 @@ export class ValidationsManager {
 
       return [];
     }
+  }
+
+  private isValidUser(payload: IAuthPayload): boolean {
+    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 }
