@@ -84,14 +84,12 @@ export class ValidationsManager {
 
       if (!result.success) {
         this.logger.error({ msg: 'Invalid users configuration', errors: result.error, logContext: this.logContext });
-
         return [];
       }
 
       return result.data;
     } catch (err) {
       this.logger.error({ msg: 'Failed to load users configuration', err, logContext: this.logContext });
-
       return [];
     }
   }
