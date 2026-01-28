@@ -1,6 +1,7 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
+import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
@@ -9,30 +10,48 @@ import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
+import { registerExternalValues } from '@src/containerConfig';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
+  let dependencyContainer: DependencyContainer;
 
   beforeAll(async function () {
     await initConfig(true);
+
+    dependencyContainer = await registerExternalValues({ useChild: true });
+
+    console.log('✅ ConnectionManager DataSource initialized.');
+
+    const [app] = await getApp({ useChild: false });
+
+    requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
   beforeEach(async function () {
     process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
+    const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+    const extractable = connectionManager.getDataSourceConnection('extractable');
+    const audit = connectionManager.getDataSourceConnection('audit');
+
+    await extractable.getRepository(ExtractableRecord).clear();
+    await audit.getRepository(AuditLog).clear();
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     delete process.env.USERS_JSON;
+  });
+
+  afterAll(async () => {
+    const connectionManager = dependencyContainer.resolve(ConnectionManager);
+    await connectionManager.shutdown()();
+    console.log('🧹 ConnectionManager shut down.');
   });
 
   describe('Happy Path', function () {

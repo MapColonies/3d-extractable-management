@@ -32,4 +32,6 @@ module.exports = {
       statements: -10,
     },
   },
+  globalSetup: '<rootDir>/tests/global-setup.js',
+  globalTeardown: '<rootDir>/tests/global-teardown.js',
 };

@@ -28,7 +28,7 @@ export class ConnectionManager {
     await Promise.all([this.initDataSource('audit'), this.initDataSource('extractable')]);
   }
 
-  public getDataSource(type: 'audit' | 'extractable'): DataSource {
+  public getDataSourceConnection(type: 'audit' | 'extractable'): DataSource {
     const logContext = { ...this.logContext, function: `getDataSource:${type}` };
     const dataSource = type === 'audit' ? this.auditDataSource : this.extractableDataSource;
 
@@ -86,7 +86,7 @@ export class ConnectionManager {
   }
   private async checkDataSource(type: 'audit' | 'extractable'): Promise<void> {
     const logContext = { ...this.logContext, function: `checkDataSource:${type}` };
-    const dataSource = this.getDataSource(type);
+    const dataSource = this.getDataSourceConnection(type);
 
     try {
       const check = dataSource.query('SELECT 1').then(() => {});

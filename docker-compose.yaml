@@ -1,0 +1,14 @@
+services:
+  audit-db:
+    image: postgres:15
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_DB: audit-logs
+
+  extractable-db:
+    image: postgres:15
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_DB: extractable-records

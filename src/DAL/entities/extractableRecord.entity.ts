@@ -8,13 +8,13 @@ export class ExtractableRecord {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   public recordName!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public username!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public authorizedBy!: string;
 
   @CreateDateColumn()

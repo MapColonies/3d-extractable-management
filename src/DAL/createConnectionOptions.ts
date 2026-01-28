@@ -2,8 +2,8 @@
 import { readFileSync } from 'fs';
 import { DataSourceOptions } from 'typeorm';
 import { DbConfig } from '../common/interfaces';
-import { ExtractableRecord } from './entities/extractableRecord';
-import { AuditLog } from './entities/auditLog';
+import { ExtractableRecord } from './entities/extractableRecord.entity';
+import { AuditLog } from './entities/auditLog.entity';
 
 export const createConnectionOptions = (dbConfig: DbConfig): DataSourceOptions => {
   const ENTITIES_DIRS = [ExtractableRecord, AuditLog, 'src/DAL/entities/*.ts'];

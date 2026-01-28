@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
 
 @Entity({ name: 'audit' })
@@ -10,16 +9,16 @@ export class AuditLog {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public recordName!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public username!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public authorizedBy!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   public action!: string;
 
   @CreateDateColumn()

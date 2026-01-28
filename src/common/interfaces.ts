@@ -12,6 +12,7 @@ export interface LogContext {
 }
 
 export interface DbConfig extends PostgresConnectionOptions {
+  type: 'postgres';
   host: string;
   port: number;
   username: string;

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { StatusCodes } from 'http-status-codes';
 
 export class AppError extends Error {

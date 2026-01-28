@@ -21,7 +21,16 @@
     "assets:copy": "copyfiles -f ./config/* ./dist/config && copyfiles -f ./openapi3.yaml ./dist/ && copyfiles ./package.json dist",
     "clean": "rimraf dist",
     "generate:openapi-types": "openapi-helpers ./openapi3.yaml ./src/openapi.d.ts --format --add-typed-request-handler",
-    "prepare": "node .husky/install.mjs"
+    "prepare": "node .husky/install.mjs",
+    "typeorm": "ts-node --esm ./node_modules/typeorm/cli.js",
+    "migration:create:audit": "npm run typeorm -- migration:generate -d src/DAL/dataSources/audit.data-source.ts",
+    "migration:run:audit": "npm run typeorm -- migration:run -d src/DAL/dataSources/audit.data-source.ts",
+    "migration:create:extractable": "npm run typeorm -- migration:generate -d src/DAL/dataSources/extractable.data-source.ts",
+    "migration:run:extractable": "npm run typeorm -- migration:run -d src/DAL/dataSources/extractable.data-source.ts",
+    "migration:audit:": "npm run typeorm -- migration:revert -d ./src/DAL/dataSources/audit.data-source.ts",
+    "migration:extractable": "npm run typeorm -- migration:revert -d ./src/DAL/dataSources/extractable.data-source.ts",
+    "schema:sync:audit": "npm run typeorm -- schema:sync -d ./src/DAL/dataSources/audit.data-source.ts",
+    "schema:sync:extractable": "npm run typeorm -- schema:sync -d ./src/DAL/dataSources/extractable.data-source.ts"
   },
   "directories": {
     "test": "tests"
@@ -30,6 +39,7 @@
   "license": "ISC",
   "dependencies": {
     "@godaddy/terminus": "^4.12.1",
+    "@map-colonies/config": "^3.0.2",
     "@map-colonies/error-express-handler": "^3.0.0",
     "@map-colonies/express-access-log-middleware": "^3.0.1",
     "@map-colonies/js-logger": "^2.0.0",
@@ -45,8 +55,7 @@
     "http-status-codes": "^2.3.0",
     "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
-    "tsyringe": "^4.8.0",
-    "typeorm": "^0.3.28"
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
@@ -67,6 +76,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
+    "docker-compose": "^1.3.1",
     "eslint": "^9.23.0",
     "eslint-plugin-jest": "^28.11.0",
     "husky": "^9.1.7",
@@ -78,7 +88,9 @@
     "rimraf": "^6.0.1",
     "supertest": "^7.1.0",
     "ts-jest": "^29.2.6",
+    "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.11",
-    "typescript": "^5.8.2"
+    "typeorm": "^0.3.28",
+    "typescript": "^5.9.3"
   }
 }
