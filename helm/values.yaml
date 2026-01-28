@@ -131,6 +131,3 @@ dbSecrets:
   - name: extractable-management-secrets
     usernameKey: extractable-username
     passwordKey: extractable-password
-  - name: extractable-management-secrets
-    usernameKey: audit-username
-    passwordKey: audit-password
