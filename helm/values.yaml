@@ -70,8 +70,7 @@ caKey: 'ca.crt'
 
 image:
   repository: acrarolibotnonprod.azurecr.io/extractable-management
-  tag: 1.0.0
-  pullPolicy: IfNotPresent
+  tag:
 
 env:
   port: 8080
@@ -131,3 +130,4 @@ dbSecrets:
   - name: extractable-management-secrets
     usernameKey: extractable-username
     passwordKey: extractable-password
+    dbNameKey: extractable_db_name

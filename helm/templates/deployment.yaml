@@ -85,6 +85,11 @@ spec:
                 secretKeyRef:
                   name: {{ .name }}
                   key: {{ .passwordKey }}
+            - name: {{ .dbNameKey | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .dbNameKey }}
             {{- end }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE

@@ -77,7 +77,12 @@ export class ValidationsManager {
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
   }
 
-  public loadUsers(): IAuthPayload[] {
+  private isValidUser(payload: IAuthPayload): boolean {
+    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
+  }
+
+  // istanbul ignore next
+  private loadUsers(): IAuthPayload[] {
     try {
       const usersConfig = config.get<IUser>('users');
       const result = UsersSchema.safeParse(usersConfig);
@@ -92,9 +97,5 @@ export class ValidationsManager {
       this.logger.error({ msg: 'Failed to load users configuration', err, logContext: this.logContext });
       return [];
     }
-  }
-
-  private isValidUser(payload: IAuthPayload): boolean {
-    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 }
