@@ -8,3 +8,6 @@ dependencies:
   - name: mclabels
     version: 1.0.1
     repository: oci://acrarolibotnonprod.azurecr.io/helm/infra
+  - name: nginx
+    version: 1.3.0
+    repository: oci://acrarolibotnonprod.azurecr.io/helm

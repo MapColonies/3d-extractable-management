@@ -1,0 +1,15 @@
+{{- if .Values.nginx.enabled -}}
+{{- $chartName := include "extractable-management.name" . -}}
+{{- $releaseName := .Release.Name -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-{{ $chartName }}-nginx-configmap
+  labels:
+    app: {{ $releaseName }}-{{ $chartName }}
+    component: nginx-configmap
+    environment: {{ .Values.environment }}
+    release: {{ $releaseName }}
+data:
+  default.conf: {{ tpl (.Files.Get "config/nginx/default.conf") . | quote }}
+{{- end }}
