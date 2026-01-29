@@ -1,5 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
+import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -10,6 +11,10 @@ import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
 import { initConfig } from '@src/common/config';
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
@@ -18,6 +23,8 @@ describe('records', function () {
   });
 
   beforeEach(async function () {
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+
     const [app] = await getApp({
       override: [
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
@@ -27,6 +34,10 @@ describe('records', function () {
     });
 
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe('Happy Path', function () {
@@ -564,7 +575,7 @@ describe('records', function () {
     });
 
     it('should return 500 for validateDelete when validation fails without error code', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
         isValid: false,
         message: 'Validation failed',
         code: 'SUCCESS',
@@ -716,7 +727,7 @@ describe('records', function () {
   });
 
   it('should return 500 for validateDelete when INTERNAL_ERROR is returned', async function () {
-    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValue({
+    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
       isValid: false,
       code: 'INTERNAL_ERROR',
       message: 'Internal validation error',
