@@ -123,13 +123,14 @@ ingress:
     origin: '*'
 
 usersSecret:
-  name: extractable-management-secrets
+  name: extractable-management-users-secret
   key: users-json
 
 postgres:
   enabled: true
   user:
-    secretName: extractable-management-secrets
+    useExternal: false
+    secretName: extractable-management-db-secrets
     requirePassword: true
   ssl:
     enabled: false
