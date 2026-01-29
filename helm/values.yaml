@@ -10,7 +10,7 @@ global:
 
 mclabels:
   component: backend
-  partOf: backend
+  partOf: extractable
   owner: 3d
   prometheus:
     enabled: true
@@ -69,7 +69,7 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/extractable-management
+  repository: extractable-management
   tag:
 
 env:
