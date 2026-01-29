@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateExtractablesRecords1769604587925 implements MigrationInterface {

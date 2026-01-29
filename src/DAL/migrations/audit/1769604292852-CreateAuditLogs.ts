@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateAuditLogs1769604292852 implements MigrationInterface {
