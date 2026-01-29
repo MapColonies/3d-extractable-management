@@ -126,8 +126,10 @@ usersSecret:
   name: extractable-management-secrets
   key: users-json
 
-dbSecrets:
-  - name: extractable-management-secrets
-    usernameKey: extractable-username
-    passwordKey: extractable-password
-    dbNameKey: extractable_db_name
+postgres:
+  enabled: true
+  user:
+    secretName: extractable-management-secrets
+    requirePassword: true
+  ssl:
+    enabled: false

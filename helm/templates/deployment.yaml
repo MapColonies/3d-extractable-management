@@ -4,6 +4,7 @@
 {{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "extractable-management.tag" . -}}
+{{- $postgres := include "merged.postgres" . | fromYaml }}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -74,22 +75,19 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.usersSecret.name }}
                   key: {{ .Values.usersSecret.key }}
-            {{- range .Values.dbSecrets }}
-            - name: {{ .usernameKey | upper }}
+            {{- if $postgres.enabled }}
+            - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .name }}
-                  key: {{ .usernameKey }}
-            - name: {{ .passwordKey | upper }}
+                  name: {{ $postgres.user.secretName }}
+                  key: username
+            {{- if $postgres.user.requirePassword }}
+            - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .name }}
-                  key: {{ .passwordKey }}
-            - name: {{ .dbNameKey | upper }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .name }}
-                  key: {{ .dbNameKey }}
+                  name: {{ $postgres.user.secretName }}
+                  key: password
+            {{- end }}
             {{- end }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
@@ -135,13 +133,18 @@ spec:
       volumes:
         - name: nginx-config
           configMap:
-            name: 'nginx-extra-configmap'      
+            name: 'nginx-extra-configmap'
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:
             secretName: {{ .Values.caSecretName }}
         {{- end }}
+        {{- if $postgres.ssl.enabled }}
+        - name: postgres-cert
+          secret:
+            secretName: {{ $postgres.ssl.secretName }}
+        {{- end }}
         {{- if .Values.extraVolumes -}}
           {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
-        {{- end }}    
+        {{- end }}
 {{- end -}}
