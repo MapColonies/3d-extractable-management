@@ -1,20 +1,24 @@
+import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@src/common/mocks';
-import { parseUsersJson } from '@src/users/utils/parser';
 import { IAuthPayload } from '@src/common/constants';
 
 let validationsManager: ValidationsManager;
 
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
+
 describe('RecordsManager', () => {
   beforeEach(() => {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
   });
 
   afterEach(() => {
-    delete process.env.USERS_JSON;
+    jest.resetAllMocks();
   });
 
   describe('#validateUser', () => {
@@ -55,52 +59,6 @@ describe('RecordsManager', () => {
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Invalid username or password');
       expect(result.code).toBe('INVALID_CREDENTIALS');
-    });
-  });
-});
-
-describe('Password Utils', () => {
-  describe('parseUsersJson', () => {
-    it('should return users when USERS_JSON is valid', () => {
-      const users: IAuthPayload[] = [{ username: validCredentials.username, password: validCredentials.password }];
-
-      process.env.USERS_JSON = JSON.stringify(users);
-
-      const result = parseUsersJson();
-
-      expect(result).toEqual(users);
-    });
-
-    it('should return empty array when USERS_JSON is empty', () => {
-      delete process.env.USERS_JSON;
-
-      const result = parseUsersJson();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when USERS_JSON is invalid JSON', () => {
-      process.env.USERS_JSON = '{invalid-json}';
-
-      const result = parseUsersJson();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when USERS_JSON is not an array', () => {
-      process.env.USERS_JSON = JSON.stringify({ username: invalidCredentials.username, password: invalidCredentials.password });
-
-      const result = parseUsersJson();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when array contains no valid users', () => {
-      process.env.USERS_JSON = JSON.stringify([{}, { foo: 'bar' }, { username: 123, password: [] }]);
-
-      const result = parseUsersJson();
-
-      expect(result).toEqual([]);
     });
   });
 });

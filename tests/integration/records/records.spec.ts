@@ -1,5 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
+import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
@@ -14,6 +15,10 @@ import { registerExternalValues } from '@src/containerConfig';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
+
+jest.mock('config');
+
+const mockedConfig = config as jest.Mocked<typeof config>;
 
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -32,7 +37,15 @@ describe('records', function () {
   });
 
   beforeEach(async function () {
-    process.env.USERS_JSON = JSON.stringify([{ username: validCredentials.username, password: validCredentials.password }]);
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+
+    // const [app] = await getApp({
+    //   override: [
+    //     { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+    //     { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+    //   ],
+    //   useChild: true,
+    // });
 
     const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 
@@ -52,6 +65,10 @@ describe('records', function () {
     const connectionManager = dependencyContainer.resolve(ConnectionManager);
     await connectionManager.shutdown()();
     console.log('🧹 ConnectionManager shut down.');
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe('Happy Path', function () {

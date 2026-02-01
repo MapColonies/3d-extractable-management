@@ -25,3 +25,8 @@ export interface DbConfig extends PostgresConnectionOptions {
     key: string;
   };
 }
+
+export interface IUser {
+  username: string;
+  password: string;
+}

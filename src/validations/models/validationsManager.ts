@@ -1,16 +1,19 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
+import config from 'config';
+import { IUser, LogContext } from '@src/common/interfaces';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
-import { LogContext } from '@common/interfaces';
-import { recordInstance } from '../../common/mocks';
-import { parseUsersJson } from '../../users/utils/parser';
+import { UsersSchema } from '@src/users/utils/userSchema';
+import { recordInstance } from '../../common/mocks'; // TODO: remove this reference
 
 @injectable()
 export class ValidationsManager {
   private readonly logContext: LogContext;
+  private readonly users: IAuthPayload[];
 
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
+    this.users = this.loadUsers();
   }
 
   public validateCreate(payload: IAuthPayloadWithRecord): IValidateResponse {
@@ -65,16 +68,34 @@ export class ValidationsManager {
       return { isValid: false, message: 'Username and password are required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const users = parseUsersJson();
-
-    const user = users.find((u) => u.username === payload.username && u.password === payload.password);
-
-    if (!user) {
+    if (!this.isValidUser(payload)) {
       this.logger.debug({ msg: 'user not found', username: payload.username, logContext });
       return { isValid: false, message: 'Invalid username or password', code: 'INVALID_CREDENTIALS' };
     }
 
     this.logger.debug({ msg: 'user validation successful', logContext });
     return { isValid: true, message: 'User credentials are valid', code: 'SUCCESS' };
+  }
+
+  private isValidUser(payload: IAuthPayload): boolean {
+    return this.users.some((u) => u.username === payload.username && u.password === payload.password);
+  }
+
+  // istanbul ignore next
+  private loadUsers(): IAuthPayload[] {
+    try {
+      const usersConfig = config.get<IUser>('users');
+      const result = UsersSchema.safeParse(usersConfig);
+
+      if (!result.success) {
+        this.logger.error({ msg: 'Invalid users configuration', errors: result.error, logContext: this.logContext });
+        return [];
+      }
+
+      return result.data;
+    } catch (err) {
+      this.logger.error({ msg: 'Failed to load users configuration', err, logContext: this.logContext });
+      return [];
+    }
   }
 }

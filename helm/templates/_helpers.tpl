@@ -47,7 +47,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Returns the tag of the chart.
 */}}
 {{- define "extractable-management.tag" -}}
-{{- default (printf "v%s" .Chart.AppVersion) .Values.image.tag }}
+{{- default .Chart.AppVersion .Values.image.tag }}
 {{- end }}
 
 {{/*

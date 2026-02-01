@@ -1,9 +1,9 @@
 {{- $releaseName := .Release.Name -}}
-{{- $chartName := include "extractable-management.name" . -}}
-{{- $cloudProviderFlavor := include "extractable-management.cloudProviderFlavor" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
-{{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
-{{- $imageTag := include "extractable-management.tag" . -}}
+{{- $chartName := include "ts-server-boilerplate.name" . -}}
+{{- $cloudProviderFlavor := include "ts-server-boilerplate.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "ts-server-boilerplate.cloudProviderDockerRegistryUrl" . -}}
+{{- $cloudProviderImagePullSecretName := include "ts-server-boilerplate.cloudProviderImagePullSecretName" . -}}
+{{- $imageTag := include "ts-server-boilerplate.tag" . -}}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -69,11 +69,6 @@ spec:
           env:
             - name: SERVER_PORT
               value: {{ .Values.env.targetPort | quote }}
-            - name: USERS_JSON
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.usersSecret.name }}
-                  key: {{ .Values.usersSecret.key }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
@@ -118,13 +113,18 @@ spec:
       volumes:
         - name: nginx-config
           configMap:
-            name: 'nginx-extra-configmap'      
+            name: 'nginx-extra-configmap'
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:
             secretName: {{ .Values.caSecretName }}
         {{- end }}
+        {{- if $postgres.ssl.enabled }}
+        - name: postgres-cert
+          secret:
+            secretName: {{ $postgres.ssl.secretName }}
+        {{- end }}
         {{- if .Values.extraVolumes -}}
           {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
-        {{- end }}    
+        {{- end }}
 {{- end -}}
