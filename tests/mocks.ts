@@ -1,4 +1,3 @@
-// TODO: remove this file
 import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 export const recordInstance: IExtractableRecord = {

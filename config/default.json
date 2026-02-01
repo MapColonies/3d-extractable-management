@@ -31,27 +31,13 @@
     }
   },
   "users": [],
-  "audit-db": {
+  "db": {
     "type": "postgres",
     "host": "127.0.0.1",
-    "port": 5433,
+    "port": 5432,
     "username": "postgres",
     "password": "postgres",
-    "database": "audit-logs",
-    "enableSslAuth": false,
-    "sslPaths": {
-      "ca": "",
-      "key": "",
-      "cert": ""
-    }
-  },
-  "extractable-db": {
-    "type": "postgres",
-    "host": "127.0.0.1",
-    "port": 5434,
-    "username": "postgres",
-    "password": "postgres",
-    "database": "extractable-records",
+    "database": "app_db",
     "enableSslAuth": false,
     "sslPaths": {
       "ca": "",

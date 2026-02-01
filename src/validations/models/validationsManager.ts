@@ -87,6 +87,7 @@ export class ValidationsManager {
     return this.users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 
+  // TODO: when starting, not loading users
   // istanbul ignore next
   private loadUsers(): IAuthPayload[] {
     try {

@@ -55,20 +55,16 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     {
       token: SERVICES.EXTRACTABLE_RECORD_REPOSITORY,
       provider: {
-        useFactory: (container: DependencyContainer): Repository<ExtractableRecord> => {
-          const connectionManager = container.resolve(ConnectionManager);
-          const connection = connectionManager.getDataSourceConnection('extractable');
-          return connection.getRepository(ExtractableRecord);
+        useFactory: (): Repository<ExtractableRecord> => {
+          return connectionManager.getDataSourceConnection().getRepository(ExtractableRecord);
         },
       },
     },
     {
       token: SERVICES.AUDIT_LOG_REPOSITORY,
       provider: {
-        useFactory: (container: DependencyContainer): Repository<AuditLog> => {
-          const connectionManager = container.resolve(ConnectionManager);
-          const connection = connectionManager.getDataSourceConnection('audit');
-          return connection.getRepository(AuditLog);
+        useFactory: (): Repository<AuditLog> => {
+          return connectionManager.getDataSourceConnection().getRepository(AuditLog);
         },
       },
     },

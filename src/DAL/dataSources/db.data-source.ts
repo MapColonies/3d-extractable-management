@@ -3,20 +3,20 @@
 import { DataSource } from 'typeorm';
 import config from 'config';
 import { DbConfig } from '@src/common/interfaces';
-import { AuditLog } from '../entities/auditLog.entity';
+import { ExtractableRecord } from '../entities/extractableRecord.entity';
 
-const dbConfig = config.get<DbConfig>('audit-db');
+const dbConfig = config.get<DbConfig>('db');
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const AuditLogDataSource = new DataSource({
+export const ExtractabledDataSource = new DataSource({
   type: dbConfig.type,
   host: dbConfig.host,
   port: dbConfig.port,
   username: dbConfig.username,
   password: dbConfig.password,
   database: dbConfig.database,
-  entities: [AuditLog],
-  migrations: ['src/DAL/migrations/audit/*.ts'],
+  entities: [ExtractableRecord],
+  migrations: ['src/DAL/migrations/*.ts'],
   synchronize: false,
   logging: false,
 });

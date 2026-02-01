@@ -25,14 +25,10 @@
     "generate:openapi-types": "openapi-helpers ./openapi3.yaml ./src/openapi.d.ts --format --add-typed-request-handler",
     "prepare": "node .husky/install.mjs",
     "typeorm": "ts-node --esm ./node_modules/typeorm/cli.js",
-    "migration:create:audit": "npm run typeorm -- migration:generate -d src/DAL/dataSources/auditLog.data-source.ts",
-    "migration:run:audit": "npm run typeorm -- migration:run -d src/DAL/dataSources/auditLog.data-source.ts",
-    "migration:create:extractable": "npm run typeorm -- migration:generate -d src/DAL/dataSources/extractableRecord.data-source.ts",
-    "migration:run:extractable": "npm run typeorm -- migration:run -d src/DAL/dataSources/extractableRecord.data-source.ts",
-    "migration:revert:audit:": "npm run typeorm -- migration:revert -d ./src/DAL/dataSources/auditLog.data-source.ts",
-    "migration:revert:extractable": "npm run typeorm -- migration:revert -d ./src/DAL/dataSources/extractableRecord.data-source.ts",
-    "schema:sync:audit": "npm run typeorm -- schema:sync -d ./src/DAL/dataSources/auditLog.data-source.ts",
-    "schema:sync:extractable": "npm run typeorm -- schema:sync -d ./src/DAL/dataSources/extractableRecord.data-source.ts"
+    "migration:create": "npm run typeorm -- migration:generate -d src/DAL/dataSources/db.data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/DAL/dataSources/db.data-source.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/DAL/dataSources/db.data-source.ts",
+    "schema:sync": "npm run typeorm -- schema:sync -d src/DAL/dataSources/db.data-source.ts"
   },
   "directories": {
     "test": "tests"

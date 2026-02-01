@@ -1,18 +1,9 @@
 services:
-  audit-db:
+  postgres-db:
     image: postgres:15
     ports:
-      - '5433:5432'
+      - '5432:5432'
     environment:
-      POSTGRES_DB: audit-logs
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-  extractable-db:
-    image: postgres:15
-    ports:
-      - '5434:5432'
-    environment:
-      POSTGRES_DB: extractable-records
+      POSTGRES_DB: app_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

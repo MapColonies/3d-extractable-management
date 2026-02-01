@@ -1,25 +1,11 @@
 {
-  "audit-db": {
-    "type": "postgres",
-    "host": "127.0.0.1",
-    "port": 5433,
-    "username": "postgres",
-    "password": "postgres",
-    "database": "audit-logs-test",
-    "enableSslAuth": false,
-    "sslPaths": {
-      "ca": "",
-      "key": "",
-      "cert": ""
-    }
-  },
-  "extractable-db": {
+  "db": {
     "type": "postgres",
     "host": "127.0.0.1",
     "port": 5434,
     "username": "postgres",
     "password": "postgres",
-    "database": "extractable-records-test",
+    "database": "app_db_test",
     "enableSslAuth": false,
     "sslPaths": {
       "ca": "",

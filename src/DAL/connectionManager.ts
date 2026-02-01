@@ -12,110 +12,92 @@ import { createConnectionOptions } from './createConnectionOptions';
 
 @singleton()
 export class ConnectionManager {
-  private auditDataSource: DataSource | null = null;
-  private extractableDataSource: DataSource | null = null;
-  private readonly auditConnectionConfig: DbConfig;
-  private readonly extractableConnectionConfig: DbConfig;
+  private dataSource: DataSource | null = null;
+  private readonly dbConfig: DbConfig;
   private readonly logContext: LogContext;
 
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
-    this.auditConnectionConfig = config.get<DbConfig>('audit-db');
-    this.extractableConnectionConfig = config.get<DbConfig>('extractable-db');
+    this.dbConfig = config.get<DbConfig>('db');
     this.logContext = { fileName: __filename, class: ConnectionManager.name };
   }
 
   public async init(): Promise<void> {
-    await Promise.all([this.initDataSource('audit'), this.initDataSource('extractable')]);
+    await this.initDataSource();
   }
 
-  public getDataSourceConnection(type: 'audit' | 'extractable'): DataSource {
-    const logContext = { ...this.logContext, function: `getDataSource:${type}` };
-    const dataSource = type === 'audit' ? this.auditDataSource : this.extractableDataSource;
-
-    if (dataSource?.isInitialized !== true) {
-      this.logger.error({ msg: `${type} Data Source not available or lost`, logContext });
-      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `${type} Database connection not initialized`, false);
+  public getDataSourceConnection(): DataSource {
+    const logContext = { ...this.logContext, function: `getDataSource` };
+    if (this.dataSource?.isInitialized !== true) {
+      this.logger.error({ msg: `Database connection not initialized`, logContext });
+      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Database connection not initialized`, false);
     }
-
-    return dataSource;
+    return this.dataSource;
   }
 
   public healthCheck = (): (() => Promise<void>) => {
     return async (): Promise<void> => {
-      await Promise.all([this.checkDataSource('audit'), this.checkDataSource('extractable')]);
+      await this.checkDataSource();
     };
   };
 
   public shutdown(): () => Promise<void> {
     return async (): Promise<void> => {
-      await Promise.all([this.destroyDataSource('audit'), this.destroyDataSource('extractable')]);
+      await this.destroyDataSource();
     };
   }
 
-  private async initDataSource(type: 'audit' | 'extractable'): Promise<void> {
-    const logContext = { ...this.logContext, function: `initDataSource:${type}` };
-    const config = type === 'audit' ? this.auditConnectionConfig : this.extractableConnectionConfig;
-
+  private async initDataSource(): Promise<void> {
+    const logContext = { ...this.logContext, function: `initDataSource` };
     let retries = 0;
     let connectionSuccess = false;
 
     while (retries < MAX_CONNECT_RETRIES && !connectionSuccess) {
       try {
-        const dataSource = new DataSource(createConnectionOptions(config));
-        await dataSource.initialize();
+        const ds = new DataSource(createConnectionOptions(this.dbConfig));
+        await ds.initialize();
+        this.dataSource = ds;
 
-        if (type === 'audit') {
-          this.auditDataSource = dataSource;
-        } else {
-          this.extractableDataSource = dataSource;
-        }
-
-        this.logger.info({ msg: `${type} Data Source successfully initialized`, logContext });
+        this.logger.info({ msg: `Database successfully initialized`, logContext });
         connectionSuccess = true;
       } catch (error) {
         retries++;
-        this.logger.warn({ msg: `${type} DB connection failed, retrying ${retries}/${MAX_CONNECT_RETRIES}`, error, logContext });
+        this.logger.warn({ msg: `DB connection failed, retrying ${retries}/${MAX_CONNECT_RETRIES}`, error, logContext });
         await new Promise((res) => setTimeout(res, DB_TIMEOUT));
       }
     }
 
     if (!connectionSuccess) {
-      this.logger.error({ msg: `${type} Database connection failed`, logContext });
-      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `${type} Database connection failed`, false);
+      this.logger.error({ msg: `Database connection failed`, logContext });
+      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Database connection failed`, false);
     }
   }
-  private async checkDataSource(type: 'audit' | 'extractable'): Promise<void> {
-    const logContext = { ...this.logContext, function: `checkDataSource:${type}` };
-    const dataSource = this.getDataSourceConnection(type);
 
+  private async checkDataSource(): Promise<void> {
+    const logContext = { ...this.logContext, function: `checkDataSource` };
+    const dataSource = this.getDataSourceConnection();
     try {
-      const check = dataSource.query('SELECT 1').then(() => {});
-      await promiseTimeout<void>(DB_TIMEOUT, check);
-      this.logger.debug({ msg: `${type} Database health check passed`, logContext });
+      await promiseTimeout<void>(DB_TIMEOUT, dataSource.query('SELECT 1'));
+      this.logger.debug({ msg: `Database health check passed`, logContext });
     } catch (error) {
-      this.logger.error({ msg: `${type} Database health check failed`, error, logContext });
-      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `${type} Database health check failed`, false);
+      this.logger.error({ msg: `Database health check failed`, error, logContext });
+      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Database health check failed`, false);
     }
   }
 
-  private async destroyDataSource(type: 'audit' | 'extractable'): Promise<void> {
-    const logContext = { ...this.logContext, function: `destroyDataSource:${type}` };
-    const dataSource = type === 'audit' ? this.auditDataSource : this.extractableDataSource;
-
-    if (dataSource?.isInitialized !== true) {
-      this.logger.warn({ msg: `Shutdown skipped: ${type} Data Source not initialized`, logContext });
+  private async destroyDataSource(): Promise<void> {
+    const logContext = { ...this.logContext, function: `destroyDataSource` };
+    if (this.dataSource?.isInitialized !== true) {
+      this.logger.warn({ msg: `Shutdown skipped: Database not initialized`, logContext });
       return;
     }
-
     try {
-      this.logger.info({ msg: `Shutting down ${type} Data Source...`, logContext });
-      await dataSource.destroy();
-      if (type === 'audit') this.auditDataSource = null;
-      else this.extractableDataSource = null;
-      this.logger.info({ msg: `${type} Data Source successfully shut down`, logContext });
+      this.logger.info({ msg: `Shutting down database...`, logContext });
+      await this.dataSource.destroy();
+      this.dataSource = null;
+      this.logger.info({ msg: `Database successfully shut down`, logContext });
     } catch (error) {
-      this.logger.error({ msg: `Failed to shut down ${type} Data Source`, error, logContext });
-      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Failed to shut down ${type} database connection`, false);
+      this.logger.error({ msg: `Failed to shut down database`, error, logContext });
+      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Failed to shut down database`, false);
     }
   }
 }
