@@ -39,13 +39,13 @@ describe('records', function () {
   beforeEach(async function () {
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
+    // const [app] = await getApp({
+    //   override: [
+    //     { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+    //     { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+    //   ],
+    //   useChild: true,
+    // });
 
     const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 

@@ -13,16 +13,16 @@ let validationsManager: ValidationsManager;
 const mockRepo = () => ({
   find: jest.fn() as jest.Mock<Promise<ExtractableRecord[]>>,
   findOne: jest.fn() as jest.Mock<Promise<ExtractableRecord | null>>,
-  create: jest.fn().mockImplementation(
-    (dto: Partial<ExtractableRecord>): ExtractableRecord => ({
-      id: 1,
-      recordName: dto.recordName ?? '',
-      username: dto.username ?? '',
-      authorizedBy: dto.authorizedBy ?? '',
-      authorizedAt: dto.authorizedAt ? new Date(record.authorizedAt) : new Date(),
-      data: dto.data,
-    })
-  ),
+  // create: jest.fn().mockImplementation(
+  //   (dto: Partial<ExtractableRecord>): ExtractableRecord => ({
+  //     id: 1,
+  //     recordName: dto.recordName ?? '',
+  //     username: dto.username ?? '',
+  //     authorizedBy: dto.authorizedBy ?? '',
+  //     authorizedAt: dto.authorizedAt ? new Date(record.authorizedAt) : new Date(),
+  //     data: dto.data,
+  //   })
+  // ),
   save: jest.fn().mockImplementation(async (record: Partial<ExtractableRecord>): Promise<ExtractableRecord> => {
     await Promise.resolve(); // satisfies ESLint
     return {
