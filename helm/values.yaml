@@ -10,7 +10,7 @@ global:
 
 mclabels:
   component: backend
-  partOf: backend
+  partOf: extractable
   owner: 3d
   prometheus:
     enabled: true
@@ -69,7 +69,7 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/extractable-management
+  repository: extractable-management
   tag:
 
 env:
@@ -192,11 +192,14 @@ ingress:
     origin: '*'
 
 usersSecret:
-  name: extractable-management-secrets
+  name: extractable-management-users-secret
   key: users-json
 
-dbSecrets:
-  - name: extractable-management-secrets
-    usernameKey: extractable-username
-    passwordKey: extractable-password
-    dbNameKey: extractable_db_name
+postgres:
+  enabled: true
+  user:
+    useExternal: false
+    secretName: extractable-management-db-secrets
+    requirePassword: true
+  ssl:
+    enabled: false
