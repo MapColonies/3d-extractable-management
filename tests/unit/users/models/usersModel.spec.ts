@@ -1,20 +1,29 @@
 import config from 'config';
+import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { validCredentials, invalidCredentials } from '@src/common/mocks';
+import { validCredentials, invalidCredentials } from '@tests/mocks';
 import { IAuthPayload } from '@src/common/constants';
+import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 
 let validationsManager: ValidationsManager;
 
 jest.mock('config');
-
 const mockedConfig = config as jest.Mocked<typeof config>;
 
-describe('RecordsManager', () => {
-  beforeEach(() => {
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+const mockRepo = () => ({
+  find: jest.fn() as jest.Mock<Promise<ExtractableRecord[]>>,
+  findOne: jest.fn() as jest.Mock<Promise<ExtractableRecord | null>>,
+  create: jest.fn(),
+  save: jest.fn(),
+  delete: jest.fn(),
+});
 
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
+describe('ValidationsManager - User Validation', () => {
+  beforeEach(() => {
+    const extractableRepo = mockRepo() as unknown as Repository<ExtractableRecord>;
+    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo);
   });
 
   afterEach(() => {
@@ -47,10 +56,8 @@ describe('RecordsManager', () => {
     });
 
     it('should fail when the username exists but password is wrong', () => {
-      const validUser = validCredentials;
-
       const payload: IAuthPayload = {
-        username: validUser.username,
+        username: validCredentials.username,
         password: 'wrongPassword',
       };
 

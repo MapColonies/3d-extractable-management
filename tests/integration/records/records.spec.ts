@@ -9,7 +9,7 @@ import { getApp } from '@src/app';
 import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
+import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
 import { ConnectionManager } from '@src/DAL/connectionManager';
@@ -39,13 +39,13 @@ describe('records', function () {
   beforeEach(async function () {
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    // const [app] = await getApp({
-    //   override: [
-    //     { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-    //     { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-    //   ],
-    //   useChild: true,
-    // });
+    const [app] = await getApp({
+      override: [
+        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+      ],
+      useChild: true,
+    });
 
     const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 

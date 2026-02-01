@@ -2,7 +2,7 @@
 import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 export const recordInstance: IExtractableRecord = {
-  id: 'a101',
+  id: 101,
   recordName: 'rec_name',
   authorizedBy: 'username',
   authorizedAt: '2026-01-16T12:00:00Z',

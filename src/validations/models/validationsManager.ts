@@ -1,22 +1,26 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
+import { Repository } from 'typeorm';
 import { IUser, LogContext } from '@src/common/interfaces';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { UsersSchema } from '@src/users/utils/userSchema';
-import { recordInstance } from '../../common/mocks'; // TODO: remove this reference
+import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 
 @injectable()
 export class ValidationsManager {
   private readonly logContext: LogContext;
   private readonly users: IAuthPayload[];
 
-  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
+  public constructor(
+    @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.EXTRACTABLE_RECORD_REPOSITORY) private readonly extractableRepo: Repository<ExtractableRecord>
+  ) {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
     this.users = this.loadUsers();
   }
 
-  public validateCreate(payload: IAuthPayloadWithRecord): IValidateResponse {
+  public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
     const logContext = { ...this.logContext, function: 'validateCreate' };
 
     const userValidation = this.validateUser(payload);
@@ -29,7 +33,8 @@ export class ValidationsManager {
       return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };
     }
 
-    if (payload.recordName !== recordInstance.recordName) {
+    const record = await this.extractableRepo.findOne({ where: { recordName: payload.recordName } });
+    if (!record) {
       this.logger.debug({ msg: 'record not found for create', recordName: payload.recordName, logContext });
       return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'INVALID_RECORD_NAME' };
     }
@@ -38,7 +43,7 @@ export class ValidationsManager {
     return { isValid: true, message: 'Record can be created', code: 'SUCCESS' };
   }
 
-  public validateDelete(payload: IAuthPayloadWithRecord): IValidateResponse {
+  public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
     const logContext = { ...this.logContext, function: 'validateDelete' };
 
     const userValidation = this.validateUser(payload);
@@ -51,7 +56,8 @@ export class ValidationsManager {
       return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };
     }
 
-    if (payload.recordName !== recordInstance.recordName) {
+    const record = await this.extractableRepo.findOne({ where: { recordName: payload.recordName } });
+    if (!record) {
       this.logger.debug({ msg: 'record not found for delete', recordName: payload.recordName, logContext });
       return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'INVALID_RECORD_NAME' };
     }

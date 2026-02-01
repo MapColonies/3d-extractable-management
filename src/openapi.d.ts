@@ -108,7 +108,8 @@ export type components = {
       recordName: string;
     };
     'extractable-record': {
-      id: string;
+      /** Format: int64 */
+      id: number;
       recordName: string;
       authorizedBy: string;
       /** Format: date-time */

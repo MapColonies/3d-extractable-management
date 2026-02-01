@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn } from 'typeorm';
+/* istanbul ignore file */
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity({ name: 'extractable_records' })
 @Index('idx_record_name', ['recordName'])
 @Index('idx_username', ['username'])
-@Index('idx_created_at', ['createdAt'])
+@Index('idx_authorized_at', ['authorizedAt'])
 export class ExtractableRecord {
   @PrimaryGeneratedColumn()
   public id!: number;
@@ -17,8 +18,8 @@ export class ExtractableRecord {
   @Column({ type: 'varchar' })
   public authorizedBy!: string;
 
-  @CreateDateColumn()
-  public createdAt!: Date;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  public authorizedAt!: Date;
 
   @Column({ type: 'jsonb', nullable: true })
   public data?: Record<string, unknown>;
