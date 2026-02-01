@@ -16,7 +16,6 @@ export class RecordsController {
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(RecordsManager) private readonly manager: RecordsManager,
     @inject(ValidationsManager) private readonly validationsManager: ValidationsManager,
-
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry
   ) {
     this.requestsCounter = new Counter({
@@ -27,123 +26,114 @@ export class RecordsController {
     });
   }
 
-  public getRecords: TypedRequestHandlers['GET /records'] = (_req, res) => {
+  public getRecords: TypedRequestHandlers['GET /records'] = async (_req, res) => {
     try {
-      const records = this.manager.getRecords() ?? [];
-
+      const records = await this.manager.getRecords();
       return res.status(httpStatus.OK).json(records);
-    } catch (err) {
-      this.logger.error({ msg: 'Unexpected error getting records', error: err });
+    } catch (error) {
+      this.logger.error({ msg: 'Unexpected error getting records', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
     }
   };
 
-  public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = (req, res) => {
+  public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = async (req, res) => {
+    const { recordName } = req.params;
+
     try {
-      const { recordName } = req.params;
-      const record = this.manager.getRecord(recordName);
+      const record = await this.manager.getRecord(recordName);
 
       if (!record) {
         return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
       }
 
       return res.status(httpStatus.OK).json(record);
-    } catch (err) {
-      this.logger.error({ msg: 'Unexpected error getting record', error: err });
+    } catch (error) {
+      this.logger.error({ msg: 'Unexpected error getting record', recordName, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get record', code: 'INTERNAL_ERROR' });
     }
   };
 
-  public createRecord: TypedRequestHandlers['POST /records/{recordName}'] = (req, res) => {
-    try {
-      const { recordName } = req.params;
-      const { username, password } = req.body;
+  public createRecord: TypedRequestHandlers['POST /records/{recordName}'] = async (req, res) => {
+    const { recordName } = req.params;
+    const { username, password, authorizedBy } = req.body;
 
-      const validation = this.validationsManager.validateCreate({ recordName, username, password });
+    try {
+      const validation = await this.validationsManager.validateCreate({ recordName, username, password });
 
       if (!validation.isValid) {
         const status = this.getStatusFromValidation(validation);
         this.requestsCounter.inc({ status: String(status) });
-
         return res.status(status).json(validation);
       }
 
-      const createdRecord = this.manager.createRecord(recordName);
+      const createdRecord = await this.manager.createRecord({
+        recordName,
+        username,
+        authorizedBy,
+      });
 
       this.requestsCounter.inc({ status: '201' });
       return res.status(httpStatus.CREATED).json(createdRecord);
-    } catch (error: unknown) {
-      const logContext = { recordName: req.params.recordName };
-
-      if (error instanceof Error) {
-        this.logger.error({ msg: 'Failed to create record', error, logContext });
-
-        if (error.message === 'Record not found') {
-          this.requestsCounter.inc({ status: '404' });
-          return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: error.message, code: 'INVALID_RECORD_NAME' });
-        }
-      } else {
-        this.logger.error({ msg: 'Unexpected error type', error, logContext });
-      }
-
+    } catch (error) {
+      this.logger.error({ msg: 'Failed to create record', recordName, error });
       this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to create record', code: 'INTERNAL_ERROR' });
     }
   };
 
-  public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = (req, res) => {
+  public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = async (req, res) => {
+    const { recordName } = req.params;
+    const { username, password } = req.body;
+
     try {
-      const result = this.validationsManager.validateCreate(req.body);
-
-      const status = this.getStatusFromValidation(result);
-
-      this.requestsCounter.inc({ status: String(status) });
-      return res.status(status).json(result);
-    } catch (err) {
-      this.logger.error({ msg: 'Failed to validate create', error: err });
-      this.requestsCounter.inc({ status: '500' });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
-    }
-  };
-
-  public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = (req, res) => {
-    try {
-      const { recordName } = req.params;
-      const { username, password } = req.body;
-
-      const validation = this.validationsManager.validateDelete({ recordName, username, password });
+      const validation = await this.validationsManager.validateDelete({ recordName, username, password });
 
       if (!validation.isValid) {
         const status = this.getStatusFromValidation(validation);
         this.requestsCounter.inc({ status: String(status) });
-
         return res.status(status).json(validation);
       }
 
-      this.manager.deleteRecord(recordName);
+      const deleted = await this.manager.deleteRecord(recordName);
+
+      if (!deleted) {
+        this.requestsCounter.inc({ status: '404' });
+        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
+      }
 
       this.requestsCounter.inc({ status: '204' });
       return res.status(httpStatus.NO_CONTENT).send();
-    } catch (error: unknown) {
-      const logContext = { recordName: req.params.recordName };
-
-      if (error instanceof Error) {
-        this.logger.error({ msg: 'Failed to delete record', error, logContext });
-      }
-
+    } catch (error) {
+      this.logger.error({ msg: 'Failed to delete record', recordName, error });
       this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
     }
   };
 
-  public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = (req, res) => {
+  public validateCreate: TypedRequestHandlers['POST /records/validateCreate'] = async (req, res) => {
     try {
-      const result = this.validationsManager.validateDelete(req.body);
+      const result = await this.validationsManager.validateCreate(req.body);
       const status = this.getStatusFromValidation(result);
+      this.requestsCounter.inc({ status: String(status) });
 
       return res.status(status).json(result);
-    } catch (err) {
-      this.logger.error({ msg: 'Failed to validate delete', error: err });
+    } catch (error) {
+      this.logger.error({ msg: 'Failed to validate create', error });
+      this.requestsCounter.inc({ status: '500' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
+    }
+  };
+
+  public validateDelete: TypedRequestHandlers['POST /records/validateDelete'] = async (req, res) => {
+    try {
+      const result = await this.validationsManager.validateDelete(req.body);
+      const status = this.getStatusFromValidation(result);
+      this.requestsCounter.inc({ status: String(status) });
+
+      return res.status(status).json(result);
+    } catch (error) {
+      this.logger.error({ msg: 'Failed to validate delete', error });
+      this.requestsCounter.inc({ status: '500' });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to validate record', code: 'INTERNAL_ERROR' });
     }
   };

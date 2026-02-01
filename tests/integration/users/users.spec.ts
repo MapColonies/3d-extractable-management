@@ -7,7 +7,7 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { validCredentials, invalidCredentials } from '@src/common/mocks';
+import { validCredentials, invalidCredentials } from '@tests/mocks';
 import { initConfig } from '@src/common/config';
 
 jest.mock('config');
@@ -19,6 +19,10 @@ describe('users', function () {
 
   beforeAll(async function () {
     await initConfig(true);
+  });
+
+  afterEach(() => {
+    delete process.env.USERS_JSON;
   });
 
   beforeEach(async function () {

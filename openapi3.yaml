@@ -569,7 +569,8 @@ components:
         - authorizedAt
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         recordName:
           type: string
         authorizedBy:
