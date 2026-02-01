@@ -16,23 +16,24 @@ const mockRepo = () => ({
   create: jest.fn().mockImplementation(
     (dto: Partial<ExtractableRecord>): ExtractableRecord => ({
       id: 1,
-      recordName: dto.recordName || '',
-      username: dto.username || '',
-      authorizedBy: dto.authorizedBy || '',
-      authorizedAt: dto.authorizedAt instanceof Date ? dto.authorizedAt : new Date(),
+      recordName: dto.recordName ?? '',
+      username: dto.username ?? '',
+      authorizedBy: dto.authorizedBy ?? '',
+      authorizedAt: dto.authorizedAt ? new Date(record.authorizedAt) : new Date(),
       data: dto.data,
     })
   ),
-  save: jest.fn().mockImplementation((record: Partial<ExtractableRecord>) =>
-    Promise.resolve({
+  save: jest.fn().mockImplementation(async (record: Partial<ExtractableRecord>): Promise<ExtractableRecord> => {
+    await Promise.resolve(); // satisfies ESLint
+    return {
       id: 1,
-      recordName: record.recordName || '',
-      username: record.username || '',
-      authorizedBy: record.authorizedBy || '',
-      authorizedAt: record.authorizedAt instanceof Date ? record.authorizedAt : new Date(),
+      recordName: record.recordName ?? '',
+      username: record.username ?? '',
+      authorizedBy: record.authorizedBy ?? '',
+      authorizedAt: record.authorizedAt ? new Date(record.authorizedAt) : new Date(),
       data: record.data,
-    })
-  ),
+    };
+  }),
   delete: jest.fn() as jest.Mock<Promise<void>>,
 });
 
