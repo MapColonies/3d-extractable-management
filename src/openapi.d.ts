@@ -112,8 +112,6 @@ export type components = {
       id: number;
       recordName: string;
       authorizedBy: string;
-      /** Format: date-time */
-      authorizedAt?: string;
       /** @description Metadata stored in extractable_records.data */
       data?: {
         [key: string]: unknown;

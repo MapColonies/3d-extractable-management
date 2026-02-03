@@ -38,10 +38,9 @@ paths:
                 withRecords:
                   summary: Some records
                   value:
-                    - id: 'abc123'
+                    - id: 123
                       recordName: rec_A
                       authorizedBy: john_doe
-                      authorizedAt: '2026-01-16T12:00:00Z'
                       data:
                         kuku: 'kuku random data'
         '400':
@@ -94,10 +93,9 @@ paths:
                 found:
                   summary: Record exists
                   value:
-                    id: 'abc123'
+                    id: 123
                     recordName: rec_A
                     authorizedBy: john_doe
-                    authorizedAt: '2026-01-16T12:00:00Z'
                     data:
                       kuku: 'kuku random data'
         '404':
@@ -171,10 +169,9 @@ paths:
                 created:
                   summary: Record created
                   value:
-                    id: 'abc123'
+                    id: 123
                     recordName: rec_A
                     authorizedBy: john_doe
-                    authorizedAt: '2026-01-16T12:00:00Z'
                     data:
                       kuku: 'kuku random data'
         '400':
@@ -574,9 +571,6 @@ components:
           type: string
         authorizedBy:
           type: string
-        authorizedAt:
-          type: string
-          format: date-time
         data:
           type: object
           additionalProperties: true
