@@ -1,8 +1,8 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { SERVICES, IExtractableRecord } from '@common/constants';
-import { LogContext } from '@common/interfaces';
+import { LogContext, IAuditAction } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 
@@ -28,10 +28,7 @@ export class RecordsManager {
       this.logger.warn({ msg: 'no records found', logContext });
     }
 
-    return records.map((record) => ({
-      ...record,
-      authorizedAt: record.authorizedAt.toISOString(),
-    }));
+    return records;
   }
 
   public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {
@@ -41,10 +38,7 @@ export class RecordsManager {
     const record = await this.extractableRepo.findOne({ where: { recordName } });
     if (!record) return undefined;
 
-    return {
-      ...record,
-      authorizedAt: record.authorizedAt.toISOString(),
-    };
+    return record;
   }
 
   public async createRecord(params: {
@@ -58,63 +52,75 @@ export class RecordsManager {
 
     this.logger.info({ msg: `starting to create extractable record '${recordName}'`, recordName, logContext });
 
-    const record = this.extractableRepo.create({
-      recordName,
-      username,
-      authorizedBy,
-      authorizedAt: new Date(),
-      data,
-    });
-    const savedRecord = await this.extractableRepo.save(record);
+    const savedRecord = await this.extractableRepo.manager.transaction(async (manager): Promise<IExtractableRecord> => {
+      const { extractableRepo, auditRepo } = this.getTransactionalRepos(manager);
 
-    await this.auditRepo.save(
-      this.auditRepo.create({
-        recordName: savedRecord.recordName,
-        username: savedRecord.username,
-        authorizedBy: savedRecord.authorizedBy,
-        action: 'CREATE',
+      const record = extractableRepo.create({
+        recordName,
+        username,
+        authorizedBy,
         authorizedAt: new Date(),
-        data: savedRecord.data,
-      })
-    );
+        data,
+      });
 
-    this.logger.info({ msg: `extractable record '${recordName}' created`, recordName, logContext });
+      const saved = await extractableRepo.save(record);
 
-    return {
-      ...savedRecord,
-      authorizedAt: savedRecord.authorizedAt.toISOString(),
-    };
+      await auditRepo.save(
+        auditRepo.create({
+          recordName: saved.recordName,
+          username: saved.username,
+          authorizedBy: saved.authorizedBy,
+          action: IAuditAction.CREATE,
+          authorizedAt: new Date(),
+        })
+      );
+
+      return saved;
+    });
+
+    this.logger.info({ msg: 'extractable record created', recordName, logContext });
+
+    return savedRecord;
   }
 
   public async deleteRecord(recordName: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     this.logger.info({ msg: `starting to delete extractable record '${recordName}'`, recordName, logContext });
 
-    const record = await this.extractableRepo.findOne({ where: { recordName } });
+    await this.extractableRepo.manager.transaction(async (manager) => {
+      const { extractableRepo, auditRepo } = this.getTransactionalRepos(manager);
 
-    if (!record) {
-      this.logger.warn({ msg: `extractable record '${recordName}' not found`, recordName, logContext });
-      return false;
-    }
+      const record = await extractableRepo.findOne({ where: { recordName } });
 
-    await this.extractableRepo.delete({ recordName });
+      if (!record) {
+        this.logger.warn({ msg: 'extractable record not found for delete', recordName, logContext });
+        return;
+      }
 
-    await this.auditRepo.save(
-      this.auditRepo.create({
-        recordName: record.recordName,
-        username: record.username,
-        authorizedBy: record.authorizedBy,
-        action: 'DELETE',
-        authorizedAt: new Date(),
-        data: {
-          deletedRecordId: record.id,
-          originalData: record.data,
-        },
-      })
-    );
+      await extractableRepo.delete({ recordName });
 
-    this.logger.info({ msg: `extractable record '${recordName}' deleted`, recordName, logContext });
+      await auditRepo.save(
+        auditRepo.create({
+          recordName: record.recordName,
+          username: record.username,
+          authorizedBy: record.authorizedBy,
+          action: IAuditAction.DELETE,
+          authorizedAt: new Date(),
+        })
+      );
+    });
 
+    this.logger.info({ msg: `extractable record deleted`, recordName, logContext });
     return true;
+  }
+
+  private getTransactionalRepos(manager: EntityManager): {
+    extractableRepo: Repository<ExtractableRecord>;
+    auditRepo: Repository<AuditLog>;
+  } {
+    return {
+      extractableRepo: manager.getRepository(ExtractableRecord),
+      auditRepo: manager.getRepository(AuditLog),
+    };
   }
 }

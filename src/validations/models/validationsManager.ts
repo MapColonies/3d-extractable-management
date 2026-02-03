@@ -34,9 +34,9 @@ export class ValidationsManager {
     }
 
     const record = await this.extractableRepo.findOne({ where: { recordName: payload.recordName } });
-    if (!record) {
-      this.logger.debug({ msg: 'record not found for create', recordName: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'INVALID_RECORD_NAME' };
+    if (record) {
+      this.logger.debug({ msg: 'record already exists for create', recordName: payload.recordName, logContext });
+      return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'INVALID_RECORD_NAME' };
     }
 
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
@@ -87,7 +87,6 @@ export class ValidationsManager {
     return this.users.some((u) => u.username === payload.username && u.password === payload.password);
   }
 
-  // TODO: when starting, not loading users
   // istanbul ignore next
   private loadUsers(): IAuthPayload[] {
     try {

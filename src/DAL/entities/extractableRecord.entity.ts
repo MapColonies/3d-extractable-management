@@ -1,24 +1,24 @@
 /* istanbul ignore file */
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn } from 'typeorm';
 
 @Entity({ name: 'extractable_records' })
-@Index('idx_record_name', ['recordName'])
-@Index('idx_username', ['username'])
-@Index('idx_authorized_at', ['authorizedAt'])
+@Index('idx_extractable_record_name', ['recordName'])
+@Index('idx_extractable_username', ['username'])
+@Index('idx_extractable_authorized_at', ['authorizedAt'])
 export class ExtractableRecord {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   public recordName!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   public username!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   public authorizedBy!: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', utc: true, insert: true })
   public authorizedAt!: Date;
 
   @Column({ type: 'jsonb', nullable: true })

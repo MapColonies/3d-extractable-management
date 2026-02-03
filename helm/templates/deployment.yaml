@@ -1,9 +1,9 @@
 {{- $releaseName := .Release.Name -}}
-{{- $chartName := include "ts-server-boilerplate.name" . -}}
-{{- $cloudProviderFlavor := include "ts-server-boilerplate.cloudProviderFlavor" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "ts-server-boilerplate.cloudProviderDockerRegistryUrl" . -}}
-{{- $cloudProviderImagePullSecretName := include "ts-server-boilerplate.cloudProviderImagePullSecretName" . -}}
-{{- $imageTag := include "ts-server-boilerplate.tag" . -}}
+{{- $chartName := include "extractable-management.name" . -}}
+{{- $cloudProviderFlavor := include "extractable-management.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
+{{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
+{{- $imageTag := include "extractable-management.tag" . -}}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment

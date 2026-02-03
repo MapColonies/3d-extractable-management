@@ -30,3 +30,8 @@ export interface IUser {
   username: string;
   password: string;
 }
+
+export enum IAuditAction {
+  CREATE = 'CREATE',
+  DELETE = 'DELETE',
+}

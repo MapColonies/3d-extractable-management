@@ -30,14 +30,14 @@
       }
     }
   },
-  "users": [],
+  "users": [{ "username": "username", "password": "password" }],
   "db": {
     "type": "postgres",
     "host": "127.0.0.1",
     "port": 5432,
     "username": "postgres",
     "password": "postgres",
-    "database": "app_db",
+    "database": "3d-extractable-management",
     "enableSslAuth": false,
     "sslPaths": {
       "ca": "",

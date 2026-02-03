@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import config from 'config';
 import { DbConfig } from '@src/common/interfaces';
 import { ExtractableRecord } from '../entities/extractableRecord.entity';
+import { AuditLog } from '../entities/auditLog.entity';
 
 const dbConfig = config.get<DbConfig>('db');
 
@@ -15,7 +16,7 @@ export const ExtractabledDataSource = new DataSource({
   username: dbConfig.username,
   password: dbConfig.password,
   database: dbConfig.database,
-  entities: [ExtractableRecord],
+  entities: [ExtractableRecord, AuditLog],
   migrations: ['src/DAL/migrations/*.ts'],
   synchronize: false,
   logging: false,

@@ -1,7 +1,7 @@
 // this import must be called before the first import of tsyringe
 import 'reflect-metadata';
 import { createServer } from 'http';
-import { createTerminus } from '@godaddy/terminus';
+import { createTerminus, HealthCheck } from '@godaddy/terminus';
 import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '@common/constants';
 import { ConfigType } from '@common/config';
@@ -13,10 +13,10 @@ void getApp()
     const config = container.resolve<ConfigType>(SERVICES.CONFIG);
     const port = config.get('server.port');
 
-    const stubHealthCheck = async (): Promise<void> => Promise.resolve();
+    const healthCheck = container.resolve<HealthCheck>(SERVICES.HEALTH_CHECK);
 
     const server = createTerminus(createServer(app), {
-      healthChecks: { '/liveness': stubHealthCheck },
+      healthChecks: { '/liveness': healthCheck },
       onSignal: container.resolve<() => Promise<void>>('onSignal'),
     });
 

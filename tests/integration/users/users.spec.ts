@@ -1,14 +1,19 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import config from 'config';
+import { DependencyContainer } from 'tsyringe';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
+import { registerExternalValues } from '@src/containerConfig';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@tests/mocks';
 import { initConfig } from '@src/common/config';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 
 jest.mock('config');
 
@@ -16,31 +21,40 @@ const mockedConfig = config as jest.Mocked<typeof config>;
 
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
+  let dependencyContainer: DependencyContainer;
 
-  beforeAll(async function () {
+  beforeAll(async () => {
     await initConfig(true);
+
+    dependencyContainer = await registerExternalValues({ useChild: true });
+
+    console.log('✅ ConnectionManager DataSource initialized.');
+
+    const [app] = await getApp({ useChild: false });
+
+    requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
-  afterEach(() => {
-    delete process.env.USERS_JSON;
-  });
-
-  beforeEach(async function () {
+  beforeEach(async () => {
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
+    const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+    const connection = connectionManager.getDataSourceConnection();
+
+    await connection.getRepository(ExtractableRecord).clear();
+    await connection.getRepository(AuditLog).clear();
+  });
+
+  afterAll(async () => {
+    const connectionManager = dependencyContainer.resolve(ConnectionManager);
+    await connectionManager.shutdown()();
+    console.log('🧹 ConnectionManager shut down.');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {

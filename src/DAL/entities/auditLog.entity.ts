@@ -1,5 +1,6 @@
 /* istanbul ignore file */
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
+import { IAuditAction } from '@src/common/interfaces';
 
 @Entity({ name: 'audit_log' })
 @Index('idx_audit_record_name', ['recordName'])
@@ -10,21 +11,18 @@ export class AuditLog {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   public recordName!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   public username!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
   public authorizedBy!: string;
 
-  @Column({ type: 'varchar' })
-  public action!: string;
+  @Column({ type: 'enum', enum: IAuditAction, nullable: false })
+  public action!: IAuditAction;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', utc: true, insert: true })
   public authorizedAt!: Date;
-
-  @Column({ type: 'jsonb', nullable: true })
-  public data?: Record<string, unknown>;
 }

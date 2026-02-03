@@ -566,7 +566,6 @@ components:
         - id
         - recordName
         - authorizedBy
-        - authorizedAt
       properties:
         id:
           type: integer
