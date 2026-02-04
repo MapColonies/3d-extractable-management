@@ -8,7 +8,6 @@ import { AuditLog } from '../entities/auditLog.entity';
 
 const dbConfig = config.get<DbConfig>('db');
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ExtractabledDataSource = new DataSource({
   type: dbConfig.type,
   host: dbConfig.host,

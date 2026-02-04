@@ -11,27 +11,27 @@ const mockExtractableCreateImpl = (
 ): ExtractableRecord | ExtractableRecord[] => {
   if (Array.isArray(entityLike)) {
     return entityLike.map((e) => ({
-      recordName: e.recordName ?? 'mock',
+      record_name: e.record_name ?? 'mock',
       username: e.username ?? 'mock',
-      authorizedBy: e.authorizedBy ?? 'mock',
-      authorizedAt: e.authorizedAt ?? new Date(),
+      authorized_by: e.authorized_by ?? 'mock',
+      authorized_at: e.authorized_at ?? new Date(),
     })) as ExtractableRecord[];
   }
 
   if (entityLike) {
     return {
-      recordName: entityLike.recordName ?? 'mock',
+      record_name: entityLike.record_name ?? 'mock',
       username: entityLike.username ?? 'mock',
-      authorizedBy: entityLike.authorizedBy ?? 'mock',
-      authorizedAt: entityLike.authorizedAt ?? new Date(),
+      authorized_by: entityLike.authorized_by ?? 'mock',
+      authorized_at: entityLike.authorized_at ?? new Date(),
     } as ExtractableRecord;
   }
 
   return {
-    recordName: 'mock',
+    record_name: 'mock',
     username: 'mock',
-    authorizedBy: 'mock',
-    authorizedAt: new Date(),
+    authorized_by: 'mock',
+    authorized_at: new Date(),
   } as ExtractableRecord;
 };
 
@@ -60,29 +60,29 @@ const mockAuditCreateImpl = (entityLike?: DeepPartial<AuditLog> | DeepPartial<Au
   if (Array.isArray(entityLike)) {
     return entityLike.map((e) => ({
       id: e.id ?? 1,
-      recordName: e.recordName ?? 'mock',
+      record_name: e.record_name ?? 'mock',
       username: e.username ?? 'mock',
-      authorizedBy: e.authorizedBy ?? 'mock',
-      authorizedAt: e.authorizedAt ?? new Date(),
+      authorized_by: e.authorized_by ?? 'mock',
+      authorized_at: e.authorized_at ?? new Date(),
     })) as AuditLog[];
   }
 
   if (entityLike) {
     return {
       id: entityLike.id ?? 1,
-      recordName: entityLike.recordName ?? 'mock',
+      record_name: entityLike.record_name ?? 'mock',
       username: entityLike.username ?? 'mock',
-      authorizedBy: entityLike.authorizedBy ?? 'mock',
-      authorizedAt: entityLike.authorizedAt ?? new Date(),
+      authorized_by: entityLike.authorized_by ?? 'mock',
+      authorized_at: entityLike.authorized_at ?? new Date(),
     } as AuditLog;
   }
 
   return {
     id: 1,
-    recordName: 'mock',
+    record_name: 'mock',
     username: 'mock',
-    authorizedBy: 'mock',
-    authorizedAt: new Date(),
+    authorized_by: 'mock',
+    authorized_at: new Date(),
   } as AuditLog;
 };
 

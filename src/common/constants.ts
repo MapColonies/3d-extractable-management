@@ -7,7 +7,6 @@ export const DEFAULT_SERVER_PORT = 80;
 export const IGNORED_OUTGOING_TRACE_ROUTES = [/^.*\/v1\/metrics.*$/];
 export const IGNORED_INCOMING_TRACE_ROUTES = [/^.*\/docs.*$/];
 
-/* eslint-disable @typescript-eslint/naming-convention */
 export const SERVICES = {
   LOGGER: Symbol('Logger'),
   CONFIG: Symbol('Config'),
@@ -18,7 +17,6 @@ export const SERVICES = {
   AUDIT_LOG_REPOSITORY: Symbol('AuditLogRepository'),
   CONNECTION_MANAGER: Symbol('ConnectionManager'),
 } satisfies Record<string, symbol>;
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export type IExtractableRecord = components['schemas']['extractable-record'];
 
@@ -27,6 +25,8 @@ export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-re
 export type IAuthPayload = components['schemas']['auth-payload'];
 
 export type IValidateResponse = components['schemas']['validateResponse'];
+
+export type IAuditLog = components['schemas']['audit-log'];
 
 export const DB_TIMEOUT = 5000;
 

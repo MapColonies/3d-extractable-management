@@ -9,6 +9,7 @@ import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
 import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
 import { usersRouterFactory, USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
+import { auditRouterFactory, AUDIT_ROUTER_SYMBOL } from './audit_logs/routes/auditRouter';
 import { ConnectionManager } from './DAL/connectionManager';
 import { getConfig } from './common/config';
 import { AuditLog } from './DAL/entities/auditLog.entity';
@@ -40,6 +41,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
     { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
+    { token: AUDIT_ROUTER_SYMBOL, provider: { useFactory: auditRouterFactory } },
     {
       token: SERVICES.HEALTH_CHECK,
       provider: {

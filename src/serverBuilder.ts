@@ -14,6 +14,7 @@ import type { ConfigType } from '@common/config';
 import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
 import { USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
+import { AUDIT_ROUTER_SYMBOL } from './audit_logs/routes/auditRouter';
 
 @injectable()
 export class ServerBuilder {
@@ -24,7 +25,8 @@ export class ServerBuilder {
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry,
     @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouter: Router,
-    @inject(USERS_ROUTER_SYMBOL) private readonly usersRouter: Router
+    @inject(USERS_ROUTER_SYMBOL) private readonly usersRouter: Router,
+    @inject(AUDIT_ROUTER_SYMBOL) private readonly auditRouter: Router
   ) {
     this.serverInstance = express();
   }
@@ -49,6 +51,7 @@ export class ServerBuilder {
   private buildRoutes(): void {
     this.serverInstance.use('/records', this.recordsRouter);
     this.serverInstance.use('/users', this.usersRouter);
+    this.serverInstance.use('/audit', this.auditRouter);
 
     this.buildDocsRoutes();
   }

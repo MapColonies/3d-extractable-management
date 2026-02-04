@@ -69,7 +69,7 @@ describe('RecordsManager & ValidationsManager', () => {
         {
           ...recordInstance,
           username: validCredentials.username,
-          authorizedAt: new Date(),
+          authorized_at: new Date(),
         },
       ];
 
@@ -91,19 +91,19 @@ describe('RecordsManager & ValidationsManager', () => {
       const record: ExtractableRecord = {
         ...recordInstance,
         username: validCredentials.username,
-        authorizedAt: new Date(),
+        authorized_at: new Date(),
       };
 
       mockExtractableFindOne.mockResolvedValue(record);
 
-      const result = await recordsManager.getRecord(record.recordName);
+      const result = await recordsManager.getRecord(record.record_name);
       expect(result).toBe(record);
     });
 
     it('should return undefined if record does not exist', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
 
-      const result = await recordsManager.getRecord(invalidCredentials.recordName);
+      const result = await recordsManager.getRecord(invalidCredentials.record_name);
       expect(result).toBeUndefined();
     });
   });
@@ -113,20 +113,20 @@ describe('RecordsManager & ValidationsManager', () => {
       const record: ExtractableRecord = {
         ...recordInstance,
         username: validCredentials.username,
-        authorizedAt: new Date(),
+        authorized_at: new Date(),
       };
 
       mockExtractableSave.mockResolvedValue(record);
 
       const result = await recordsManager.createRecord({
-        recordName: record.recordName,
+        record_name: record.record_name,
         username: record.username,
-        authorizedBy: record.authorizedBy,
+        authorized_by: record.authorized_by,
         data: record.data,
       });
 
       expect(result).toBe(record);
-      expect(result.recordName).toBe(record.recordName);
+      expect(result.record_name).toBe(record.record_name);
     });
   });
 
@@ -135,21 +135,21 @@ describe('RecordsManager & ValidationsManager', () => {
       const record: ExtractableRecord = {
         ...recordInstance,
         username: validCredentials.username,
-        authorizedAt: new Date(),
+        authorized_at: new Date(),
       };
 
       mockExtractableFindOne.mockResolvedValue(record);
       const deleteResult: DeleteResult = { raw: null, affected: 1 };
       mockExtractableDelete.mockResolvedValue(deleteResult);
 
-      const result = await recordsManager.deleteRecord(record.recordName);
+      const result = await recordsManager.deleteRecord(record.record_name);
       expect(result).toBe(true);
     });
 
     it('should return false when record does not exist', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
 
-      const result = await recordsManager.deleteRecord(invalidCredentials.recordName);
+      const result = await recordsManager.deleteRecord(invalidCredentials.record_name);
       expect(result).toBe(false);
     });
   });
@@ -161,7 +161,7 @@ describe('RecordsManager & ValidationsManager', () => {
           ...validCredentials,
           username: '',
           password: '',
-          recordName: recordInstance.recordName,
+          record_name: recordInstance.record_name,
         });
 
         expect(result).toEqual({
@@ -172,16 +172,16 @@ describe('RecordsManager & ValidationsManager', () => {
       });
     });
 
-    describe('#validateCreate - missing recordName', () => {
-      it('should return invalid if recordName is missing', async () => {
+    describe('#validateCreate - missing record_name', () => {
+      it('should return invalid if record_name is missing', async () => {
         const result = await validationsManager.validateCreate({
           ...validCredentials,
-          recordName: '',
+          record_name: '',
         });
 
         expect(result).toEqual({
           isValid: false,
-          message: 'recordName is required',
+          message: 'record_name is required',
           code: 'MISSING_CREDENTIALS',
         });
       });
@@ -193,7 +193,7 @@ describe('RecordsManager & ValidationsManager', () => {
           ...validCredentials,
           username: '',
           password: '',
-          recordName: recordInstance.recordName,
+          record_name: recordInstance.record_name,
         });
 
         expect(result).toEqual({
@@ -204,16 +204,16 @@ describe('RecordsManager & ValidationsManager', () => {
       });
     });
 
-    describe('#validateDelete - missing recordName', () => {
-      it('should return invalid if recordName is missing', async () => {
+    describe('#validateDelete - missing record_name', () => {
+      it('should return invalid if record_name is missing', async () => {
         const result = await validationsManager.validateDelete({
           ...validCredentials,
-          recordName: '',
+          record_name: '',
         });
 
         expect(result).toEqual({
           isValid: false,
-          message: 'recordName is required',
+          message: 'record_name is required',
           code: 'MISSING_CREDENTIALS',
         });
       });

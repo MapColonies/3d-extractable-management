@@ -71,9 +71,9 @@ describe('records', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 201 when recordName is valid', async function () {
+    it('should return 201 when record_name is valid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -84,10 +84,9 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
 
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
       expect(response.body).toMatchObject({
-        recordName: recordInstance.recordName,
-        authorizedBy: recordInstance.authorizedBy,
+        recorecord_namerdName: recordInstance.record_name,
+        authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
         authorizedAt: expect.any(String),
       });
@@ -95,16 +94,15 @@ describe('records', function () {
 
     it('should return 200 and the record', async function () {
       const response = await requestSender.getRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
 
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
       expect(response.body).toMatchObject({
-        recordName: recordInstance.recordName,
-        authorizedBy: recordInstance.authorizedBy,
+        record_name: recordInstance.record_name,
+        authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
         authorizedAt: expect.any(String),
       });
@@ -131,7 +129,7 @@ describe('records', function () {
       const payload: IAuthPayloadWithRecord = {
         username: validCredentials.username,
         password: validCredentials.password,
-        recordName: recordInstance.recordName,
+        record_name: recordInstance.record_name,
       };
 
       const response = await requestSender.validateDelete({
@@ -146,9 +144,9 @@ describe('records', function () {
       expect(body.message).toBe('Record can be deleted');
     });
 
-    it('should return 204 when recordName is valid and deleted successfully', async function () {
+    it('should return 204 when record_name is valid and deleted successfully', async function () {
       const response = await requestSender.deleteRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -164,7 +162,7 @@ describe('records', function () {
   describe('Bad Path', function () {
     beforeAll(async () => {
       await requestSender.createRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { record_name: validCredentials.record_name },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -172,9 +170,9 @@ describe('records', function () {
         },
       });
     });
-    it('should return 404 when recordName is invalid', async function () {
+    it('should return 404 when record_name is invalid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { record_name: validCredentials.record_name },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -188,11 +186,11 @@ describe('records', function () {
 
     it('should return 404 when createRecord throws "Record not found"', async () => {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { record_name: validCredentials.record_name },
         requestBody: {
           username: validCredentials.username,
           password: validCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
         },
       });
 
@@ -217,7 +215,7 @@ describe('records', function () {
         requestBody: {
           username: '',
           password: '',
-          recordName: validCredentials.recordName,
+          record_name: validCredentials.record_name,
         },
       });
 
@@ -236,7 +234,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: invalidCredentials.recordName,
+          record_name: invalidCredentials.record_name,
         },
       });
 
@@ -249,7 +247,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: invalidCredentials.recordName,
+          record_name: invalidCredentials.record_name,
         },
       });
 
@@ -264,11 +262,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
         },
       });
 
@@ -293,7 +291,7 @@ describe('records', function () {
         requestBody: {
           username: '',
           password: '',
-          recordName: validCredentials.recordName,
+          record_name: validCredentials.record_name,
         },
       });
 
@@ -315,11 +313,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
           data: recordInstance.data,
         },
       });
@@ -342,11 +340,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.deleteRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
         },
       });
 
@@ -364,7 +362,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: invalidCredentials.recordName,
+          record_name: invalidCredentials.record_name,
         },
       });
 
@@ -376,7 +374,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: invalidCredentials.recordName,
+          record_name: invalidCredentials.record_name,
         },
       });
 
@@ -391,11 +389,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.deleteRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
         },
       });
 
@@ -411,7 +409,7 @@ describe('records', function () {
 
     it('should return 404 for non-existent record', async function () {
       const response = await requestSender.getRecord({
-        pathParams: { recordName: 'rec_nonexistent' },
+        pathParams: { record_name: 'rec_nonexistent' },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -429,7 +427,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: 'nonexistent-record',
+          record_name: 'nonexistent-record',
         },
       });
 
@@ -454,7 +452,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: 'nonexistent-record',
+          record_name: 'nonexistent-record',
         },
       });
 
@@ -494,7 +492,7 @@ describe('records', function () {
       });
 
       const response = await requestSender.getRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { record_name: validCredentials.record_name },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -514,11 +512,11 @@ describe('records', function () {
       });
 
       const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { record_name: recordInstance.record_name },
         requestBody: {
           username: validCredentials.username,
           password: validCredentials.password,
-          authorizedBy: recordInstance.authorizedBy,
+          authorized_by: recordInstance.authorized_by,
         },
       });
 
@@ -536,7 +534,7 @@ describe('records', function () {
         requestBody: {
           username: validCredentials.username,
           password: 'any-password',
-          recordName: validCredentials.recordName,
+          record_name: validCredentials.record_name,
         },
       });
 
@@ -554,7 +552,7 @@ describe('records', function () {
         requestBody: {
           username: validCredentials.username,
           password: 'any-password',
-          recordName: validCredentials.recordName,
+          record_name: validCredentials.record_name,
         },
       });
 
@@ -573,7 +571,7 @@ describe('records', function () {
       const response = await requestSender.validateDelete({
         requestBody: {
           ...validCredentials,
-          recordName: validCredentials.recordName,
+          record_name: validCredentials.record_name,
         },
       });
 
@@ -593,7 +591,7 @@ describe('records', function () {
         requestBody: {
           username: 'any-username',
           password: 'any-password',
-          recordName: 'any-recordName',
+          record_name: 'any-record_name',
         },
       });
 
@@ -625,12 +623,12 @@ describe('records', function () {
     });
 
     const response = await requestSender.deleteRecord({
-      pathParams: { recordName: recordInstance.recordName },
+      pathParams: { record_name: recordInstance.record_name },
       requestBody: {
         ...recordInstance,
         username: validCredentials.username,
         password: validCredentials.password,
-        authorizedBy: recordInstance.authorizedBy,
+        authorized_by: recordInstance.authorized_by,
       },
     });
 
@@ -645,12 +643,12 @@ describe('records', function () {
     });
 
     const response = await requestSender.deleteRecord({
-      pathParams: { recordName: recordInstance.recordName },
+      pathParams: { record_name: recordInstance.record_name },
       requestBody: {
         ...recordInstance,
         username: validCredentials.username,
         password: validCredentials.password,
-        authorizedBy: recordInstance.authorizedBy,
+        authorized_by: recordInstance.authorized_by,
       },
     });
 
@@ -664,12 +662,12 @@ describe('records', function () {
     });
 
     const response = await requestSender.deleteRecord({
-      pathParams: { recordName: recordInstance.recordName },
+      pathParams: { record_name: recordInstance.record_name },
       requestBody: {
         ...recordInstance,
         username: validCredentials.username,
         password: validCredentials.password,
-        authorizedBy: recordInstance.authorizedBy,
+        authorized_by: recordInstance.authorized_by,
       },
     });
 
@@ -687,7 +685,7 @@ describe('records', function () {
     const response = await requestSender.validateDelete({
       requestBody: {
         ...validCredentials,
-        recordName: validCredentials.recordName,
+        record_name: validCredentials.record_name,
       },
     });
 
@@ -709,7 +707,7 @@ describe('records', function () {
     const response = await requestSender.validateDelete({
       requestBody: {
         ...validCredentials,
-        recordName: validCredentials.recordName,
+        record_name: validCredentials.record_name,
       },
     });
 

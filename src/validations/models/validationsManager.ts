@@ -28,19 +28,19 @@ export class ValidationsManager {
       return userValidation;
     }
 
-    if (!payload.recordName) {
-      this.logger.debug({ msg: 'missing recordName', logContext });
-      return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };
+    if (!payload.record_name) {
+      this.logger.debug({ msg: 'missing record_name', logContext });
+      return { isValid: false, message: 'record_name is required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const record = await this.extractableRepo.findOne({ where: { recordName: payload.recordName } });
+    const record = await this.extractableRepo.findOne({ where: { record_name: payload.record_name } });
     if (record) {
-      this.logger.debug({ msg: 'record already exists for create', recordName: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'INVALID_RECORD_NAME' };
+      this.logger.debug({ msg: 'record already exists for create', record_name: payload.record_name, logContext });
+      return { isValid: false, message: `Record '${payload.record_name}' already exists`, code: 'INVALID_RECORD_NAME' };
     }
 
-    this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
-    return { isValid: true, message: `Record '${payload.recordName}' can be created`, code: 'SUCCESS' };
+    this.logger.debug({ msg: 'create validation successful', record_name: payload.record_name, logContext });
+    return { isValid: true, message: `Record '${payload.record_name}' can be created`, code: 'SUCCESS' };
   }
 
   public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
@@ -51,18 +51,18 @@ export class ValidationsManager {
       return userValidation;
     }
 
-    if (!payload.recordName) {
-      this.logger.debug({ msg: 'missing recordName', logContext });
-      return { isValid: false, message: 'recordName is required', code: 'MISSING_CREDENTIALS' };
+    if (!payload.record_name) {
+      this.logger.debug({ msg: 'missing record_name', logContext });
+      return { isValid: false, message: 'record_name is required', code: 'MISSING_CREDENTIALS' };
     }
 
-    const record = await this.extractableRepo.findOne({ where: { recordName: payload.recordName } });
+    const record = await this.extractableRepo.findOne({ where: { record_name: payload.record_name } });
     if (!record) {
-      this.logger.debug({ msg: 'record not found for delete', recordName: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'INVALID_RECORD_NAME' };
+      this.logger.debug({ msg: 'record not found for delete', record_name: payload.record_name, logContext });
+      return { isValid: false, message: `Record '${payload.record_name}' not found`, code: 'INVALID_RECORD_NAME' };
     }
 
-    this.logger.debug({ msg: 'delete validation successful', recordName: payload.recordName, logContext });
+    this.logger.debug({ msg: 'delete validation successful', record_name: payload.record_name, logContext });
     return { isValid: true, message: 'Record can be deleted', code: 'SUCCESS' };
   }
 

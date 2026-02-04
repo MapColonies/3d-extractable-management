@@ -18,7 +18,7 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
-  '/records/{recordName}': {
+  '/records/{record_name}': {
     parameters: {
       query?: never;
       header?: never;
@@ -71,6 +71,23 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
+  '/audit/{record_name}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get all audit logs by record name */
+    get: operations['getAudit'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/users/validate': {
     parameters: {
       query?: never;
@@ -105,17 +122,25 @@ export type components = {
     'auth-payload-with-record': {
       username: string;
       password: string;
-      recordName: string;
+      record_name: string;
     };
     'extractable-record': {
       /** Format: int64 */
       id: number;
-      recordName: string;
-      authorizedBy: string;
+      record_name: string;
+      authorized_by: string;
       /** @description Metadata stored in extractable_records.data */
       data?: {
         [key: string]: unknown;
       };
+    };
+    'audit-log': {
+      /** Format: int64 */
+      id: number;
+      record_name: string;
+      authorized_by: string;
+      /** @enum {string} */
+      action: 'CREATE' | 'DELETE';
     };
   };
   responses: never;
@@ -169,7 +194,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        recordName: string;
+        record_name: string;
       };
       cookie?: never;
     };
@@ -209,7 +234,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        recordName: string;
+        record_name: string;
       };
       cookie?: never;
     };
@@ -219,7 +244,7 @@ export interface operations {
           username: string;
           password: string;
           /** @description User authorizing this record creation */
-          authorizedBy: string;
+          authorized_by: string;
           /** @description Optional metadata for the record */
           data?: {
             [key: string]: unknown;
@@ -280,7 +305,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        recordName: string;
+        record_name: string;
       };
       cookie?: never;
     };
@@ -290,7 +315,7 @@ export interface operations {
           username: string;
           password: string;
           /** @description User authorizing this deletion */
-          authorizedBy: string;
+          authorized_by: string;
         };
       };
     };
@@ -442,6 +467,47 @@ export interface operations {
       };
       /** @description Validation error – doesn't exists */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+    };
+  };
+  getAudit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The record_name to fetch audit logs for */
+        record_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of audit logs for the record (empty array if none found) */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['audit-log'][];
+        };
+      };
+      /** @description Invalid record_name or request parameters */
+      400: {
         headers: {
           [name: string]: unknown;
         };
