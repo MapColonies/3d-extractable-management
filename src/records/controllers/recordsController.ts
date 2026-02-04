@@ -63,7 +63,7 @@ export class RecordsController {
     const logContext = { ...this.logContext, function: this.createRecord.name };
 
     const { recordName } = req.params;
-    const { username, password, authorizedBy } = req.body;
+    const { username, password, authorizedBy, data } = req.body;
 
     try {
       this.logger.info({ msg: 'Create record requested, starts validation', logContext });
@@ -80,6 +80,7 @@ export class RecordsController {
         recordName,
         username,
         authorizedBy,
+        data,
       });
 
       this.requestsCounter.inc({ status: '201' });

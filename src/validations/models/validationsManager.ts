@@ -40,7 +40,7 @@ export class ValidationsManager {
     }
 
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
-    return { isValid: true, message: 'Record can be created', code: 'SUCCESS' };
+    return { isValid: true, message: `Record '${payload.recordName}' can be created`, code: 'SUCCESS' };
   }
 
   public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {

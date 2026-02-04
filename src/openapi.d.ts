@@ -380,6 +380,15 @@ export interface operations {
           'application/json': components['schemas']['validateResponse'];
         };
       };
+      /** @description Validation error – already exists */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
       /** @description Internal server error */
       500: {
         headers: {
@@ -424,6 +433,15 @@ export interface operations {
       };
       /** @description Unauthorized – invalid credentials */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Validation error – doesn't exists */
+      404: {
         headers: {
           [name: string]: unknown;
         };

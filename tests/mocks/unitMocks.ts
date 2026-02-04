@@ -56,7 +56,6 @@ const mockExtractableRepoInternal: Partial<Repository<ExtractableRecord>> = {
 const mockAuditSave: jest.MockedFunction<<T extends DeepPartial<AuditLog>>(entityOrEntities: T | T[], options?: SaveOptions) => Promise<T | T[]>> =
   jest.fn();
 
-// Mock create() - plain function
 const mockAuditCreateImpl = (entityLike?: DeepPartial<AuditLog> | DeepPartial<AuditLog>[]): AuditLog | AuditLog[] => {
   if (Array.isArray(entityLike)) {
     return entityLike.map((e) => ({

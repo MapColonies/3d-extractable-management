@@ -1,19 +1,17 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import config from 'config';
-import { DependencyContainer } from 'tsyringe';
+import { container as tsyringeContainer } from 'tsyringe';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
-import { registerExternalValues } from '@src/containerConfig';
-import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
-import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
-import { AuditLog } from '@src/DAL/entities/auditLog.entity';
+import { getApp } from '@src/app';
+import { getTestDbConfig } from '@tests/configurations/testConfig';
 
 jest.mock('config');
 
@@ -21,12 +19,21 @@ const mockedConfig = config as jest.Mocked<typeof config>;
 
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
-  let dependencyContainer: DependencyContainer;
 
   beforeAll(async () => {
     await initConfig(true);
 
-    dependencyContainer = await registerExternalValues({ useChild: true });
+    const dbConfig = getTestDbConfig();
+
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
+    });
 
     console.log('✅ ConnectionManager DataSource initialized.');
 
@@ -35,21 +42,28 @@ describe('users', function () {
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
-  beforeEach(async () => {
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+  beforeEach(() => {
+    const dbConfig = getTestDbConfig();
 
-    const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
-
-    const connection = connectionManager.getDataSourceConnection();
-
-    await connection.getRepository(ExtractableRecord).clear();
-    await connection.getRepository(AuditLog).clear();
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
+    });
   });
 
   afterAll(async () => {
-    const connectionManager = dependencyContainer.resolve(ConnectionManager);
-    await connectionManager.shutdown()();
-    console.log('🧹 ConnectionManager shut down.');
+    try {
+      const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+      await connectionManager.shutdown()();
+      console.log('🧹 ConnectionManager shut down.');
+    } catch (err) {
+      console.log('⚠️  Error during shutdown:', err);
+    }
   });
 
   afterEach(() => {
@@ -156,11 +170,19 @@ describe('users', function () {
         mockedConfig.get.mockReset();
 
         if (shouldThrow) {
-          mockedConfig.get.mockImplementation(() => {
+          mockedConfig.get.mockImplementation((key: string) => {
+            if (key === 'db') {
+              return getTestDbConfig();
+            }
             throw new Error('missing config');
           });
         } else {
-          mockedConfig.get.mockReturnValue(usersMock);
+          mockedConfig.get.mockImplementation((key: string) => {
+            if (key === 'db') {
+              return getTestDbConfig();
+            }
+            return usersMock;
+          });
         }
 
         const [app] = await getApp({

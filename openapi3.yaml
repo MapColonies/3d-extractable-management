@@ -364,6 +364,19 @@ paths:
                     isValid: false
                     message: 'Username, password, and recordName are required'
                     code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' already exists"
+                    code: 'INVALID_RECORD_NAME'
         '500':
           description: Internal server error
           content:
@@ -430,6 +443,19 @@ paths:
                     isValid: false
                     message: 'Username, password, and recordName are required'
                     code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – doesn't exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' doesn't exists"
+                    code: 'INVALID_RECORD_NAME'
         '500':
           description: Internal server error
           content:

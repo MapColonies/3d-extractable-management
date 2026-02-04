@@ -55,12 +55,13 @@ describe('ValidationsManager - User & Record Validation', () => {
   describe('#validateCreate', () => {
     it('should succeed when record does not exist and credentials are valid', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
+      const recordName = 'newRecord';
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'newRecord' };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: recordName };
       const result = await validationsManager.validateCreate(payload);
 
       expect(result.isValid).toBe(true);
-      expect(result.message).toBe('Record can be created');
+      expect(result.message).toBe(`Record '${recordName}' can be created`);
       expect(result.code).toBe('SUCCESS');
     });
 
