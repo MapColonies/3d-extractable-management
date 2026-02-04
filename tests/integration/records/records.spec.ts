@@ -85,10 +85,10 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
 
       expect(response.body).toMatchObject({
-        recorecord_namerdName: recordInstance.record_name,
+        record_name: recordInstance.record_name,
         authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
-        authorizedAt: expect.any(String),
+        authorized_at: expect.any(String),
       });
     });
 
@@ -104,7 +104,7 @@ describe('records', function () {
         record_name: recordInstance.record_name,
         authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
-        authorizedAt: expect.any(String),
+        authorized_at: expect.any(String),
       });
     });
 
