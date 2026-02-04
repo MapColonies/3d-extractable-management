@@ -18,7 +18,7 @@ export class ExtractableRecord {
   @Column({ type: 'varchar', nullable: false })
   public authorizedBy!: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', utc: true, insert: true })
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   public authorizedAt!: Date;
 
   @Column({ type: 'jsonb', nullable: true })
