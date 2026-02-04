@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AlterAuthorizedAtToTimeStamptz1770136414640 implements MigrationInterface {

@@ -2,31 +2,27 @@ import config from 'config';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { validCredentials, invalidCredentials } from '@tests/mocks';
-import { IAuthPayload } from '@src/common/constants';
+import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
+import { IAuthPayloadWithRecord } from '@src/common/constants';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { mockExtractableRepo, mockExtractableFindOne, resetRepoMocks } from '@tests/mocks/unitMocks';
 
 let validationsManager: ValidationsManager;
 
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
 
-const mockRepo = () => ({
-  find: jest.fn() as jest.Mock<Promise<ExtractableRecord[]>>,
-  findOne: jest.fn() as jest.Mock<Promise<ExtractableRecord | null>>,
-  create: jest.fn(),
-  save: jest.fn(),
-  delete: jest.fn(),
-});
-
-describe('ValidationsManager - User Validation', () => {
+describe('ValidationsManager - User & Record Validation', () => {
   beforeEach(() => {
-    const extractableRepo = mockRepo() as unknown as Repository<ExtractableRecord>;
+    const extractableRepo = mockExtractableRepo as unknown as Repository<ExtractableRecord>;
+
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+
     validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo);
   });
 
   afterEach(() => {
+    resetRepoMocks();
     jest.resetAllMocks();
   });
 
@@ -54,18 +50,53 @@ describe('ValidationsManager - User Validation', () => {
       expect(result.message).toBe('Username and password are required');
       expect(result.code).toBe('MISSING_CREDENTIALS');
     });
+  });
 
-    it('should fail when the username exists but password is wrong', () => {
-      const payload: IAuthPayload = {
-        username: validCredentials.username,
-        password: 'wrongPassword',
-      };
+  describe('#validateCreate', () => {
+    it('should succeed when record does not exist and credentials are valid', async () => {
+      mockExtractableFindOne.mockResolvedValue(null);
 
-      const result = validationsManager.validateUser(payload);
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'newRecord' };
+      const result = await validationsManager.validateCreate(payload);
+
+      expect(result.isValid).toBe(true);
+      expect(result.message).toBe('Record can be created');
+      expect(result.code).toBe('SUCCESS');
+    });
+
+    it('should fail when record already exists', async () => {
+      mockExtractableFindOne.mockResolvedValue({ recordName: 'existingRecord' } as ExtractableRecord);
+
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
+      const result = await validationsManager.validateCreate(payload);
 
       expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Invalid username or password');
-      expect(result.code).toBe('INVALID_CREDENTIALS');
+      expect(result.message).toBe("Record 'existingRecord' already exists");
+      expect(result.code).toBe('INVALID_RECORD_NAME');
+    });
+  });
+
+  describe('#validateDelete', () => {
+    it('should succeed when record exists and credentials are valid', async () => {
+      mockExtractableFindOne.mockResolvedValue({ recordName: 'existingRecord' } as ExtractableRecord);
+
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
+      const result = await validationsManager.validateDelete(payload);
+
+      expect(result.isValid).toBe(true);
+      expect(result.message).toBe('Record can be deleted');
+      expect(result.code).toBe('SUCCESS');
+    });
+
+    it('should fail when record does not exist', async () => {
+      mockExtractableFindOne.mockResolvedValue(null);
+
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'nonExistingRecord' };
+      const result = await validationsManager.validateDelete(payload);
+
+      expect(result.isValid).toBe(false);
+      expect(result.message).toBe("Record 'nonExistingRecord' not found");
+      expect(result.code).toBe('INVALID_RECORD_NAME');
     });
   });
 });

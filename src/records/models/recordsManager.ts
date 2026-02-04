@@ -86,14 +86,14 @@ export class RecordsManager {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     this.logger.info({ msg: `starting to delete extractable record '${recordName}'`, recordName, logContext });
 
-    await this.extractableRepo.manager.transaction(async (manager) => {
+    const result = await this.extractableRepo.manager.transaction(async (manager) => {
       const { extractableRepo, auditRepo } = this.getTransactionalRepos(manager);
 
       const record = await extractableRepo.findOne({ where: { recordName } });
 
       if (!record) {
         this.logger.warn({ msg: 'extractable record not found for delete', recordName, logContext });
-        return;
+        return false;
       }
 
       await extractableRepo.delete({ recordName });
@@ -107,10 +107,11 @@ export class RecordsManager {
           authorizedAt: new Date(),
         })
       );
+      return true;
     });
 
     this.logger.info({ msg: `extractable record deleted`, recordName, logContext });
-    return true;
+    return result;
   }
 
   private getTransactionalRepos(manager: EntityManager): {

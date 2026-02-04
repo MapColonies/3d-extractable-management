@@ -1,43 +1,56 @@
 import 'reflect-metadata';
 import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
-import { Repository } from 'typeorm';
+import { Repository, DeleteResult, EntityManager } from 'typeorm';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
-import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks';
+import { AuditLog } from '@src/DAL/entities/auditLog.entity';
+import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
+import {
+  mockExtractableRepo,
+  mockExtractableFind,
+  mockExtractableFindOne,
+  mockExtractableSave,
+  mockExtractableDelete,
+  resetRepoMocks,
+  mockAuditRepo,
+} from '@tests/mocks/unitMocks';
 
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
-
-const mockRepo = () => {
-  const mockRepoMethods = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    create: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
-  };
-
-  return {
-    ...mockRepoMethods,
-    manager: {
-      transaction: async <T>(cb: (manager: { getRepository: <T>(entity: new () => T) => typeof mockRepoMethods }) => Promise<T> | T): Promise<T> => {
-        const manager = {
-          getRepository: jest.fn(() => mockRepoMethods),
-        };
-        return cb(manager);
-      },
-    },
-  };
-};
 
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
 
 describe('RecordsManager & ValidationsManager', () => {
   beforeEach(() => {
-    const extractableRepo = mockRepo() as unknown as Repository<ExtractableRecord>;
+    const extractableRepo = mockExtractableRepo as unknown as Repository<ExtractableRecord>;
+
+    const repoMap = new Map<unknown, unknown>([
+      [ExtractableRecord, mockExtractableRepo],
+      [AuditLog, mockAuditRepo],
+    ]);
+
+    const fakeEntityManager: Pick<EntityManager, 'getRepository'> = {
+      getRepository: <T extends object>(entity: new () => T): Repository<T> => {
+        const repo = repoMap.get(entity);
+        if (repo === undefined) {
+          const entityName = 'name' in entity ? (entity as { name: string }).name : String(entity);
+          throw new Error(`No mock defined for repository: ${entityName}`);
+        }
+        return repo as Repository<T>;
+      },
+    };
+
+    type MockEntityManager = Pick<EntityManager, 'transaction' | 'getRepository'>;
+
+    (extractableRepo as unknown as { manager?: MockEntityManager }).manager = {
+      transaction: jest.fn().mockImplementation(async <T>(runInTransaction: (manager: EntityManager) => Promise<T>) => {
+        return runInTransaction(fakeEntityManager as EntityManager);
+      }),
+      getRepository: fakeEntityManager.getRepository,
+    };
 
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
@@ -46,21 +59,28 @@ describe('RecordsManager & ValidationsManager', () => {
   });
 
   afterEach(() => {
+    resetRepoMocks();
     jest.resetAllMocks();
   });
 
   describe('#getRecords', () => {
     it('should return all records', async () => {
-      const records = [{ ...recordInstance, authorizedAt: new Date().toISOString() }];
-      (recordsManager['extractableRepo'].find as jest.Mock).mockResolvedValue(records);
+      const records: ExtractableRecord[] = [
+        {
+          ...recordInstance,
+          username: validCredentials.username,
+          authorizedAt: new Date(),
+        },
+      ];
+
+      mockExtractableFind.mockResolvedValue(records);
 
       const result = await recordsManager.getRecords();
-      expect(result[0]?.recordName).toBe(records[0]?.recordName);
-      expect(typeof result[0]?.authorizedAt).toBe('string');
+      expect(result[0]).toBe(records[0]);
     });
 
     it('should return empty array if no records exist', async () => {
-      (recordsManager['extractableRepo'].find as jest.Mock).mockResolvedValue([]);
+      mockExtractableFind.mockResolvedValue([]);
       const result = await recordsManager.getRecords();
       expect(result).toEqual([]);
     });
@@ -68,16 +88,21 @@ describe('RecordsManager & ValidationsManager', () => {
 
   describe('#getRecord', () => {
     it('should return a record by name', async () => {
-      const record = { ...recordInstance, authorizedAt: new Date().toISOString() };
-      (recordsManager['extractableRepo'].findOne as jest.Mock).mockResolvedValue(record);
+      const record: ExtractableRecord = {
+        ...recordInstance,
+        username: validCredentials.username,
+        authorizedAt: new Date(),
+      };
+
+      mockExtractableFindOne.mockResolvedValue(record);
 
       const result = await recordsManager.getRecord(record.recordName);
-      expect(result?.recordName).toBe(record.recordName);
-      expect(typeof result?.authorizedAt).toBe('string');
+      expect(result).toBe(record);
     });
 
     it('should return undefined if record does not exist', async () => {
-      (recordsManager['extractableRepo'].findOne as jest.Mock).mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValue(null);
+
       const result = await recordsManager.getRecord(invalidCredentials.recordName);
       expect(result).toBeUndefined();
     });
@@ -85,11 +110,13 @@ describe('RecordsManager & ValidationsManager', () => {
 
   describe('#createRecord', () => {
     it('should create and return the saved record', async () => {
-      const record = { ...recordInstance, username: validCredentials.username };
-      const repo = recordsManager['extractableRepo'];
+      const record: ExtractableRecord = {
+        ...recordInstance,
+        username: validCredentials.username,
+        authorizedAt: new Date(),
+      };
 
-      repo.create = jest.fn().mockReturnValue(record);
-      repo.save = jest.fn().mockResolvedValue(record);
+      mockExtractableSave.mockResolvedValue(record);
 
       const result = await recordsManager.createRecord({
         recordName: record.recordName,
@@ -105,15 +132,23 @@ describe('RecordsManager & ValidationsManager', () => {
 
   describe('#deleteRecord', () => {
     it('should delete an existing record', async () => {
-      const record = { ...recordInstance, authorizedAt: new Date().toISOString() };
-      (recordsManager['extractableRepo'].findOne as jest.Mock).mockResolvedValue(record);
+      const record: ExtractableRecord = {
+        ...recordInstance,
+        username: validCredentials.username,
+        authorizedAt: new Date(),
+      };
+
+      mockExtractableFindOne.mockResolvedValue(record);
+      const deleteResult: DeleteResult = { raw: null, affected: 1 };
+      mockExtractableDelete.mockResolvedValue(deleteResult);
 
       const result = await recordsManager.deleteRecord(record.recordName);
       expect(result).toBe(true);
     });
 
     it('should return false when record does not exist', async () => {
-      (recordsManager['extractableRepo'].findOne as jest.Mock).mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValue(null);
+
       const result = await recordsManager.deleteRecord(invalidCredentials.recordName);
       expect(result).toBe(false);
     });
@@ -154,7 +189,7 @@ describe('RecordsManager & ValidationsManager', () => {
 
     describe('#validateDelete - userValidation failure', () => {
       it('should return invalid if username/password are missing', async () => {
-        const result = await validationsManager.validateCreate({
+        const result = await validationsManager.validateDelete({
           ...validCredentials,
           username: '',
           password: '',
@@ -171,7 +206,7 @@ describe('RecordsManager & ValidationsManager', () => {
 
     describe('#validateDelete - missing recordName', () => {
       it('should return invalid if recordName is missing', async () => {
-        const result = await validationsManager.validateCreate({
+        const result = await validationsManager.validateDelete({
           ...validCredentials,
           recordName: '',
         });

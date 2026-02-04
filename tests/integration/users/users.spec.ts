@@ -9,7 +9,7 @@ import { registerExternalValues } from '@src/containerConfig';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { validCredentials, invalidCredentials } from '@tests/mocks';
+import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';

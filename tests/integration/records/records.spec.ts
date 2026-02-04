@@ -7,7 +7,7 @@ import { getApp } from '@src/app';
 import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks';
+import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
 import { ConnectionManager } from '@src/DAL/connectionManager';
