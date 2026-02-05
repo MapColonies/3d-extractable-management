@@ -21,7 +21,6 @@ export class AuditManager {
     const logContext = { ...this.logContext, function: this.getAuditLogs.name };
     this.logger.debug({ msg: `Fetching audit logs for record '${recordName}'`, recordName, logContext });
 
-    console.log('\n' + recordName + '\n');
     const records = await this.auditRepo.find({ where: { record_name: recordName } });
 
     if (records.length === 0) {
