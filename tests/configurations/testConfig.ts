@@ -1,22 +1,8 @@
 /**
  * Test configuration helper that loads database and users config from test.json
  */
+import { DbConfig } from '@src/common/interfaces';
 import testConfigData from '../../config/test.json';
-
-interface DbConfig {
-  type: string;
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-  enableSslAuth: boolean;
-  sslPaths: {
-    ca: string;
-    key: string;
-    cert: string;
-  };
-}
 
 interface TestConfig {
   db: DbConfig;

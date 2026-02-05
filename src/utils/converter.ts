@@ -1,25 +1,8 @@
 import type { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import type { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { IExtractableRecord, IAuditLog } from '@src/common/constants';
 
-interface CamelAuditLog {
-  id: number;
-  recordName: string;
-  username: string;
-  authorizedBy: string;
-  action: 'CREATE' | 'DELETE';
-  authorizedAt?: string;
-}
-
-interface CamelExtractableRecord {
-  id: number;
-  recordName: string;
-  username: string;
-  authorizedBy: string;
-  data?: Record<string, unknown>;
-  authorizedAt?: string;
-}
-
-export const mapAuditLogToCamelCase = (record: AuditLog): CamelAuditLog => ({
+export const mapAuditLogToCamelCase = (record: AuditLog): IAuditLog => ({
   id: record.id,
   recordName: record.record_name,
   username: record.username,
@@ -28,7 +11,7 @@ export const mapAuditLogToCamelCase = (record: AuditLog): CamelAuditLog => ({
   authorizedAt: record.authorized_at?.toISOString(),
 });
 
-export const mapExtractableRecordToCamelCase = (record: ExtractableRecord): CamelExtractableRecord => ({
+export const mapExtractableRecordToCamelCase = (record: ExtractableRecord): IExtractableRecord => ({
   id: record.id,
   recordName: record.record_name,
   username: record.username,
