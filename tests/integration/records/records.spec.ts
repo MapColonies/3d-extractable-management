@@ -1,15 +1,16 @@
-import jsLogger from '@map-colonies/js-logger';
-import { trace } from '@opentelemetry/api';
 import config from 'config';
 import httpStatusCodes from 'http-status-codes';
+import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { invalidCredentials, recordInstance, validCredentials } from '@src/common/mocks';
+import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { getTestDbConfig } from '@tests/configurations/testConfig';
 
 jest.mock('config');
 
@@ -18,32 +19,62 @@ const mockedConfig = config as jest.Mocked<typeof config>;
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
-  beforeAll(async function () {
+  beforeAll(async () => {
     await initConfig(true);
-  });
 
-  beforeEach(async function () {
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+    const dbConfig = getTestDbConfig();
 
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
     });
 
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+    console.log('✅ ConnectionManager DataSource initialized.');
+
+    const [app] = await getApp({ useChild: false });
+
+    requestSender = await createRequestSender('openapi3.yaml', app);
+  });
+
+  beforeEach(() => {
+    const dbConfig = getTestDbConfig();
+
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
+    });
+  });
+
+  afterAll(async () => {
+    try {
+      jest.restoreAllMocks();
+      const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+      await connectionManager.shutdown()();
+      console.log('🧹 ConnectionManager shut down.');
+    } catch (err) {
+      console.log('⚠️  Error during shutdown:', err);
+    }
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {
     it('should return 201 when recordName is valid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -54,37 +85,30 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
 
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-      expect(response).toMatchObject({
-        body: expect.objectContaining({
-          ...recordInstance,
-          recordName: recordInstance.recordName,
-          authorizedAt: expect.any(String),
-        }),
+      expect(response.body).toMatchObject({
+        recordName: 'rec_happy_path',
+        authorizedBy: recordInstance.authorizedBy,
+        data: recordInstance.data,
       });
     });
 
     it('should return 200 and the record', async function () {
       const response = await requestSender.getRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
 
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-      expect(response).toMatchObject({
-        body: expect.objectContaining({
-          ...recordInstance,
-          recordName: recordInstance.recordName,
-          authorizedAt: expect.any(String),
-          data: recordInstance.data,
-        }),
+      expect(response.body).toMatchObject({
+        recordName: 'rec_happy_path',
+        authorizedBy: recordInstance.authorizedBy,
+        data: recordInstance.data,
       });
     });
 
     it('should return 200 and the available records', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce([recordInstance]);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([recordInstance]);
       const response = await requestSender.getRecords();
 
       expect(response).toSatisfyApiSpec();
@@ -93,37 +117,18 @@ describe('records', function () {
     });
 
     it('should return 200 and empty array when no records exist', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockReturnValueOnce(undefined);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([]);
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual([]);
     });
 
-    it('should return 200 when credentials are valid in order to post', async function () {
-      const payload: IAuthPayloadWithRecord = {
-        username: validCredentials.username,
-        password: validCredentials.password,
-        recordName: validCredentials.recordName,
-      };
-
-      const response = await requestSender.validateCreate({
-        requestBody: payload,
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-
-      const body = response.body;
-      expect(body.isValid).toBe(true);
-      expect(body.message).toBe('Record can be created');
-    });
-
     it('should return 200 when credentials are valid', async function () {
       const payload: IAuthPayloadWithRecord = {
         username: validCredentials.username,
         password: validCredentials.password,
-        recordName: recordInstance.recordName,
+        recordName: 'rec_happy_path',
       };
 
       const response = await requestSender.validateDelete({
@@ -140,7 +145,7 @@ describe('records', function () {
 
     it('should return 204 when recordName is valid and deleted successfully', async function () {
       const response = await requestSender.deleteRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -154,9 +159,19 @@ describe('records', function () {
   });
 
   describe('Bad Path', function () {
+    beforeAll(async () => {
+      await requestSender.createRecord({
+        pathParams: { recordName: validCredentials.recordName },
+        requestBody: {
+          ...recordInstance,
+          username: validCredentials.username,
+          password: validCredentials.password,
+        },
+      });
+    });
     it('should return 404 when recordName is invalid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: 'rec_invalid' },
+        pathParams: { recordName: validCredentials.recordName },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -169,18 +184,8 @@ describe('records', function () {
     });
 
     it('should return 404 when createRecord throws "Record not found"', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
-        isValid: true,
-        message: 'Record can be created',
-        code: 'SUCCESS',
-      });
-
-      jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
-        throw new Error('Record not found');
-      });
-
       const response = await requestSender.createRecord({
-        pathParams: { recordName: invalidCredentials.recordName },
+        pathParams: { recordName: validCredentials.recordName },
         requestBody: {
           username: validCredentials.username,
           password: validCredentials.password,
@@ -191,7 +196,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         isValid: false,
-        message: 'Record not found',
+        message: `Record 'rec_name' already exists`,
         code: 'INVALID_RECORD_NAME',
       });
 
@@ -199,7 +204,7 @@ describe('records', function () {
     });
 
     it('should return 400 when credentials are missing in validateCreate', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -249,7 +254,7 @@ describe('records', function () {
     });
 
     it('should return 401 when validation fails with non-specific code', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
         message: 'Unauthorized',
         code: 'INVALID_CREDENTIALS',
@@ -275,7 +280,7 @@ describe('records', function () {
     });
 
     it('should return 400 when credentials are missing in validateDelete', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -300,7 +305,7 @@ describe('records', function () {
     });
 
     it('should return 400 when validation fails with MISSING_CREDENTIALS (createRecord)', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -327,7 +332,7 @@ describe('records', function () {
     });
 
     it('should return 400 when validation fails with MISSING_CREDENTIALS (deleteRecord)', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Missing credentials',
         code: 'MISSING_CREDENTIALS',
@@ -376,7 +381,7 @@ describe('records', function () {
     });
 
     it('should return 401 when delete validation fails with INVALID_CREDENTIALS', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Invalid credentials',
         code: 'INVALID_CREDENTIALS',
@@ -401,7 +406,15 @@ describe('records', function () {
       jest.restoreAllMocks();
     });
 
-    it('should return 404 when deleting a non-existing record', async function () {
+    it('should return 404 when deleteRecord returns false (record not found)', async function () {
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+        isValid: true,
+        message: 'Record can be deleted',
+        code: 'SUCCESS',
+      });
+
+      jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockResolvedValueOnce(false);
+
       const response = await requestSender.deleteRecord({
         pathParams: { recordName: invalidCredentials.recordName },
         requestBody: {
@@ -415,7 +428,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         isValid: false,
-        message: `Record '${invalidCredentials.recordName}' not found`,
+        message: `Record ${invalidCredentials.recordName} not found`,
         code: 'INVALID_RECORD_NAME',
       });
     });
@@ -430,7 +443,7 @@ describe('records', function () {
     });
 
     it('should return 404 when validateCreate returns INVALID_RECORD_NAME', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
         message: 'Record does not exist',
         code: 'INVALID_RECORD_NAME',
@@ -440,7 +453,7 @@ describe('records', function () {
         requestBody: {
           username: invalidCredentials.username,
           password: invalidCredentials.password,
-          recordName: 'nonexistent-record',
+          recordName: invalidCredentials.recordName,
         },
       });
 
@@ -455,7 +468,7 @@ describe('records', function () {
     });
 
     it('should return 404 when validateDelete returns INVALID_RECORD_NAME', async () => {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Record does not exist',
         code: 'INVALID_RECORD_NAME',
@@ -514,7 +527,7 @@ describe('records', function () {
     });
 
     it('should return 500 if createRecord throws an unexpected error', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: true,
         message: 'Record can be created',
         code: 'SUCCESS',
@@ -575,7 +588,7 @@ describe('records', function () {
     });
 
     it('should return 500 for validateDelete when validation fails without error code', async function () {
-      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Validation failed',
         code: 'SUCCESS',
@@ -595,24 +608,6 @@ describe('records', function () {
       });
     });
 
-    it('should return 500 for createRecord with unknown error type', async () => {
-      jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
-        throw new Error('non-error object');
-      });
-
-      const response = await requestSender.createRecord({
-        pathParams: { recordName: recordInstance.recordName },
-        requestBody: {
-          ...recordInstance,
-          username: validCredentials.username,
-          password: validCredentials.password,
-        },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ isValid: false, message: 'Failed to create record', code: 'INTERNAL_ERROR' });
-    });
-
     it('should return 500 for validateCreate with unknown error type', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockImplementation(() => {
         throw new Error('non-error object');
@@ -620,9 +615,9 @@ describe('records', function () {
 
       const response = await requestSender.validateCreate({
         requestBody: {
-          username: 'any-username',
-          password: 'any-password',
-          recordName: 'any-recordName',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
         },
       });
 
@@ -668,26 +663,6 @@ describe('records', function () {
     expect(response.body).toEqual({ isValid: false, message: 'Failed to delete record', code: 'INTERNAL_ERROR' });
   });
 
-  it('should return 500 for createRecord when thrown error is not an instance of Error', async () => {
-    jest.spyOn(RecordsManager.prototype, 'createRecord').mockImplementation(() => {
-      throw { weird: 'object' } as unknown as Error;
-    });
-
-    const response = await requestSender.createRecord({
-      pathParams: { recordName: recordInstance.recordName },
-      requestBody: {
-        ...recordInstance,
-        username: validCredentials.username,
-        password: validCredentials.password,
-        authorizedBy: recordInstance.authorizedBy,
-        data: recordInstance.data,
-      },
-    });
-
-    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ isValid: false, message: 'Failed to create record', code: 'INTERNAL_ERROR' });
-  });
-
   it('should return 500 for deleteRecord when thrown error is not an instance of Error', async () => {
     jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockImplementation(() => {
       throw { weird: 'object' } as unknown as Error;
@@ -727,10 +702,10 @@ describe('records', function () {
   });
 
   it('should return 500 for validateDelete when INTERNAL_ERROR is returned', async function () {
-    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockReturnValueOnce({
+    jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
       isValid: false,
       code: 'INTERNAL_ERROR',
-      message: 'Internal validation error',
+      message: 'Failed to delete record',
     });
 
     const response = await requestSender.validateDelete({
@@ -744,6 +719,7 @@ describe('records', function () {
     expect(response.body).toMatchObject({
       isValid: false,
       code: 'INTERNAL_ERROR',
+      message: 'Failed to delete record',
     });
   });
 

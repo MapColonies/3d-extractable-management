@@ -18,8 +18,9 @@ export class UsersController {
       const result = this.manager.validateUser(payload);
 
       let status: number;
-      /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
+
       if (!result.isValid) {
+        // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
         switch (result.code) {
           case 'MISSING_CREDENTIALS':
             status = httpStatus.BAD_REQUEST;

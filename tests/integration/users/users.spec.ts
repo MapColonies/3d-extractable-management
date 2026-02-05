@@ -1,14 +1,17 @@
 import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import config from 'config';
+import { container as tsyringeContainer } from 'tsyringe';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
-import { getApp } from '@src/app';
 import { SERVICES, IAuthPayload } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { validCredentials, invalidCredentials } from '@src/common/mocks';
+import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { getApp } from '@src/app';
+import { getTestDbConfig } from '@tests/configurations/testConfig';
 
 jest.mock('config');
 
@@ -17,26 +20,55 @@ const mockedConfig = config as jest.Mocked<typeof config>;
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
 
-  beforeAll(async function () {
+  beforeAll(async () => {
     await initConfig(true);
-  });
 
-  beforeEach(async function () {
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
+    const dbConfig = getTestDbConfig();
 
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
     });
 
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+    console.log('✅ ConnectionManager DataSource initialized.');
+
+    const [app] = await getApp({ useChild: false });
+
+    requestSender = await createRequestSender('openapi3.yaml', app);
+  });
+
+  beforeEach(() => {
+    const dbConfig = getTestDbConfig();
+
+    mockedConfig.get.mockImplementation((key: string) => {
+      if (key === 'db') {
+        return dbConfig;
+      }
+      if (key === 'users') {
+        return [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return undefined;
+    });
+  });
+
+  afterAll(async () => {
+    try {
+      const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+      await connectionManager.shutdown()();
+      console.log('🧹 ConnectionManager shut down.');
+    } catch (err) {
+      console.log('⚠️  Error during shutdown:', err);
+    }
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {
@@ -138,11 +170,19 @@ describe('users', function () {
         mockedConfig.get.mockReset();
 
         if (shouldThrow) {
-          mockedConfig.get.mockImplementation(() => {
+          mockedConfig.get.mockImplementation((key: string) => {
+            if (key === 'db') {
+              return getTestDbConfig();
+            }
             throw new Error('missing config');
           });
         } else {
-          mockedConfig.get.mockReturnValue(usersMock);
+          mockedConfig.get.mockImplementation((key: string) => {
+            if (key === 'db') {
+              return getTestDbConfig();
+            }
+            return usersMock;
+          });
         }
 
         const [app] = await getApp({

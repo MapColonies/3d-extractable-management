@@ -1,11 +1,9 @@
-// TODO: remove this file
 import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 export const recordInstance: IExtractableRecord = {
-  id: 'a101',
+  id: 101,
   recordName: 'rec_name',
   authorizedBy: 'username',
-  authorizedAt: '2026-01-16T12:00:00Z',
   data: {
     productType: '3DPhotoRealistic' as never,
     resolution: '4K' as never,
@@ -13,7 +11,6 @@ export const recordInstance: IExtractableRecord = {
   },
 };
 
-// mock valid credentials
 export const validCredentials: IAuthPayloadWithRecord = {
   username: 'username',
   password: 'password',
