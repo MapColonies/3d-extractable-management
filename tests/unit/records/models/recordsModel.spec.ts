@@ -76,7 +76,9 @@ describe('RecordsManager & ValidationsManager', () => {
       mockExtractableFind.mockResolvedValue(records);
 
       const result = await recordsManager.getRecords();
-      expect(result[0]).toBe(records[0]);
+      expect(result.map((record) => ({ ...record, authorized_at: record.authorized_at?.toString() }))).toEqual(
+        records.map((record) => ({ ...record, authorized_at: record.authorized_at?.toISOString() }))
+      );
     });
 
     it('should return empty array if no records exist', async () => {
@@ -97,7 +99,10 @@ describe('RecordsManager & ValidationsManager', () => {
       mockExtractableFindOne.mockResolvedValue(record);
 
       const result = await recordsManager.getRecord(record.record_name);
-      expect(result).toBe(record);
+      expect({ ...result, authorized_at: result?.authorized_at?.toString() }).toEqual({
+        ...record,
+        authorized_at: record.authorized_at?.toISOString(),
+      });
     });
 
     it('should return undefined if record does not exist', async () => {
@@ -125,7 +130,10 @@ describe('RecordsManager & ValidationsManager', () => {
         data: record.data,
       });
 
-      expect(result).toBe(record);
+      expect({ ...result, authorized_at: result.authorized_at?.toString() }).toEqual({
+        ...record,
+        authorized_at: record.authorized_at?.toISOString(),
+      });
       expect(result.record_name).toBe(record.record_name);
     });
   });

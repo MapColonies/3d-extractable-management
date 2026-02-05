@@ -128,7 +128,9 @@ export type components = {
       /** Format: int64 */
       id: number;
       record_name: string;
+      username?: string;
       authorized_by: string;
+      authorized_at?: string;
       /** @description Metadata stored in extractable_records.data */
       data?: {
         [key: string]: unknown;
@@ -138,9 +140,11 @@ export type components = {
       /** Format: int64 */
       id: number;
       record_name: string;
+      username?: string;
       authorized_by: string;
       /** @enum {string} */
       action: 'CREATE' | 'DELETE';
+      authorized_at?: string;
     };
   };
   responses: never;

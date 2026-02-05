@@ -27,7 +27,10 @@ export class RecordsManager {
       this.logger.warn({ msg: 'no records found', logContext });
     }
 
-    return records;
+    return records.map((record) => ({
+      ...record,
+      authorized_at: record.authorized_at?.toISOString(),
+    }));
   }
 
   public async getRecord(record_name: string): Promise<IExtractableRecord | undefined> {
@@ -37,7 +40,7 @@ export class RecordsManager {
     const record = await this.extractableRepo.findOne({ where: { record_name } });
     if (!record) return undefined;
 
-    return record;
+    return { ...record, authorized_at: record.authorized_at?.toISOString() };
   }
 
   public async createRecord(params: {
@@ -58,7 +61,6 @@ export class RecordsManager {
         record_name,
         username,
         authorized_by,
-        authorized_at: new Date(),
         data,
       });
 
@@ -70,11 +72,10 @@ export class RecordsManager {
           username: saved.username,
           authorized_by: saved.authorized_by,
           action: IAuditAction.CREATE,
-          authorized_at: new Date(),
         })
       );
 
-      return saved;
+      return { ...saved, authorized_at: saved.authorized_at?.toISOString() };
     });
 
     this.logger.info({ msg: 'extractable record created', record_name, logContext });
@@ -104,7 +105,6 @@ export class RecordsManager {
           username: record.username,
           authorized_by: record.authorized_by,
           action: IAuditAction.DELETE,
-          authorized_at: new Date(),
         })
       );
       return true;

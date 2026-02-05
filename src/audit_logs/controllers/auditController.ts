@@ -29,7 +29,7 @@ export class AuditController {
       return res.status(httpStatus.OK).json(records);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting record', record_name, err, logContext });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get record', code: 'INTERNAL_ERROR' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get audit logs', code: 'INTERNAL_ERROR' });
     }
   };
 }

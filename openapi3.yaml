@@ -42,7 +42,9 @@ paths:
                   value:
                     - id: 123
                       record_name: rec_A
+                      username: username
                       authorized_by: john_doe
+                      authorized_at: '2026-02-04T16:26:18.055Z'
                       data:
                         kuku: 'kuku random data'
         '400':
@@ -97,7 +99,9 @@ paths:
                   value:
                     id: 123
                     record_name: rec_A
+                    username: username
                     authorized_by: john_doe
+                    authorized_at: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
         '404':
@@ -173,7 +177,9 @@ paths:
                   value:
                     id: 123
                     record_name: rec_A
+                    username: username
                     authorized_by: john_doe
+                    authorized_at: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
         '400':
@@ -500,12 +506,16 @@ paths:
                   value:
                     - id: 1
                       record_name: rec_A
+                      username: username
                       authorized_by: john_doe
                       action: 'CREATE'
+                      authorized_at: '2026-02-04T16:26:18.055Z'
                     - id: 2
                       record_name: rec_A
+                      username: username
                       authorized_by: jane_doe
                       action: 'DELETE'
+                      authorized_at: '2026-02-05T16:26:18.055Z'
                 empty:
                   summary: No audit logs
                   value: []
@@ -661,7 +671,11 @@ components:
           format: int64
         record_name:
           type: string
+        username:
+          type: string
         authorized_by:
+          type: string
+        authorized_at:
           type: string
         data:
           type: object
@@ -681,10 +695,12 @@ components:
           format: int64
         record_name:
           type: string
+        username:
+          type: string
         authorized_by:
           type: string
         action:
           type: string
-          enum:
-            - CREATE
-            - DELETE
+          enum: [CREATE, DELETE]
+        authorized_at:
+          type: string

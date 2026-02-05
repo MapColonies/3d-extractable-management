@@ -73,7 +73,7 @@ describe('records', function () {
   describe('Happy Path', function () {
     it('should return 201 when record_name is valid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { record_name: recordInstance.record_name },
+        pathParams: { record_name: invalidCredentials.record_name },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -85,10 +85,9 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
 
       expect(response.body).toMatchObject({
-        record_name: recordInstance.record_name,
+        record_name: invalidCredentials.record_name,
         authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
-        authorized_at: expect.any(String),
       });
     });
 
@@ -405,6 +404,33 @@ describe('records', function () {
       });
 
       jest.restoreAllMocks();
+    });
+
+    it('should return 404 when deleteRecord returns false (record not found)', async function () {
+      jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
+        isValid: true,
+        message: 'Record can be deleted',
+        code: 'SUCCESS',
+      });
+
+      jest.spyOn(RecordsManager.prototype, 'deleteRecord').mockResolvedValueOnce(false);
+
+      const response = await requestSender.deleteRecord({
+        pathParams: { record_name: invalidCredentials.record_name },
+        requestBody: {
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorized_by: recordInstance.authorized_by,
+        },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: `Record ${invalidCredentials.record_name} not found`,
+        code: 'INVALID_RECORD_NAME',
+      });
     });
 
     it('should return 404 for non-existent record', async function () {

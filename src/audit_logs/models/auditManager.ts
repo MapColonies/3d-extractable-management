@@ -26,6 +26,9 @@ export class AuditManager {
       this.logger.warn({ msg: 'no records found', record_name, logContext });
     }
 
-    return records;
+    return records.map((record) => ({
+      ...record,
+      authorized_at: record.authorized_at?.toISOString(),
+    }));
   }
 }

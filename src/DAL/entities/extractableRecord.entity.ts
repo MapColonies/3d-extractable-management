@@ -19,7 +19,7 @@ export class ExtractableRecord {
   public authorized_by!: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  public authorized_at!: Date;
+  public authorized_at?: Date;
 
   @Column({ type: 'jsonb', nullable: true })
   public data?: Record<string, unknown>;

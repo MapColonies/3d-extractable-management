@@ -24,5 +24,5 @@ export class AuditLog {
   public action!: IAuditAction;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  public authorized_at!: Date;
+  public authorized_at?: Date;
 }

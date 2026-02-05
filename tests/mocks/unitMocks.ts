@@ -37,6 +37,8 @@ const mockExtractableCreateImpl = (
 
 const mockExtractableCreate = mockExtractableCreateImpl as unknown as Repository<ExtractableRecord>['create'];
 
+const mockAuditFind: jest.MockedFunction<(criteria?: unknown) => Promise<AuditLog[]>> = jest.fn();
+
 const mockExtractableSave: jest.MockedFunction<
   <T extends DeepPartial<ExtractableRecord>>(entityOrEntities: T | T[], options?: SaveOptions) => Promise<T | T[]>
 > = jest.fn();
@@ -89,6 +91,7 @@ const mockAuditCreateImpl = (entityLike?: DeepPartial<AuditLog> | DeepPartial<Au
 const mockAuditCreate = mockAuditCreateImpl as unknown as Repository<AuditLog>['create'];
 
 const mockAuditRepoInternal: Partial<Repository<AuditLog>> = {
+  find: mockAuditFind,
   save: mockAuditSave,
   create: mockAuditCreate,
 };
@@ -102,10 +105,12 @@ const resetRepoMocks = (): void => {
   mockExtractableDelete.mockReset();
 
   mockAuditSave.mockReset();
+  mockAuditFind.mockReset();
 };
 
 export { mockExtractableFind, mockExtractableFindOne, mockExtractableCreate, mockExtractableSave, mockExtractableDelete };
 export { mockExtractableRepoInternal as mockExtractableRepo };
 export { mockAuditSave, mockAuditCreate };
+export { mockAuditFind };
 export { mockAuditRepoInternal as mockAuditRepo };
 export { resetRepoMocks };
