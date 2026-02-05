@@ -57,6 +57,7 @@ describe('records', function () {
 
   afterAll(async () => {
     try {
+      jest.restoreAllMocks();
       const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
       await connectionManager.shutdown()();
       console.log('🧹 ConnectionManager shut down.');
@@ -73,7 +74,7 @@ describe('records', function () {
   describe('Happy Path', function () {
     it('should return 201 when recordName is valid', async function () {
       const response = await requestSender.createRecord({
-        pathParams: { recordName: invalidCredentials.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -85,31 +86,22 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
 
       expect(response.body).toMatchObject({
-        recordName: invalidCredentials.recordName,
+        recordName: 'rec_happy_path',
         authorizedBy: recordInstance.authorizedBy,
         data: recordInstance.data,
       });
     });
 
     it('should return 200 and the record', async function () {
-      await requestSender.createRecord({
-        pathParams: { recordName: invalidCredentials.recordName },
-        requestBody: {
-          ...recordInstance,
-          username: validCredentials.username,
-          password: validCredentials.password,
-        },
-      });
-
       const response = await requestSender.getRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
 
       expect(response.body).toMatchObject({
-        recordName: recordInstance.recordName,
+        recordName: 'rec_happy_path',
         authorizedBy: recordInstance.authorizedBy,
         data: recordInstance.data,
       });
@@ -136,7 +128,7 @@ describe('records', function () {
       const payload: IAuthPayloadWithRecord = {
         username: validCredentials.username,
         password: validCredentials.password,
-        recordName: recordInstance.recordName,
+        recordName: 'rec_happy_path',
       };
 
       const response = await requestSender.validateDelete({
@@ -153,7 +145,7 @@ describe('records', function () {
 
     it('should return 204 when recordName is valid and deleted successfully', async function () {
       const response = await requestSender.deleteRecord({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_happy_path' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -623,9 +615,9 @@ describe('records', function () {
 
       const response = await requestSender.validateCreate({
         requestBody: {
-          username: 'any-username',
-          password: 'any-password',
-          recordName: 'any-recordName',
+          username: invalidCredentials.username,
+          password: invalidCredentials.password,
+          recordName: invalidCredentials.recordName,
         },
       });
 
