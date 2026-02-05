@@ -73,7 +73,7 @@ describe('records', function () {
   describe('Happy Path', function () {
     it('should return 200 and the available audits', async function () {
       await requestSender.createRecord({
-        pathParams: { record_name: validCredentials.record_name },
+        pathParams: { recordName: validCredentials.recordName },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -82,17 +82,16 @@ describe('records', function () {
       });
 
       const response = await requestSender.getAudit({
-        pathParams: { record_name: recordInstance.record_name },
+        pathParams: { recordName: recordInstance.recordName },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(Array.isArray(response.body)).toBe(true);
-
       expect(response.body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            record_name: recordInstance.record_name,
-            authorized_by: recordInstance.authorized_by,
+            recordName: recordInstance.recordName,
+            authorizedBy: recordInstance.authorizedBy,
             action: IAuditAction.CREATE,
           }),
         ])
@@ -102,7 +101,7 @@ describe('records', function () {
     it('should return 200 and empty array when no audit logs by recordName found', async function () {
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce([]);
       const response = await requestSender.getAudit({
-        pathParams: { record_name: validCredentials.record_name },
+        pathParams: { recordName: validCredentials.recordName },
       });
 
       expect(response.status).toBe(httpStatusCodes.OK);
@@ -117,7 +116,7 @@ describe('records', function () {
       });
 
       const response = await requestSender.getAudit({
-        pathParams: { record_name: validCredentials.record_name },
+        pathParams: { recordName: validCredentials.recordName },
       });
 
       expect(response).toSatisfyApiSpec();

@@ -6,7 +6,7 @@ const auditRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   const router = Router();
   const controller = dependencyContainer.resolve(AuditController);
 
-  router.get('/:record_name', controller.getAudit);
+  router.get('/:recordName', controller.getAudit);
 
   return router;
 };

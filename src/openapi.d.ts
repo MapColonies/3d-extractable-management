@@ -18,7 +18,7 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
-  '/records/{record_name}': {
+  '/records/{recordName}': {
     parameters: {
       query?: never;
       header?: never;
@@ -71,7 +71,7 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
-  '/audit/{record_name}': {
+  '/audit/{recordName}': {
     parameters: {
       query?: never;
       header?: never;
@@ -122,15 +122,15 @@ export type components = {
     'auth-payload-with-record': {
       username: string;
       password: string;
-      record_name: string;
+      recordName: string;
     };
     'extractable-record': {
       /** Format: int64 */
       id: number;
-      record_name: string;
+      recordName: string;
       username?: string;
-      authorized_by: string;
-      authorized_at?: string;
+      authorizedBy: string;
+      authorizedAt?: string;
       /** @description Metadata stored in extractable_records.data */
       data?: {
         [key: string]: unknown;
@@ -139,12 +139,12 @@ export type components = {
     'audit-log': {
       /** Format: int64 */
       id: number;
-      record_name: string;
+      recordName: string;
       username?: string;
-      authorized_by: string;
+      authorizedBy: string;
       /** @enum {string} */
       action: 'CREATE' | 'DELETE';
-      authorized_at?: string;
+      authorizedAt?: string;
     };
   };
   responses: never;
@@ -198,7 +198,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        record_name: string;
+        recordName: string;
       };
       cookie?: never;
     };
@@ -238,7 +238,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        record_name: string;
+        recordName: string;
       };
       cookie?: never;
     };
@@ -248,7 +248,7 @@ export interface operations {
           username: string;
           password: string;
           /** @description User authorizing this record creation */
-          authorized_by: string;
+          authorizedBy: string;
           /** @description Optional metadata for the record */
           data?: {
             [key: string]: unknown;
@@ -309,7 +309,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        record_name: string;
+        recordName: string;
       };
       cookie?: never;
     };
@@ -319,7 +319,7 @@ export interface operations {
           username: string;
           password: string;
           /** @description User authorizing this deletion */
-          authorized_by: string;
+          authorizedBy: string;
         };
       };
     };
@@ -494,8 +494,8 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        /** @description The record_name to fetch audit logs for */
-        record_name: string;
+        /** @description The recordName to fetch audit logs for */
+        recordName: string;
       };
       cookie?: never;
     };
@@ -510,7 +510,7 @@ export interface operations {
           'application/json': components['schemas']['audit-log'][];
         };
       };
-      /** @description Invalid record_name or request parameters */
+      /** @description Invalid recordName or request parameters */
       400: {
         headers: {
           [name: string]: unknown;

@@ -2,8 +2,8 @@ import { IExtractableRecord, IAuthPayloadWithRecord } from '@common/constants';
 
 export const recordInstance: IExtractableRecord = {
   id: 101,
-  record_name: 'rec_name',
-  authorized_by: 'username',
+  recordName: 'rec_name',
+  authorizedBy: 'username',
   data: {
     productType: '3DPhotoRealistic' as never,
     resolution: '4K' as never,
@@ -14,11 +14,11 @@ export const recordInstance: IExtractableRecord = {
 export const validCredentials: IAuthPayloadWithRecord = {
   username: 'username',
   password: 'password',
-  record_name: recordInstance.record_name,
+  recordName: recordInstance.recordName,
 };
 
 export const invalidCredentials: IAuthPayloadWithRecord = {
   username: 'wrong',
   password: 'wrong',
-  record_name: 'rec_invalid',
+  recordName: 'rec_invalid',
 };

@@ -57,7 +57,7 @@ describe('ValidationsManager - User & Record Validation', () => {
       mockExtractableFindOne.mockResolvedValue(null);
       const record_name = 'newRecord';
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, record_name: record_name };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name };
       const result = await validationsManager.validateCreate(payload);
 
       expect(result.isValid).toBe(true);
@@ -68,7 +68,7 @@ describe('ValidationsManager - User & Record Validation', () => {
     it('should fail when record already exists', async () => {
       mockExtractableFindOne.mockResolvedValue({ record_name: 'existingRecord' } as ExtractableRecord);
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, record_name: 'existingRecord' };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
       const result = await validationsManager.validateCreate(payload);
 
       expect(result.isValid).toBe(false);
@@ -81,7 +81,7 @@ describe('ValidationsManager - User & Record Validation', () => {
     it('should succeed when record exists and credentials are valid', async () => {
       mockExtractableFindOne.mockResolvedValue({ record_name: 'existingRecord' } as ExtractableRecord);
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, record_name: 'existingRecord' };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
       const result = await validationsManager.validateDelete(payload);
 
       expect(result.isValid).toBe(true);
@@ -92,7 +92,7 @@ describe('ValidationsManager - User & Record Validation', () => {
     it('should fail when record does not exist', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, record_name: 'nonExistingRecord' };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'nonExistingRecord' };
       const result = await validationsManager.validateDelete(payload);
 
       expect(result.isValid).toBe(false);

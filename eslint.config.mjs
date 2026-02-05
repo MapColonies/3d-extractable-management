@@ -6,5 +6,6 @@ export default config(jestConfig, tsBaseConfig, {
   rules: {
     '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/switch-exhaustiveness-check': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
   },
 });

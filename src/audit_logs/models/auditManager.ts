@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { SERVICES, IAuditLog } from '@common/constants';
 import { LogContext } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
+import { mapAuditLogToCamelCase } from '@src/utils/converter';
 
 @injectable()
 export class AuditManager {
@@ -16,19 +17,17 @@ export class AuditManager {
     this.logContext = { fileName: __filename, class: AuditManager.name };
   }
 
-  public async getAuditLogs(record_name: string): Promise<IAuditLog[]> {
+  public async getAuditLogs(recordName: string): Promise<IAuditLog[]> {
     const logContext = { ...this.logContext, function: this.getAuditLogs.name };
-    this.logger.debug({ msg: `Fetching audit logs for record '${record_name}'`, record_name, logContext });
+    this.logger.debug({ msg: `Fetching audit logs for record '${recordName}'`, recordName, logContext });
 
-    const records = await this.auditRepo.find({ where: { record_name } });
+    console.log('\n' + recordName + '\n');
+    const records = await this.auditRepo.find({ where: { record_name: recordName } });
 
     if (records.length === 0) {
-      this.logger.warn({ msg: 'no records found', record_name, logContext });
+      this.logger.warn({ msg: 'no records found', recordName, logContext });
     }
 
-    return records.map((record) => ({
-      ...record,
-      authorized_at: record.authorized_at?.toISOString(),
-    }));
+    return records.map(mapAuditLogToCamelCase);
   }
 }

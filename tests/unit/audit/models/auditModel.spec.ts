@@ -7,6 +7,7 @@ import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import { mockExtractableRepo, mockAuditFind, resetRepoMocks, mockAuditRepo } from '@tests/mocks/unitMocks';
 import { IAuditAction } from '@src/common/interfaces';
+import { mapAuditLogToCamelCase } from '@src/utils/converter';
 
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
@@ -54,30 +55,26 @@ describe('RecordsManager & ValidationsManager', () => {
 
   describe('#getAuditLogs', () => {
     it('should return audit logs by record name', async () => {
-      const auditLog: AuditLog = {
-        ...recordInstance,
+      const dbAuditLog: AuditLog = {
+        id: 1,
+        record_name: recordInstance.recordName,
         username: validCredentials.username,
+        authorized_by: recordInstance.authorizedBy,
         action: IAuditAction.CREATE,
         authorized_at: new Date(),
       };
 
-      mockAuditFind.mockResolvedValue([auditLog]);
+      mockAuditFind.mockResolvedValue([dbAuditLog]);
 
-      const result = await auditManager.getAuditLogs(auditLog.record_name);
+      const result = await auditManager.getAuditLogs(dbAuditLog.record_name);
 
-      expect(Array.isArray(result)).toBe(true);
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        record_name: auditLog.record_name,
-        username: auditLog.username,
-        action: IAuditAction.CREATE,
-      });
+      expect(result).toEqual([mapAuditLogToCamelCase(dbAuditLog)]);
     });
 
     it('should return empty array when no audit logs found', async () => {
       mockAuditFind.mockResolvedValue([]);
 
-      const result = await auditManager.getAuditLogs(invalidCredentials.record_name);
+      const result = await auditManager.getAuditLogs(invalidCredentials.recordName);
 
       expect(result).toEqual([]);
     });

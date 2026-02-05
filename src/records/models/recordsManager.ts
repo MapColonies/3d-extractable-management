@@ -5,6 +5,7 @@ import { SERVICES, IExtractableRecord } from '@common/constants';
 import { LogContext, IAuditAction } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
 
 @injectable()
 export class RecordsManager {
@@ -27,40 +28,37 @@ export class RecordsManager {
       this.logger.warn({ msg: 'no records found', logContext });
     }
 
-    return records.map((record) => ({
-      ...record,
-      authorized_at: record.authorized_at?.toISOString(),
-    }));
+    return records.map(mapExtractableRecordToCamelCase);
   }
 
-  public async getRecord(record_name: string): Promise<IExtractableRecord | undefined> {
+  public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {
     const logContext = { ...this.logContext, function: this.getRecord.name };
-    this.logger.debug({ msg: 'getting record', record_name, logContext });
+    this.logger.debug({ msg: 'getting record', recordName, logContext });
 
-    const record = await this.extractableRepo.findOne({ where: { record_name } });
+    const record = await this.extractableRepo.findOne({ where: { record_name: recordName } });
     if (!record) return undefined;
 
-    return { ...record, authorized_at: record.authorized_at?.toISOString() };
+    return mapExtractableRecordToCamelCase(record);
   }
 
   public async createRecord(params: {
-    record_name: string;
+    recordName: string;
     username: string;
-    authorized_by: string;
+    authorizedBy: string;
     data?: Record<string, unknown>;
   }): Promise<IExtractableRecord> {
     const logContext = { ...this.logContext, function: this.createRecord.name };
-    const { record_name, username, authorized_by, data } = params;
+    const { recordName, username, authorizedBy, data } = params;
 
-    this.logger.info({ msg: `starting to create extractable record '${record_name}'`, record_name, logContext });
+    this.logger.info({ msg: `starting to create extractable record '${recordName}'`, recordName, logContext });
 
     const savedRecord = await this.extractableRepo.manager.transaction(async (manager): Promise<IExtractableRecord> => {
       const { extractableRepo, auditRepo } = this.getTransactionalRepos(manager);
 
       const record = extractableRepo.create({
-        record_name,
+        record_name: recordName,
         username,
-        authorized_by,
+        authorized_by: authorizedBy,
         data,
       });
 
@@ -68,36 +66,36 @@ export class RecordsManager {
 
       await auditRepo.save(
         auditRepo.create({
-          record_name: saved.record_name,
-          username: saved.username,
-          authorized_by: saved.authorized_by,
+          record_name: record.record_name,
+          username: record.username,
+          authorized_by: record.authorized_by,
           action: IAuditAction.CREATE,
         })
       );
 
-      return { ...saved, authorized_at: saved.authorized_at?.toISOString() };
+      return mapExtractableRecordToCamelCase(saved);
     });
 
-    this.logger.info({ msg: 'extractable record created', record_name, logContext });
+    this.logger.info({ msg: 'extractable record created', recordName, logContext });
 
     return savedRecord;
   }
 
-  public async deleteRecord(record_name: string): Promise<boolean> {
+  public async deleteRecord(recordName: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
-    this.logger.info({ msg: `starting to delete extractable record '${record_name}'`, record_name, logContext });
+    this.logger.info({ msg: `starting to delete extractable record '${recordName}'`, recordName, logContext });
 
     const result = await this.extractableRepo.manager.transaction(async (manager) => {
       const { extractableRepo, auditRepo } = this.getTransactionalRepos(manager);
 
-      const record = await extractableRepo.findOne({ where: { record_name } });
+      const record = await extractableRepo.findOne({ where: { record_name: recordName } });
 
       if (!record) {
-        this.logger.warn({ msg: 'extractable record not found for delete', record_name, logContext });
+        this.logger.warn({ msg: 'extractable record not found for delete', recordName, logContext });
         return false;
       }
 
-      await extractableRepo.delete({ record_name });
+      await extractableRepo.delete({ record_name: recordName });
 
       await auditRepo.save(
         auditRepo.create({
@@ -110,7 +108,7 @@ export class RecordsManager {
       return true;
     });
 
-    this.logger.info({ msg: `extractable record deleted`, record_name, logContext });
+    this.logger.info({ msg: `extractable record deleted`, recordName, logContext });
     return result;
   }
 

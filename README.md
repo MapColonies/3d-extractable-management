@@ -9,7 +9,7 @@ The service provides a REST API for managing 3d _extractable_ records with valid
 The service performs the following key tasks:
 
 - **Record Management:**  
-  Create, read, and delete extractable records. The server automatically assigns `id` and `authorized_at`.
+  Create, read, and delete extractable records. The server automatically assigns `id` and `authorizedAt`.
 
 - **Validation:**  
   Before creating or deleting records, requests go through a validation step to ensure authorization and correctness(the validation endpoints are open).
@@ -29,20 +29,20 @@ The service performs the following key tasks:
 flowchart TD
     A["Client"]
 
-    G1["GET /records<br/>GET /records/{record_name}"]
+    G1["GET /records<br/>GET /records/{recordName}"]
 
     B["POST /users/validate<br/>username + password"]
     C{"Login valid?"}
     D["Authenticated session"]
 
-    F1["POST /records/validateCreate<br/>record_name"]
-    F2["POST /records/validateDelete<br/>record_name"]
+    F1["POST /records/validateCreate<br/>recordName"]
+    F2["POST /records/validateDelete<br/>recordName"]
     V{"Validation passed?"}
 
-    I1["POST /records<br/>username + password<br/>authorized_by + data"]
-    I2["DELETE /records<br/>username + password<br/>authorized_by"]
+    I1["POST /records<br/>username + password<br/>authorizedBy + data"]
+    I2["DELETE /records<br/>username + password<br/>authorizedBy"]
 
-    J["DB: records + audit<br/>(authorized_by, <b><i>authorized_at...)</i></b>"]
+    J["DB: records + audit<br/>(authorizedBy, <b><i>authorizedAt...)</i></b>"]
 
     S["200 OK / Success"]
     E1["401 Unauthorized"]
