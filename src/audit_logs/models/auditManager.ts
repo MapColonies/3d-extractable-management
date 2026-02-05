@@ -21,11 +21,8 @@ export class AuditManager {
     const logContext = { ...this.logContext, function: this.getAuditLogs.name };
     this.logger.debug({ msg: `Fetching audit logs for record '${recordName}'`, recordName, logContext });
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const records = await this.auditRepo.find({ where: { record_name: recordName } });
-
-    if (records.length === 0) {
-      this.logger.warn({ msg: 'no records found', recordName, logContext });
-    }
 
     return records.map(mapAuditLogToCamelCase);
   }

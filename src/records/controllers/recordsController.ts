@@ -160,7 +160,8 @@ export class RecordsController {
       return httpStatus.OK;
     }
 
-    switch (result.code) {
+    const code = result.code ?? 'UNKNOWN';
+    switch (code) {
       case 'MISSING_CREDENTIALS':
         return httpStatus.BAD_REQUEST;
       case 'INVALID_RECORD_NAME':

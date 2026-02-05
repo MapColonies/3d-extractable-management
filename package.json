@@ -25,10 +25,10 @@
     "generate:openapi-types": "openapi-helpers ./openapi3.yaml ./src/openapi.d.ts --format --add-typed-request-handler",
     "prepare": "node .husky/install.mjs",
     "typeorm": "ts-node --esm ./node_modules/typeorm/cli.js",
-    "migration:create": "npm run typeorm -- migration:generate -d src/DAL/dataSources/db.data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d src/DAL/dataSources/db.data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/DAL/dataSources/db.data-source.ts",
-    "schema:sync": "npm run typeorm -- schema:sync -d src/DAL/dataSources/db.data-source.ts"
+    "migration:create": "npm run typeorm -- migration:generate -d src/DAL/db.data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/DAL/db.data-source.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/DAL/db.data-source.ts",
+    "schema:sync": "npm run typeorm -- schema:sync -d src/DAL/db.data-source.ts"
   },
   "directories": {
     "test": "tests"

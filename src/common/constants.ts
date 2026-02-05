@@ -8,6 +8,7 @@ export const IGNORED_OUTGOING_TRACE_ROUTES = [/^.*\/v1\/metrics.*$/];
 export const IGNORED_INCOMING_TRACE_ROUTES = [/^.*\/docs.*$/];
 
 export const SERVICES = {
+  /* eslint-disable @typescript-eslint/naming-convention */
   LOGGER: Symbol('Logger'),
   CONFIG: Symbol('Config'),
   TRACER: Symbol('Tracer'),

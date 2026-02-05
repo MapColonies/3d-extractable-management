@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn } from 'typeorm';
 
 @Entity({ name: 'extractable_records' })

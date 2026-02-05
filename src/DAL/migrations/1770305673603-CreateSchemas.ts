@@ -1,10 +1,11 @@
 /* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateSchemasMigration1769960851517 implements MigrationInterface {
+export class CreateSchemas1770305673603 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // --- Extractable Records Table ---
     await queryRunner.query(`
-      CREATE TABLE "extractable_records" (
+      CREATE TABLE IF NOT EXISTS "extractable_records" (
         "id" SERIAL NOT NULL,
         "record_name" character varying NOT NULL,
         "username" character varying NOT NULL,
@@ -17,22 +18,23 @@ export class CreateSchemasMigration1769960851517 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_extractable_record_name"
+      CREATE INDEX IF NOT EXISTS "idx_extractable_record_name"
       ON "extractable_records" ("record_name")
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_extractable_username"
+      CREATE INDEX IF NOT EXISTS "idx_extractable_username"
       ON "extractable_records" ("username")
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_extractable_authorized_at"
+      CREATE INDEX IF NOT EXISTS "idx_extractable_authorized_at"
       ON "extractable_records" ("authorized_at")
     `);
 
+    // --- Audit Log Table ---
     await queryRunner.query(`
-      CREATE TABLE "audit_log" (
+      CREATE TABLE IF NOT EXISTS "audit_log" (
         "id" SERIAL NOT NULL,
         "record_name" character varying NOT NULL,
         "username" character varying NOT NULL,
@@ -44,36 +46,30 @@ export class CreateSchemasMigration1769960851517 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_audit_record_name"
+      CREATE INDEX IF NOT EXISTS "idx_audit_record_name"
       ON "audit_log" ("record_name")
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_audit_username"
+      CREATE INDEX IF NOT EXISTS "idx_audit_username"
       ON "audit_log" ("username")
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_audit_authorized_at"
+      CREATE INDEX IF NOT EXISTS "idx_audit_authorized_at"
       ON "audit_log" ("authorized_at")
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "idx_audit_action"
-      ON "audit_log" ("action")
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "idx_audit_action"`);
-    await queryRunner.query(`DROP INDEX "idx_audit_authorized_at"`);
-    await queryRunner.query(`DROP INDEX "idx_audit_username"`);
-    await queryRunner.query(`DROP INDEX "idx_audit_record_name"`);
-    await queryRunner.query(`DROP TABLE "audit_log"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_audit_authorized_at"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_audit_username"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_audit_record_name"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "audit_log"`);
 
-    await queryRunner.query(`DROP INDEX "idx_extractable_authorized_at"`);
-    await queryRunner.query(`DROP INDEX "idx_extractable_username"`);
-    await queryRunner.query(`DROP INDEX "idx_extractable_record_name"`);
-    await queryRunner.query(`DROP TABLE "extractable_records"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_extractable_authorized_at"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_extractable_username"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_extractable_record_name"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "extractable_records"`);
   }
 }

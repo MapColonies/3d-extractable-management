@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import config from 'config';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';

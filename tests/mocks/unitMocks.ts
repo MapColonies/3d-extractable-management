@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Repository, DeepPartial, FindOptionsWhere, SaveOptions, DeleteResult } from 'typeorm';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';

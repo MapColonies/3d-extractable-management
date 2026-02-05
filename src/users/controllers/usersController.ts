@@ -20,6 +20,7 @@ export class UsersController {
       let status: number;
 
       if (!result.isValid) {
+        // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
         switch (result.code) {
           case 'MISSING_CREDENTIALS':
             status = httpStatus.BAD_REQUEST;

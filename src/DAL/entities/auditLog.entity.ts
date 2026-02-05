@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
 import { IAuditAction } from '../../common/interfaces';
 
@@ -6,7 +7,6 @@ import { IAuditAction } from '../../common/interfaces';
 @Index('idx_audit_record_name', ['record_name'])
 @Index('idx_audit_username', ['username'])
 @Index('idx_audit_authorized_at', ['authorized_at'])
-@Index('idx_audit_action', ['action'])
 export class AuditLog {
   @PrimaryGeneratedColumn()
   public id!: number;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import 'reflect-metadata';
 import config from 'config';
 import jsLogger from '@map-colonies/js-logger';

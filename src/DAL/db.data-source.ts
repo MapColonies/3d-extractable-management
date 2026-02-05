@@ -3,11 +3,12 @@
 import { DataSource } from 'typeorm';
 import config from 'config';
 import { DbConfig } from '@src/common/interfaces';
-import { ExtractableRecord } from '../entities/extractableRecord.entity';
-import { AuditLog } from '../entities/auditLog.entity';
+import { ExtractableRecord } from './entities/extractableRecord.entity';
+import { AuditLog } from './entities/auditLog.entity';
 
 const dbConfig = config.get<DbConfig>('db');
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export const ExtractabledDataSource = new DataSource({
   type: dbConfig.type,
   host: dbConfig.host,

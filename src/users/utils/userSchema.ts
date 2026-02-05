@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { z } from 'zod';
 
 const AuthPayloadSchema = z.object({
