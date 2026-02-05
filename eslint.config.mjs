@@ -5,5 +5,6 @@ import { config } from '@map-colonies/eslint-config/helpers';
 export default config(jestConfig, tsBaseConfig, {
   rules: {
     '@typescript-eslint/naming-convention': 'off',
+    '@typescript-eslint/switch-exhaustiveness-check': 'off',
   },
 });

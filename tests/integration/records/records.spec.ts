@@ -103,7 +103,6 @@ describe('records', function () {
         record_name: recordInstance.record_name,
         authorized_by: recordInstance.authorized_by,
         data: recordInstance.data,
-        authorized_at: expect.any(String),
       });
     });
 

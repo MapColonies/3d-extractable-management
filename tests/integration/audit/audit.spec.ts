@@ -4,15 +4,13 @@ import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
-import { RecordsManager } from '@src/records/models/recordsManager';
-import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
+import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
+import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
 
 jest.mock('config');
 

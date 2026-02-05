@@ -1,15 +1,13 @@
 import 'reflect-metadata';
 import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
-import { Repository, DeleteResult, EntityManager } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
-import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import { mockExtractableRepo, mockAuditFind, resetRepoMocks, mockAuditRepo } from '@tests/mocks/unitMocks';
 import { IAuditAction } from '@src/common/interfaces';
 
-IAuditAction;
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
 
