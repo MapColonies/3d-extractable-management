@@ -7,6 +7,7 @@ import { IUser, LogContext } from '@src/common/interfaces';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
 import { UsersSchema } from '@src/users/utils/userSchema';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { CatalogCall } from '../../externalServices/catalog/catalogCall';
 
 @injectable()
 export class ValidationsManager {
@@ -15,7 +16,8 @@ export class ValidationsManager {
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    @inject(SERVICES.EXTRACTABLE_RECORD_REPOSITORY) private readonly extractableRepo: Repository<ExtractableRecord>
+    @inject(SERVICES.EXTRACTABLE_RECORD_REPOSITORY) private readonly extractableRepo: Repository<ExtractableRecord>,
+    @inject(CatalogCall) private readonly catalog: CatalogCall
   ) {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
     this.users = this.loadUsers();
@@ -36,8 +38,21 @@ export class ValidationsManager {
 
     const record = await this.extractableRepo.findOne({ where: { record_name: payload.recordName } });
     if (record) {
-      this.logger.debug({ msg: 'record already exists for create', record_name: payload.recordName, logContext });
+      this.logger.debug({ msg: 'record already exists for create', recordName: payload.recordName, logContext });
       return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'INVALID_RECORD_NAME' };
+    }
+
+    let existsInCatalog: boolean;
+    try {
+      existsInCatalog = await this.catalog.doesRecordExist(payload.recordName);
+    } catch (err) {
+      this.logger.warn({ msg: 'catalog unavailable during create validation', recordName: payload.recordName, logContext, err });
+      return { isValid: false, message: 'Catalog service is currently unavailable', code: 'INTERNAL_ERROR' };
+    }
+
+    if (!existsInCatalog) {
+      this.logger.debug({ msg: 'record does not exist in catalog', recordName: payload.recordName, logContext });
+      return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
