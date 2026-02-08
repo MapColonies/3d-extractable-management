@@ -1,0 +1,9 @@
+services:
+  postgres-db:
+    image: postgres:15
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_DB: 3d-extractable-management_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
