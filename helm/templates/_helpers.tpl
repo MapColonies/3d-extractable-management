@@ -31,6 +31,13 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Create service name as used by the service name label.
+*/}}
+{{- define "service.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "extractable-management.labels" -}}
@@ -58,6 +65,17 @@ app.kubernetes.io/name: {{ include "extractable-management.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{ include "mclabels.selectorLabels" . }}
 {{- end }}
+
+{{/*
+Returns the environment from global if exists or from the chart's values, defaults to development
+*/}}
+{{- define "extractable-management.environment" -}}
+{{- if .Values.global.environment }}
+    {{- .Values.global.environment -}}
+{{- else -}}
+    {{- .Values.environment | default "development" -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Returns the cloud provider name from global if exists or from the chart's values, defaults to minikube
@@ -96,6 +114,28 @@ Returns the cloud provider image pull secret name from global if exists or from 
 {{- end -}}
 
 {{/*
+Returns tracing enabled from global if exists or from chart's values
+*/}}
+{{- define "extractable-management.tracingEnabled" -}}
+{{- if .Values.global.tracing.enabled }}
+    {{- .Values.global.tracing.enabled -}}
+{{- else -}}
+    {{- .Values.env.tracing.enabled -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Returns metrics enabled from global if exists or from chart's values
+*/}}
+{{- define "extractable-management.metricsEnabled" -}}
+{{- if .Values.global.metrics.enabled }}
+    {{- .Values.global.metrics.enabled -}}
+{{- else -}}
+    {{- .Values.env.metrics.enabled -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Returns the tracing url from global if exists or from the chart's values
 */}}
 {{- define "extractable-management.tracingUrl" -}}
@@ -114,5 +154,18 @@ Returns the tracing url from global if exists or from the chart's values
     {{- .Values.global.metrics.url -}}
 {{- else -}}
     {{- .Values.env.metrics.url -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate OpenTelemetry trace configuration
+*/}}
+{{- define "extractable-managementNginx.otelTrace" -}}
+{{- if eq .Values.nginx.opentelemetry.samplerMethod "AlwaysOn" -}}
+otel_trace on;
+{{- else if eq .Values.nginx.opentelemetry.samplerMethod "TraceIdRatioBased" -}}
+otel_trace $ratio_sampler;
+{{- else -}}
+otel_trace off;
 {{- end -}}
 {{- end -}}
