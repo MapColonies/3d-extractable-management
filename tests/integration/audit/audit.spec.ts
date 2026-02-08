@@ -14,6 +14,13 @@ import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
 
 jest.mock('config');
 
+jest.mock('@src/externalServices/catalog/catalogCall', () => ({
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  CatalogCall: jest.fn().mockImplementation(() => ({
+    findRecord: jest.fn().mockResolvedValue(true),
+  })),
+}));
+
 const mockedConfig = config as jest.Mocked<typeof config>;
 
 describe('records', function () {
@@ -73,7 +80,7 @@ describe('records', function () {
   describe('Happy Path', function () {
     it('should return 200 and the available audits', async function () {
       await requestSender.createRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { recordName: 'rec_test' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -82,7 +89,7 @@ describe('records', function () {
       });
 
       const response = await requestSender.getAudit({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_test' },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -90,7 +97,7 @@ describe('records', function () {
       expect(response.body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            recordName: recordInstance.recordName,
+            recordName: 'rec_test',
             authorizedBy: recordInstance.authorizedBy,
             action: IAuditAction.CREATE,
           }),

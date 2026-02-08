@@ -6,7 +6,8 @@ import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
 import { IAuthPayloadWithRecord } from '@src/common/constants';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
-import { mockExtractableRepo, mockExtractableFindOne, resetRepoMocks } from '@tests/mocks/unitMocks';
+import { mockExtractableRepo, mockExtractableFindOne, resetRepoMocks, mockCatalogCall } from '@tests/mocks/unitMocks';
+import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 
 let validationsManager: ValidationsManager;
 
@@ -19,7 +20,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo);
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo, mockCatalogCall as unknown as CatalogCall);
   });
 
   afterEach(() => {
@@ -56,6 +57,8 @@ describe('ValidationsManager - User & Record Validation', () => {
   describe('#validateCreate', () => {
     it('should succeed when record does not exist and credentials are valid', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
+      mockCatalogCall.findRecord.mockResolvedValueOnce(true);
+
       const record_name = 'newRecord';
 
       const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name };
