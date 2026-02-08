@@ -55,6 +55,40 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
+    //add another property to stop the validation chain [the length of the routes maybe] - if(!shouldStopValidation) :
+    //forEach extractable url(other sites) send /records/validateCreate
+    //use promiseAll- get all responses and aggregate to get validOnOtherSites boolean
+    // if (!payload.stopRemoteValidation) {
+    //   try {
+    //     const routes = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
+
+    //     const results = await Promise.all(
+    //       routes.map(async (r) => {
+    //         try {
+    //           const res = await fetch(`${r.url}/records/validateCreate`, {
+    //             method: 'POST',
+    //             headers: { 'content-type': 'application/json' },
+    //             body: JSON.stringify({ ...payload, skipRemoteValidation: true }), // stop flag set here
+    //           });
+    //           const data = (await res.json()) as IValidateResponse;
+    //           return data.isValid;
+    //         } catch {
+    //           return false;
+    //         }
+    //       })
+    //     );
+
+    //     const validOnOtherSites = results.every(Boolean);
+    //     if (!validOnOtherSites) {
+    //       this.logger.debug({ msg: 'record validation failed on another site', recordName: payload.recordName, logContext });
+    //       return { isValid: false, message: 'Record validation failed on another site', code: 'REMOTE_VALIDATION_FAILED' };
+    //     }
+    //   } catch (err) {
+    //     this.logger.warn({ msg: 'remote validation unavailable', recordName: payload.recordName, logContext, err });
+    //     return { isValid: false, message: 'Remote validation service unavailable', code: 'INTERNAL_ERROR' };
+    //   }
+    // }
+
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
     return { isValid: true, message: `Record '${payload.recordName}' can be created`, code: 'SUCCESS' };
   }

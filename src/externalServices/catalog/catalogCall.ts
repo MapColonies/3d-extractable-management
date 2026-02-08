@@ -32,18 +32,15 @@ export class CatalogCall {
       const payload: IFindRecordsPayload = { productName: recordName };
       const response = await axios.post<Record3D[]>(`${this.catalog}/metadata/find`, payload);
 
-      if (response.status === StatusCodes.OK.valueOf() && Array.isArray(response.data)) {
-        if (response.data.length === 0) {
-          this.logger.debug({ msg: `No record found for '${recordName}'`, logContext });
-          return false;
-        }
-
-        this.logger.debug({ msg: `Record '${recordName}' found in catalog`, logContext });
-        return true;
+      if (response.status !== StatusCodes.OK.valueOf()) {
+        this.logger.error({ msg: `Catalog returned unexpected status: ${response.status}`, logContext, response });
+        throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog during record lookup', true);
       }
 
-      this.logger.error({ msg: `Catalog returned unexpected status: ${response.status}`, logContext, response });
-      throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog during record lookup', true);
+      const recordFound = Array.isArray(response.data) && response.data.length > 0;
+      this.logger.debug({ msg: recordFound ? `Record '${recordName}' found in catalog` : `No record found for '${recordName}'`, logContext });
+
+      return recordFound;
     } catch (err) {
       this.logger.error({ msg: 'Error occurred during findRecord call', logContext, err });
       throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog findRecord', true);
