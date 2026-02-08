@@ -29,5 +29,20 @@
         "options": null
       }
     }
+  },
+  "users": [{ "username": "username", "password": "password" }],
+  "db": {
+    "type": "postgres",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "username": "postgres",
+    "password": "postgres",
+    "database": "3d-extractable-management",
+    "enableSslAuth": false,
+    "sslPaths": {
+      "ca": "",
+      "key": "",
+      "cert": ""
+    }
   }
 }

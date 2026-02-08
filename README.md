@@ -1,65 +1,96 @@
-# Map Colonies typescript service template
+# 3D Extractable Management
 
-----------------------------------
+The service provides a REST API for managing 3d _extractable_ records with validation, audit logging, and user authentication. The service ensures proper authorization before creating or deleting records and stores relevant metadata for each record.
 
-This is a basic repo template for building new MapColonies web services in Typescript.
+---
 
-> [!IMPORTANT]
-> To regenerate the types on openapi change run the command `npm run generate:openapi-types`.
+## Functionality
 
-> [!WARNING]
-> After creating a new repo based on this template, you should delete the CODEOWNERS file.
+The service performs the following key tasks:
 
+- **Record Management:**  
+  Create, read, and delete extractable records. The server automatically assigns `id` and `authorizedAt`.
 
-## Development
-When in development you should use the command `npm run start:dev`. The main benefits are that it enables offline mode for the config package, and source map support for NodeJS errors.
+- **Validation:**  
+  Before creating or deleting records, requests go through a validation step to ensure authorization and correctness(the validation endpoints are open).
 
-### Template Features:
+- **User Authentication:**  
+  Verify user credentials for all record-related operations.
 
-- eslint configuration by [@map-colonies/eslint-config](https://github.com/MapColonies/eslint-config)
+- **Metadata Storage:**  
+  Optional JSON metadata can be stored alongside each record for additional context.
 
-- prettier configuration by [@map-colonies/prettier-config](https://github.com/MapColonies/prettier-config)
+- **Audit Logging:**  
+  Tracks who authorized each record creation or deletion along with timestamps.
 
-- jest
+---
 
-- .nvmrc
+``` mermaid
+flowchart TD
+    A["Client"]
 
-- Multi stage production-ready Dockerfile
+    G1["GET /records<br/>GET /records/{recordName}"]
 
-- commitlint
+    B["POST /users/validate<br/>username + password"]
+    C{"Login valid?"}
+    D["Authenticated session"]
 
-- git hooks
+    F1["POST /records/validateCreate<br/>recordName"]
+    F2["POST /records/validateDelete<br/>recordName"]
+    V{"Validation passed?"}
 
-- logging by [@map-colonies/js-logger](https://github.com/MapColonies/js-logger)
+    I1["POST /records<br/>username + password<br/>authorizedBy + data"]
+    I2["DELETE /records<br/>username + password<br/>authorizedBy"]
 
-- OpenAPI request validation
+    J["DB: records + audit<br/>(authorizedBy, <b><i>authorizedAt...)</i></b>"]
 
-- config load with [node-config](https://www.npmjs.com/package/node-config)
+    S["200 OK / Success"]
+    E1["401 Unauthorized"]
+    E2["400 / 401 Validation error"]
 
-- Tracing and metrics by [@map-colonies/telemetry](https://github.com/MapColonies/telemetry)
+    A -->|GET only| G1
 
-- github templates
+    A -->|Create / Delete| B
+    B --> C
+    C -->|No| E1
+    C -->|Yes| D
 
-- bug report
+    D -->|Create| F1
+    D -->|Delete| F2
 
-- feature request
+    F1 --> V
+    F2 --> V
 
-- pull request
+    V -->|No| E2
+    V -->|Yes| I1
+    V -->|Yes| I2
 
-- github actions
+    I1 --> J
+    I2 --> J
+    J --> S
 
-- on pull_request
+    classDef client fill:#eeeeee,stroke:#333,color:#000
+    classDef public fill:#1976d2,stroke:#0d47a1,color:#fff
+    classDef auth fill:#fb8c00,stroke:#e65100,color:#fff
+    classDef logic fill:#bbdefb,stroke:#1e88e5,color:#0d1b2a
+    classDef secure fill:#8e24aa,stroke:#4a148c,color:#fff
+    classDef storage fill:#00897b,stroke:#004d40,color:#fff
+    classDef success fill:#2e7d32,stroke:#1b5e20,color:#fff
+    classDef error fill:#c62828,stroke:#b71c1c,color:#fff
 
-- LGTM
+    class A client
+    class G1 public
 
-- test
+    class B,C auth
+    class D,F1,F2,V logic
 
-- lint
+    class I1,I2 secure
+    class J storage
+    class S success
+    class E1,E2 error
+```
 
-- snyk
-
-## API
-Checkout the OpenAPI spec [here](/openapi3.yaml)
+---
 
 ## Installation
 
@@ -67,6 +98,10 @@ Install deps with npm
 
 ```bash
 npm install
+```
+### Install Git Hooks
+```bash
+npx husky install
 ```
 
 ## Run Locally
