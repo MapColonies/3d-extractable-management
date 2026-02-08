@@ -1,106 +1,706 @@
 openapi: 3.0.1
 info:
-  title: service-name
-  description: basic template for map colonies service
+  title: 3d-extractable-management
+  description: Manage extractable records with validation and audit logging
   version: 1.0.0
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: 3d-extractable-management repo link
+    url: https://github.com/MapColonies/3d-extractable-management/
+
+security: []
+
+tags:
+  - name: records
+    description: Record extractability management
+  - name: audit
+    description: Documation of the the record history
+  - name: users
+    description: User authentication and validation
+
 paths:
-  /anotherResource:
+  /records:
     get:
-      operationId: getAnotherResource
       tags:
-        - anotherResource
-      summary: gets the resource
+        - records
+      summary: Get all extractable records
+      operationId: getRecords
       responses:
-        200:
-          description: OK
+        '200':
+          description: List of extractable records (empty array if none found)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/anotherResource'
-        400:
-          description: Bad Request
+                type: array
+                items:
+                  $ref: '#/components/schemas/extractable-record'
+              examples:
+                empty:
+                  summary: No records
+                  value: []
+                withRecords:
+                  summary: Some records
+                  value:
+                    - id: 123
+                      recordName: rec_A
+                      username: username
+                      authorizedBy: john_doe
+                      authorizedAt: '2026-02-04T16:26:18.055Z'
+                      data:
+                        kuku: 'kuku random data'
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
-  /resourceName:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                bad_request:
+                  summary: Bad request
+                  value:
+                    isValid: false
+                    message: 'Bad request – invalid query or parameters'
+                    code: 'MISSING_CREDENTIALS'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /records/{recordName}:
     get:
-      operationId: getResourceName
       tags:
-        - resourceName
-      summary: gets the resource
+        - records
+      summary: Get extractable record by record name
+      operationId: getRecord
+      parameters:
+        - name: recordName
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
-          description: OK
+        '200':
+          description: Record found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/resource'
-        400:
-          description: Bad Request
+                $ref: '#/components/schemas/extractable-record'
+              examples:
+                found:
+                  summary: Record exists
+                  value:
+                    id: 123
+                    recordName: rec_A
+                    username: username
+                    authorizedBy: john_doe
+                    authorizedAt: '2026-02-04T16:26:18.055Z'
+                    data:
+                      kuku: 'kuku random data'
+        '404':
+          description: Record not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                not_found:
+                  summary: Record does not exist
+                  value:
+                    isValid: false
+                    message: "Record with name 'rec_X' not found"
+                    code: 'INVALID_RECORD_NAME'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
     post:
-      operationId: createResource
       tags:
-        - resourceName
-      summary: creates a new record of type resource
+        - records
+      summary: Create extractable record
+      operationId: createRecord
+      parameters:
+        - name: recordName
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/resource'
+              type: object
+              required:
+                - username
+                - password
+                - authorizedBy
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                authorizedBy:
+                  type: string
+                  description: 'User authorizing this record creation'
+                data:
+                  type: object
+                  additionalProperties: true
+                  description: 'Optional metadata for the record'
       responses:
-        201:
-          description: created
+        '201':
+          description: Record created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/resource'
-        400:
-          description: Bad Request
+                $ref: '#/components/schemas/extractable-record'
+              examples:
+                created:
+                  summary: Record created
+                  value:
+                    id: 123
+                    recordName: rec_A
+                    username: username
+                    authorizedBy: john_doe
+                    authorizedAt: '2026-02-04T16:26:18.055Z'
+                    data:
+                      kuku: 'kuku random data'
+        '400':
+          description: Validation failed – call POST /records/validate first
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
-security:
-  - {}
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                validation_failed:
+                  summary: Validation missing
+                  value:
+                    isValid: false
+                    message: 'Cannot create record – validation required'
+                    code: 'MISSING_CREDENTIALS'
+        '401':
+          description: Unauthorized – invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                unauthorized:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: 'Invalid username or password'
+                    code: 'INVALID_CREDENTIALS'
+        '404':
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                record_not_found:
+                  summary: Record does not exist
+                  value:
+                    isValid: false
+                    message: "Record with name 'rec_X' not found"
+                    code: 'INVALID_RECORD_NAME'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+    delete:
+      tags:
+        - records
+      summary: Delete extractable record
+      operationId: deleteRecord
+      parameters:
+        - name: recordName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - authorizedBy
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                authorizedBy:
+                  type: string
+                  description: 'User authorizing this deletion'
+      responses:
+        '204':
+          description: Record deleted successfully
+        '404':
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                not_found:
+                  summary: Record missing
+                  value:
+                    isValid: false
+                    message: "Cannot delete – record 'rec_X' not found"
+                    code: 'INVALID_RECORD_NAME'
+        '400':
+          description: Validation failed – deletion not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                deletion_failed:
+                  summary: Validation failed
+                  value:
+                    isValid: false
+                    message: 'Deletion not allowed for this record'
+                    code: 'MISSING_CREDENTIALS'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                unauthorized:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: 'Invalid username or password'
+                    code: 'INVALID_CREDENTIALS'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /records/validateCreate:
+    post:
+      tags:
+        - records
+      summary: Validate record can be created
+      operationId: validateCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload-with-record'
+      responses:
+        '200':
+          description: Validation result for create
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                valid:
+                  summary: Can create
+                  value:
+                    isValid: true
+                    message: 'Record can be created'
+                    code: 'SUCCESS'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: 'Invalid username or password'
+                    code: 'INVALID_CREDENTIALS'
+        '400':
+          description: Validation failed – missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Missing credentials or recordName
+                  value:
+                    isValid: false
+                    message: 'Username, password, and recordName are required'
+                    code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' already exists"
+                    code: 'INVALID_RECORD_NAME'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /records/validateDelete:
+    post:
+      tags:
+        - records
+      summary: Validate record can be deleted
+      operationId: validateDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload-with-record'
+      responses:
+        '200':
+          description: Validation result for delete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                valid:
+                  summary: Can delete
+                  value:
+                    isValid: true
+                    message: 'Record can be deleted'
+                    code: 'SUCCESS'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: 'Invalid username or password'
+                    code: 'INVALID_CREDENTIALS'
+        '400':
+          description: Validation failed – missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Missing credentials or recordName
+                  value:
+                    isValid: false
+                    message: 'Username, password, and recordName are required'
+                    code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – doesn't exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' doesn't exists"
+                    code: 'INVALID_RECORD_NAME'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /audit/{recordName}:
+    get:
+      tags:
+        - audit
+      summary: Get all audit logs by record name
+      operationId: getAudit
+      parameters:
+        - name: recordName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The recordName to fetch audit logs for
+      responses:
+        '200':
+          description: List of audit logs for the record (empty array if none found)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/audit-log'
+              examples:
+                withAudits:
+                  summary: Audit logs exist
+                  value:
+                    - id: 1
+                      recordName: rec_A
+                      username: username
+                      authorizedBy: john_doe
+                      action: 'CREATE'
+                      authorizedAt: '2026-02-04T16:26:18.055Z'
+                    - id: 2
+                      recordName: rec_A
+                      username: username
+                      authorizedBy: jane_doe
+                      action: 'DELETE'
+                      authorizedAt: '2026-02-05T16:26:18.055Z'
+                empty:
+                  summary: No audit logs
+                  value: []
+        '400':
+          description: Invalid recordName or request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_format:
+                  summary: Invalid recordName
+                  value:
+                    isValid: false
+                    message: 'Invalid recordName provided'
+                    code: 'MISSING_CREDENTIALS'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /users/validate:
+    post:
+      tags:
+        - users
+      summary: Validate a user's username and password
+      operationId: validateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth-payload'
+      responses:
+        '200':
+          description: User credentials are valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                valid:
+                  summary: Credentials valid
+                  value:
+                    isValid: true
+                    message: 'User credentials are valid'
+                    code: 'SUCCESS'
+        '400':
+          description: Missing username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Missing credentials
+                  value:
+                    isValid: false
+                    message: 'Username and password are required'
+                    code: 'MISSING_CREDENTIALS'
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: 'Invalid username or password'
+                    code: 'INVALID_CREDENTIALS'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
 components:
   schemas:
-    error:
+    validateResponse:
       type: object
       required:
+        - isValid
         - message
+        - code
       properties:
+        isValid:
+          type: boolean
         message:
           type: string
-    resource:
+        code:
+          type: string
+          enum:
+            - SUCCESS
+            - MISSING_CREDENTIALS
+            - INVALID_CREDENTIALS
+            - INVALID_RECORD_NAME
+            - INTERNAL_ERROR
+
+    auth-payload:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    auth-payload-with-record:
+      type: object
+      required:
+        - username
+        - password
+        - recordName
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        recordName:
+          type: string
+
+    extractable-record:
       type: object
       required:
         - id
-        - name
-        - description
+        - recordName
+        - authorizedBy
       properties:
         id:
-          type: number
+          type: integer
           format: int64
-        name:
+        recordName:
           type: string
-        description:
+        username:
           type: string
-    anotherResource:
+        authorizedBy:
+          type: string
+        authorizedAt:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+          description: Metadata stored in extractable_records.data
+
+    audit-log:
       type: object
       required:
-        - kind
-        - isAlive
+        - id
+        - recordName
+        - authorizedBy
+        - action
       properties:
-        kind:
+        id:
+          type: integer
+          format: int64
+        recordName:
           type: string
-        isAlive:
-          type: boolean
+        username:
+          type: string
+        authorizedBy:
+          type: string
+        action:
+          type: string
+          enum: [CREATE, DELETE]
+        authorizedAt:
+          type: string

@@ -1,12 +1,17 @@
 global:
-  cloudProvider: {}
-  tracing: {}
-  metrics: {}
+  cloudProvider:
+    flavor: openshift
+    dockerRegistryUrl: ""
+    imagePullSecretName: ""
+  tracing:
+    url: ""
+  metrics:
+    url: ""
 
 mclabels:
   component: backend
-  partOf: boilerplates
-  owner: common
+  partOf: extractable
+  owner: 3d
   prometheus:
     enabled: true
 
@@ -20,8 +25,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 configManagement:
-  offlineMode: false
-  name: 'service-name'
+  offlineMode: true
+  name: 'extractable-management'
   version: 'latest'
   serverUrl: 'http://localhost:8080/api'
 
@@ -64,10 +69,8 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: ts-server-boilerplate
-  # If commented, appVersion will be taken. See: _helpers.tpl
-  # tag: 'latest'
-  pullPolicy: IfNotPresent
+  repository: extractable-management
+  tag:
 
 env:
   port: 8080
@@ -118,3 +121,16 @@ ingress:
   cors:
     enabled: true
     origin: '*'
+
+usersSecret:
+  name: extractable-management-users-secret
+  key: users-json
+
+postgres:
+  enabled: true
+  user:
+    useExternal: false
+    secretName: extractable-management-db-secrets
+    requirePassword: true
+  ssl:
+    enabled: false
