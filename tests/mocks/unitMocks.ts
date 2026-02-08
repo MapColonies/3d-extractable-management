@@ -115,3 +115,7 @@ export { mockAuditSave, mockAuditCreate };
 export { mockAuditFind };
 export { mockAuditRepoInternal as mockAuditRepo };
 export { resetRepoMocks };
+
+export const mockCatalogCall = {
+  findRecord: jest.fn<Promise<boolean>, [string]>().mockResolvedValue(true),
+};

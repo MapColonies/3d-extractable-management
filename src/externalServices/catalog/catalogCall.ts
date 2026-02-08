@@ -7,7 +7,7 @@ import { withSpanAsyncV4 } from '@map-colonies/telemetry';
 import { SERVICES } from '../../common/constants';
 import { AppError } from '../../utils/appError';
 import type { IConfig, LogContext } from '../../common/interfaces';
-import type { Record3D } from './interfaces';
+import type { Record3D, IFindRecordsPayload } from './interfaces';
 
 @injectable()
 export class CatalogCall {
@@ -24,28 +24,29 @@ export class CatalogCall {
   }
 
   @withSpanAsyncV4
-  public async doesRecordExist(recordName: string): Promise<boolean> {
-    const logContext = { ...this.logContext, function: this.doesRecordExist.name };
-    this.logger.debug({ msg: 'Find last version of product from catalog service (CRUD)', logContext });
+  public async findRecord(recordName: string): Promise<boolean> {
+    const logContext = { ...this.logContext, function: this.findRecord.name };
+    this.logger.debug({ msg: `Searching for record '${recordName}' in catalog service`, logContext });
+
     try {
-      const response = await axios.get<Record3D>(`${this.catalog}/metadata/lastVersion/${recordName}`);
-      if (response.status === StatusCodes.OK.valueOf()) {
+      const payload: IFindRecordsPayload = { productName: recordName };
+      const response = await axios.post<Record3D[]>(`${this.catalog}/metadata/find`, payload);
+
+      if (response.status === StatusCodes.OK.valueOf() && Array.isArray(response.data)) {
+        if (response.data.length === 0) {
+          this.logger.debug({ msg: `No record found for '${recordName}'`, logContext });
+          return false;
+        }
+
+        this.logger.debug({ msg: `Record '${recordName}' found in catalog`, logContext });
         return true;
       }
 
-      if (response.status === StatusCodes.NOT_FOUND.valueOf()) {
-        return false;
-      }
-
-      this.logger.error({ msg: 'Got unexpected status-code form catalog', logContext, response });
-      throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with the catalog during validation of recordName existence', true);
+      this.logger.error({ msg: `Catalog returned unexpected status: ${response.status}`, logContext, response });
+      throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog during record lookup', true);
     } catch (err) {
-      if (err instanceof AppError) {
-        throw err;
-      }
-
-      this.logger.error({ msg: 'Something went wrong in catalog', logContext, err });
-      throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'there is a problem with catalog', true);
+      this.logger.error({ msg: 'Error occurred during findRecord call', logContext, err });
+      throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog findRecord', true);
     }
   }
 }

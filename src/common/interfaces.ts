@@ -1,5 +1,4 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { Polygon } from 'geojson';
 
 export interface IConfig {
   get: <T>(setting: string) => T;
@@ -35,32 +34,4 @@ export interface IUser {
 export enum IAuditAction {
   CREATE = 'CREATE',
   DELETE = 'DELETE',
-}
-
-export interface UpdatePayload {
-  productName?: string;
-  sourceDateStart?: Date;
-  sourceDateEnd?: Date;
-  footprint?: Polygon;
-  description?: string;
-  creationDate?: Date;
-  minResolutionMeter?: number;
-  maxResolutionMeter?: number;
-  maxAccuracyCE90?: number;
-  absoluteAccuracyLE90?: number;
-  accuracySE90?: number;
-  relativeAccuracySE90?: number;
-  visualAccuracy?: number;
-  heightRangeFrom?: number;
-  heightRangeTo?: number;
-  classification?: string;
-  producerName?: string;
-  minFlightAlt?: number;
-  maxFlightAlt?: number;
-  geographicArea?: string;
-  keywords?: string;
-}
-
-export interface UpdateStatusPayload {
-  productStatus: string;
 }

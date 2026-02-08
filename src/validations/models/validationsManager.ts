@@ -44,7 +44,7 @@ export class ValidationsManager {
 
     let existsInCatalog: boolean;
     try {
-      existsInCatalog = await this.catalog.doesRecordExist(payload.recordName);
+      existsInCatalog = await this.catalog.findRecord(payload.recordName);
     } catch (err) {
       this.logger.warn({ msg: 'catalog unavailable during create validation', recordName: payload.recordName, logContext, err });
       return { isValid: false, message: 'Catalog service is currently unavailable', code: 'INTERNAL_ERROR' };
