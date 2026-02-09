@@ -124,7 +124,7 @@ export type components = {
       password: string;
       recordName: string;
       /** @description Optional flag to skip remote validation (used internally) */
-      stopRemoteValidation?: boolean;
+      multiSiteValidation?: boolean;
     };
     'extractable-record': {
       /** Format: int64 */

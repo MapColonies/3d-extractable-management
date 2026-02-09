@@ -33,13 +33,13 @@ export class CatalogCall {
       const response = await axios.post<Record3D[]>(`${this.catalog}/metadata/find`, payload);
 
       if (response.status !== StatusCodes.OK.valueOf()) {
-        this.logger.debug({ msg: `Catalog returned unexpected status: ${response.status}`, logContext, response });
-        throw new AppError('catalog', StatusCodes.BAD_REQUEST, 'Problem with catalog during record lookup', true);
+        this.logger.error({ msg: `Catalog returned unexpected status: ${response.status}`, logContext, response });
+        throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog during record lookup', true);
       }
 
       const records = response.data;
       if (!Array.isArray(records) || records.length === 0) {
-        this.logger.debug({ msg: `No record found for '${recordName}'`, logContext });
+        this.logger.error({ msg: `No record found for '${recordName}'`, logContext });
         return false;
       }
 

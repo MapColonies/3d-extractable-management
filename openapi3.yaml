@@ -331,7 +331,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/auth-payload-with-record'
+              allOf:
+                - $ref: '#/components/schemas/auth-payload-with-record'
+                - type: object
+                  properties:
+                    multiSiteValidation:
+                      type: boolean
+                      description: Optional flag to skip remote validation (used internally)
+
       responses:
         '200':
           description: Validation result for create
@@ -658,9 +665,6 @@ components:
           type: string
         recordName:
           type: string
-        stopRemoteValidation:
-          type: boolean
-          description: Optional flag to skip remote validation (used internally)
 
     extractable-record:
       type: object

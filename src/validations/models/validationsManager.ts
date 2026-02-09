@@ -64,14 +64,14 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
-    if (payload.stopRemoteValidation !== true) {
+    if (payload.multiSiteValidation !== true) {
       try {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {
             try {
               const response = await axios.post<IValidateResponse>(`${route.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
                 ...payload,
-                stopRemoteValidation: true,
+                multiSiteValidation: true,
               });
 
               return response.data.isValid;

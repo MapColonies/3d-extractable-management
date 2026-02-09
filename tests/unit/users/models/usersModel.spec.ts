@@ -64,7 +64,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       const record_name = 'newRecord';
 
-      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: true };
+      const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
       const result = await validationsManager.validateCreate(payload);
 
       expect(result.isValid).toBe(true);
@@ -89,12 +89,12 @@ describe('ValidationsManager - User & Record Validation', () => {
         mockCatalogCall.findPublishedRecord.mockResolvedValueOnce(true);
       });
 
-      it('should skip remote validation when stopRemoteValidation is true', async () => {
+      it('should skip remote validation when multiSiteValidation is true', async () => {
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post.mockClear();
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: true };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(true);
@@ -102,7 +102,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         expect(mockedAxios.post).not.toHaveBeenCalled();
       });
 
-      it('should perform remote validation when stopRemoteValidation is undefined (defaults to false)', async () => {
+      it('should perform remote validation when multiSiteValidation is undefined (defaults to false)', async () => {
         const routes = [{ url: 'http://site1.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post.mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } });
@@ -146,7 +146,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         );
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(true);
@@ -174,7 +174,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         );
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(false);
@@ -201,7 +201,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         );
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(false);
@@ -224,7 +224,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         );
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(true);
@@ -243,7 +243,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         });
 
         const record_name = 'remoteTestRecord';
-        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
+        const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(false);
