@@ -27,6 +27,10 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ isValid: true }),
+    });
+
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();
@@ -38,6 +42,12 @@ describe('records', function () {
       if (key === 'users') {
         return [{ username: validCredentials.username, password: validCredentials.password }];
       }
+      if (key === 'externalServices.publicExtractableRoutes') {
+        return [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }];
+      }
+      if (key === 'externalServices.catalog') {
+        return 'http://127.0.0.1:8080';
+      }
       return undefined;
     });
 
@@ -48,33 +58,15 @@ describe('records', function () {
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
-  beforeEach(() => {
-    const dbConfig = getTestDbConfig();
-
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
-    });
-  });
-
   afterAll(async () => {
     try {
+      jest.restoreAllMocks();
       const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
       await connectionManager.shutdown()();
       console.log('🧹 ConnectionManager shut down.');
     } catch (err) {
       console.log('⚠️  Error during shutdown:', err);
     }
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {

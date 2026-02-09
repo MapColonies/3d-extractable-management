@@ -37,10 +37,20 @@ export class CatalogCall {
         throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog during record lookup', true);
       }
 
-      const recordFound = Array.isArray(response.data) && response.data.length > 0;
-      this.logger.debug({ msg: recordFound ? `Record '${recordName}' found in catalog` : `No record found for '${recordName}'`, logContext });
+      const records = response.data;
+      if (!Array.isArray(records) || records.length === 0) {
+        this.logger.debug({ msg: `No record found for '${recordName}'`, logContext });
+        return false;
+      }
 
-      return recordFound;
+      const isPublished = records.some((r) => r.productStatus?.toLowerCase() === 'published');
+      if (!isPublished) {
+        this.logger.error({ msg: `Record '${recordName}' found but not published`, logContext, response });
+        throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Record found but not published', true);
+      }
+
+      this.logger.debug({ msg: `Record '${recordName}' found and published`, logContext });
+      return true;
     } catch (err) {
       this.logger.error({ msg: 'Error occurred during findRecord call', logContext, err });
       throw new AppError('catalog', StatusCodes.INTERNAL_SERVER_ERROR, 'Problem with catalog findRecord', true);

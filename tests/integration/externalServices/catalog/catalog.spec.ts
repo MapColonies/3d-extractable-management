@@ -23,7 +23,7 @@ const createSpanMock = (): Span =>
   }) as unknown as Span;
 
 const tracerMock: Tracer = {
-  startActiveSpan: ((
+  startActiveSpan: (
     name: string,
     fnOrOptions?: SpanOptions | ((span: Span) => unknown),
     fnOrContext?: Context | ((span: Span) => unknown),
@@ -42,16 +42,21 @@ const tracerMock: Tracer = {
 
     if (!callback) return span;
 
-    const result = callback(span);
-    if (result instanceof Promise) {
-      return result.finally(() => span.end());
-    } else {
+    try {
+      const result = callback(span);
+      if (result instanceof Promise) {
+        return result.finally(() => span.end());
+      } else {
+        span.end();
+        return result;
+      }
+    } catch (error) {
       span.end();
-      return result;
+      throw error;
     }
-  }) as Tracer['startActiveSpan'],
+  },
   startSpan: jest.fn(),
-};
+} as unknown as Tracer;
 
 describe('CatalogCall Integration (axios mocked)', () => {
   let catalogCall: CatalogCall;
@@ -68,6 +73,9 @@ describe('CatalogCall Integration (axios mocked)', () => {
       error: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
+      log: jest.fn(),
+      trace: jest.fn(),
+      fatal: jest.fn(),
     } as unknown as jest.Mocked<Logger>;
 
     catalogCall = new CatalogCall(configMock, loggerMock, tracerMock);
@@ -75,17 +83,18 @@ describe('CatalogCall Integration (axios mocked)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedAxios.post.mockClear();
   });
 
   it('should return true when record is found', async () => {
     mockedAxios.post.mockResolvedValueOnce({
       status: httpStatusCodes.OK,
-      data: [{ id: '123', name: 'rec_found' }],
+      data: [{ id: '123', name: 'rec_found', productStatus: 'PUBLISHED' }],
     });
 
     const result = await catalogCall.findRecord('rec_found');
-    expect(result).toBe(true);
 
+    expect(result).toBe(true);
     expect(loggerMock.debug).toHaveBeenCalledWith(expect.objectContaining({ msg: expect.stringContaining("Record 'rec_found' found") as string }));
   });
 
@@ -123,6 +132,19 @@ describe('CatalogCall Integration (axios mocked)', () => {
 
     expect(loggerMock.error).toHaveBeenCalledWith(
       expect.objectContaining({ msg: expect.stringContaining('Error occurred during findRecord call') as string })
+    );
+  });
+
+  it('should throw AppError when record is found but not published', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      status: httpStatusCodes.OK,
+      data: [{ id: '123', name: 'rec_unpublished', productStatus: 'unpublished' }],
+    });
+
+    await expect(catalogCall.findRecord('rec_unpublished')).rejects.toThrow(AppError);
+
+    expect(loggerMock.error).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: expect.stringContaining("Record 'rec_unpublished' found but not published") as string })
     );
   });
 });

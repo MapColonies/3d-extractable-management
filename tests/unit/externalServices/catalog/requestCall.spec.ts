@@ -39,12 +39,17 @@ describe('catalogCall tests', () => {
       expect(response).toBe(false);
     });
 
-    it('returns true when record exists', async () => {
+    it('returns true when record exists and is published', async () => {
       const recordName = validCredentials.recordName;
 
       mockedAxios.post.mockResolvedValueOnce({
         status: StatusCodes.OK,
-        data: [{ productName: recordName } as Record3D],
+        data: [
+          {
+            productName: recordName,
+            productStatus: 'published',
+          } as unknown as Record3D,
+        ],
       });
 
       const response = await catalog.findRecord(recordName);
@@ -52,6 +57,22 @@ describe('catalogCall tests', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.post).toHaveBeenCalledWith(`${catalogUrl}/find`, { productName: recordName });
       expect(response).toBe(true);
+    });
+
+    it('throws error when record exists but not published', async () => {
+      const recordName = validCredentials.recordName;
+
+      mockedAxios.post.mockResolvedValueOnce({
+        status: StatusCodes.OK,
+        data: [
+          {
+            productName: recordName,
+            productStatus: 'draft',
+          } as unknown as Record3D,
+        ],
+      });
+
+      await expect(catalog.findRecord(recordName)).rejects.toThrow('Problem with catalog findRecord');
     });
 
     it('throws error on bad status', async () => {

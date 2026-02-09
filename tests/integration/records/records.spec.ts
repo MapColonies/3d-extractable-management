@@ -12,6 +12,7 @@ import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
 
+jest.mock('axios');
 jest.mock('config');
 
 jest.mock('@src/externalServices/catalog/catalogCall', () => ({
@@ -27,6 +28,9 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ isValid: true }),
+    });
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();
@@ -38,6 +42,12 @@ describe('records', function () {
       if (key === 'users') {
         return [{ username: validCredentials.username, password: validCredentials.password }];
       }
+      if (key === 'externalServices.publicExtractableRoutes') {
+        return [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }];
+      }
+      if (key === 'externalServices.catalog') {
+        return 'http://127.0.0.1:8080';
+      }
       return undefined;
     });
 
@@ -46,20 +56,6 @@ describe('records', function () {
     const [app] = await getApp({ useChild: false });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
-  });
-
-  beforeEach(() => {
-    const dbConfig = getTestDbConfig();
-
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
-    });
   });
 
   afterAll(async () => {
@@ -71,11 +67,6 @@ describe('records', function () {
     } catch (err) {
       console.log('⚠️  Error during shutdown:', err);
     }
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-    delete process.env.USERS_JSON;
   });
 
   describe('Happy Path', function () {
@@ -229,8 +220,6 @@ describe('records', function () {
           message: `Record 'rec_name' already exists`,
           code: 'INVALID_RECORD_NAME',
         });
-
-        jest.restoreAllMocks();
       });
     });
 

@@ -4,7 +4,7 @@ import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Repository } from 'typeorm';
 import { IUser, LogContext } from '@src/common/interfaces';
-import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse, REMOTE_VALIDATE_CREATE_PATH } from '@common/constants';
 import { UsersSchema } from '@src/users/utils/userSchema';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { CatalogCall } from '../../externalServices/catalog/catalogCall';
@@ -24,7 +24,7 @@ export class ValidationsManager {
   }
 
   public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
-    const logContext = { ...this.logContext, function: 'validateCreate' };
+    const logContext = { ...this.logContext, function: this.validateCreate.name };
 
     const userValidation = this.validateUser(payload);
     if (!userValidation.isValid) {
@@ -55,46 +55,45 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
-    //add another property to stop the validation chain [the length of the routes maybe] - if(!shouldStopValidation) :
-    //forEach extractable url(other sites) send /records/validateCreate
-    //use promiseAll- get all responses and aggregate to get validOnOtherSites boolean
-    // if (!payload.stopRemoteValidation) {
-    //   try {
-    //     const routes = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
+    const stopRemoteValidation = payload.stopRemoteValidation ?? false;
+    if (!stopRemoteValidation) {
+      try {
+        const routes = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
 
-    //     const results = await Promise.all(
-    //       routes.map(async (r) => {
-    //         try {
-    //           const res = await fetch(`${r.url}/records/validateCreate`, {
-    //             method: 'POST',
-    //             headers: { 'content-type': 'application/json' },
-    //             body: JSON.stringify({ ...payload, skipRemoteValidation: true }), // stop flag set here
-    //           });
-    //           const data = (await res.json()) as IValidateResponse;
-    //           return data.isValid;
-    //         } catch {
-    //           return false;
-    //         }
-    //       })
-    //     );
+        const results = await Promise.all(
+          routes.map(async (r) => {
+            try {
+              const res = await fetch(`${r.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ ...payload, stopRemoteValidation: true }),
+              });
+              const data = (await res.json()) as IValidateResponse;
 
-    //     const validOnOtherSites = results.every(Boolean);
-    //     if (!validOnOtherSites) {
-    //       this.logger.debug({ msg: 'record validation failed on another site', recordName: payload.recordName, logContext });
-    //       return { isValid: false, message: 'Record validation failed on another site', code: 'REMOTE_VALIDATION_FAILED' };
-    //     }
-    //   } catch (err) {
-    //     this.logger.warn({ msg: 'remote validation unavailable', recordName: payload.recordName, logContext, err });
-    //     return { isValid: false, message: 'Remote validation service unavailable', code: 'INTERNAL_ERROR' };
-    //   }
-    // }
+              return data.isValid;
+            } catch {
+              return false;
+            }
+          })
+        );
+
+        const validOnOtherSites = results.every(Boolean);
+        if (!validOnOtherSites) {
+          this.logger.debug({ msg: 'record validation failed on another site', recordName: payload.recordName, logContext });
+          return { isValid: false, message: 'Record validation failed on another site', code: 'INTERNAL_ERROR' };
+        }
+      } catch (err) {
+        this.logger.warn({ msg: 'remote validation unavailable', recordName: payload.recordName, logContext, err });
+        return { isValid: false, message: 'Remote validation service unavailable', code: 'INTERNAL_ERROR' };
+      }
+    }
 
     this.logger.debug({ msg: 'create validation successful', recordName: payload.recordName, logContext });
     return { isValid: true, message: `Record '${payload.recordName}' can be created`, code: 'SUCCESS' };
   }
 
   public async validateDelete(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
-    const logContext = { ...this.logContext, function: 'validateDelete' };
+    const logContext = { ...this.logContext, function: this.validateDelete.name };
 
     const userValidation = this.validateUser(payload);
     if (!userValidation.isValid) {
@@ -117,7 +116,7 @@ export class ValidationsManager {
   }
 
   public validateUser(payload: IAuthPayload): IValidateResponse {
-    const logContext = { ...this.logContext, function: 'validateUser' };
+    const logContext = { ...this.logContext, function: this.validateUser.name };
 
     if (!payload.username || !payload.password) {
       this.logger.debug({ msg: 'missing credentials', logContext });
