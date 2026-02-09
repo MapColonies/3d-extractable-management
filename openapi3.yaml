@@ -658,6 +658,9 @@ components:
           type: string
         recordName:
           type: string
+        stopRemoteValidation:
+          type: boolean
+          description: Optional flag to skip remote validation (used internally)
 
     extractable-record:
       type: object

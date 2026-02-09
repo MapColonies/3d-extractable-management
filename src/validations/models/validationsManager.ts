@@ -64,8 +64,7 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
-    const stopRemoteValidation = payload.stopRemoteValidation ?? false;
-    if (!stopRemoteValidation) {
+    if (payload.stopRemoteValidation !== true) {
       try {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {

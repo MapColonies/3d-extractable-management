@@ -123,6 +123,8 @@ export type components = {
       username: string;
       password: string;
       recordName: string;
+      /** @description Optional flag to skip remote validation (used internally) */
+      stopRemoteValidation?: boolean;
     };
     'extractable-record': {
       /** Format: int64 */
