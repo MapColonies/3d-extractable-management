@@ -7,7 +7,7 @@ import { withSpanAsyncV4 } from '@map-colonies/telemetry';
 import { SERVICES } from '../../common/constants';
 import { AppError } from '../../utils/appError';
 import type { IConfig, LogContext } from '../../common/interfaces';
-import type { Record3D, IfindPublishedRecordsPayload } from './interfaces';
+import type { Record3D, IFindPublishedRecordsPayload } from './interfaces';
 
 @injectable()
 export class CatalogCall {
@@ -29,7 +29,7 @@ export class CatalogCall {
     this.logger.debug({ msg: `Searching for record '${recordName}' in catalog service`, logContext });
 
     try {
-      const payload: IfindPublishedRecordsPayload = { productName: recordName };
+      const payload: IFindPublishedRecordsPayload = { productName: recordName };
       const response = await axios.post<Record3D[]>(`${this.catalog}/metadata/find`, payload);
 
       if (response.status !== StatusCodes.OK.valueOf()) {
@@ -39,7 +39,7 @@ export class CatalogCall {
 
       const records = response.data;
       if (!Array.isArray(records) || records.length === 0) {
-        this.logger.error({ msg: `No record found for '${recordName}'`, logContext });
+        this.logger.debug({ msg: `No record found for '${recordName}'`, logContext });
         return false;
       }
 
