@@ -1,5 +1,6 @@
 import config from 'config';
 import httpStatusCodes from 'http-status-codes';
+import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -15,10 +16,12 @@ import { getTestDbConfig } from '@tests/configurations/testConfig';
 jest.mock('axios');
 jest.mock('config');
 
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 jest.mock('@src/externalServices/catalog/catalogCall', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CatalogCall: jest.fn().mockImplementation(() => ({
-    findRecord: jest.fn().mockResolvedValue(true),
+    findPublishedRecord: jest.fn().mockResolvedValue(true),
   })),
 }));
 
@@ -28,9 +31,10 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      json: jest.fn().mockResolvedValue({ isValid: true }),
+    mockedAxios.post.mockResolvedValue({
+      data: { isValid: true },
     });
+
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();

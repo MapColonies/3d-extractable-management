@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import axios from 'axios';
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
@@ -13,6 +14,7 @@ import { CatalogCall } from '../../externalServices/catalog/catalogCall';
 export class ValidationsManager {
   private readonly logContext: LogContext;
   private readonly users: IAuthPayload[];
+  private readonly routesConfig: { url: string }[];
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -21,6 +23,13 @@ export class ValidationsManager {
   ) {
     this.logContext = { fileName: __filename, class: ValidationsManager.name };
     this.users = this.loadUsers();
+
+    try {
+      this.routesConfig = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
+    } catch (err) {
+      this.logger.error({ msg: 'Failed to load routes from config', err, logContext: this.logContext });
+      this.routesConfig = [];
+    }
   }
 
   public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
@@ -44,7 +53,7 @@ export class ValidationsManager {
 
     let existsInCatalog: boolean;
     try {
-      existsInCatalog = await this.catalog.findRecord(payload.recordName);
+      existsInCatalog = await this.catalog.findPublishedRecord(payload.recordName);
     } catch (err) {
       this.logger.warn({ msg: 'catalog unavailable during create validation', recordName: payload.recordName, logContext, err });
       return { isValid: false, message: 'Catalog service is currently unavailable', code: 'INTERNAL_ERROR' };
@@ -58,19 +67,15 @@ export class ValidationsManager {
     const stopRemoteValidation = payload.stopRemoteValidation ?? false;
     if (!stopRemoteValidation) {
       try {
-        const routes = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
-
         const results = await Promise.all(
-          routes.map(async (r) => {
+          this.routesConfig.map(async (route) => {
             try {
-              const res = await fetch(`${r.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ ...payload, stopRemoteValidation: true }),
+              const response = await axios.post<IValidateResponse>(`${route.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
+                ...payload,
+                stopRemoteValidation: true,
               });
-              const data = (await res.json()) as IValidateResponse;
 
-              return data.isValid;
+              return response.data.isValid;
             } catch {
               return false;
             }

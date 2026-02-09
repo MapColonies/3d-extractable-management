@@ -1,10 +1,10 @@
-import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
+import { StatusCodes } from 'http-status-codes';
 import type { Tracer, Span, SpanOptions, Context } from '@opentelemetry/api';
-import { Logger } from '@map-colonies/js-logger';
+import type { Logger } from '@map-colonies/js-logger';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
-import { IConfig } from '@src/common/interfaces';
 import { AppError } from '@src/utils/appError';
+import { IConfig } from '@src/common/interfaces';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -60,91 +60,86 @@ const tracerMock: Tracer = {
 
 describe('CatalogCall Integration (axios mocked)', () => {
   let catalogCall: CatalogCall;
-  let configMock: jest.Mocked<IConfig>;
-  let loggerMock: jest.Mocked<Logger>;
-
-  beforeAll(() => {
-    configMock = {
-      get: jest.fn().mockReturnValue('http://mock-catalog-service'),
-    } as unknown as jest.Mocked<IConfig>;
-
-    loggerMock = {
-      debug: jest.fn(),
-      error: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      log: jest.fn(),
-      trace: jest.fn(),
-      fatal: jest.fn(),
-    } as unknown as jest.Mocked<Logger>;
-
-    catalogCall = new CatalogCall(configMock, loggerMock, tracerMock);
-  });
+  const loggerMock = {
+    debug: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    log: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+  } as unknown as Logger;
+  const configMock = {
+    get: jest.fn().mockReturnValue('http://mock-catalog-service'),
+  } as unknown as jest.Mocked<IConfig>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedAxios.post.mockClear();
+    catalogCall = new CatalogCall(configMock, loggerMock, tracerMock);
   });
 
-  it('should return true when record is found', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      status: httpStatusCodes.OK,
-      data: [{ id: '123', name: 'rec_found', productStatus: 'PUBLISHED' }],
-    });
+  it('should throw AppError for axios rejection', async () => {
+    mockedAxios.post.mockRejectedValueOnce(new Error('Network error'));
 
-    const result = await catalogCall.findRecord('rec_found');
+    await expect(catalogCall.findPublishedRecord('rec_fail')).rejects.toThrow(AppError);
 
-    expect(result).toBe(true);
-    expect(loggerMock.debug).toHaveBeenCalledWith(expect.objectContaining({ msg: expect.stringContaining("Record 'rec_found' found") as string }));
-  });
-
-  it('should return false when record is not found', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      status: httpStatusCodes.OK,
-      data: [],
-    });
-
-    const result = await catalogCall.findRecord('rec_missing');
-    expect(result).toBe(false);
-
-    expect(loggerMock.debug).toHaveBeenCalledWith(
-      expect.objectContaining({ msg: expect.stringContaining("No record found for 'rec_missing'") as string })
+    expect(loggerMock.error).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: expect.stringContaining('Error occurred during findPublishedRecord call') as string })
     );
   });
 
   it('should throw AppError for unexpected status', async () => {
     mockedAxios.post.mockResolvedValueOnce({
-      status: httpStatusCodes.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST,
       data: [],
     });
 
-    await expect(catalogCall.findRecord('rec_error')).rejects.toThrow(AppError);
+    await expect(catalogCall.findPublishedRecord('rec_error')).rejects.toThrow(AppError);
 
     expect(loggerMock.error).toHaveBeenCalledWith(
-      expect.objectContaining({ msg: expect.stringContaining('Catalog returned unexpected status') as string })
+      expect.objectContaining({ msg: expect.stringContaining('Error occurred during findPublishedRecord call') as string })
     );
   });
 
-  it('should throw AppError if axios rejects', async () => {
-    mockedAxios.post.mockRejectedValueOnce(new Error('Network error'));
-
-    await expect(catalogCall.findRecord('rec_fail')).rejects.toThrow(AppError);
-
-    expect(loggerMock.error).toHaveBeenCalledWith(
-      expect.objectContaining({ msg: expect.stringContaining('Error occurred during findRecord call') as string })
-    );
-  });
-
-  it('should throw AppError when record is found but not published', async () => {
+  it('should return false when record exists but not published', async () => {
     mockedAxios.post.mockResolvedValueOnce({
-      status: httpStatusCodes.OK,
-      data: [{ id: '123', name: 'rec_unpublished', productStatus: 'unpublished' }],
+      status: StatusCodes.OK,
+      data: [{ id: '123', name: 'rec_unpublished', productStatus: 'draft' }],
     });
 
-    await expect(catalogCall.findRecord('rec_unpublished')).rejects.toThrow(AppError);
+    const result = await catalogCall.findPublishedRecord('rec_unpublished');
 
-    expect(loggerMock.error).toHaveBeenCalledWith(
+    expect(result).toBe(false);
+    expect(loggerMock.debug).toHaveBeenCalledWith(
       expect.objectContaining({ msg: expect.stringContaining("Record 'rec_unpublished' found but not published") as string })
+    );
+  });
+
+  it('should return true when record exists and is published', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      status: StatusCodes.OK,
+      data: [{ id: '123', name: 'rec_published', productStatus: 'published' }],
+    });
+
+    const result = await catalogCall.findPublishedRecord('rec_published');
+
+    expect(result).toBe(true);
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: expect.stringContaining("Record 'rec_published' found and published") as string })
+    );
+  });
+
+  it('should return false when no records are found', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      status: StatusCodes.OK,
+      data: [],
+    });
+
+    const result = await catalogCall.findPublishedRecord('rec_missing');
+
+    expect(result).toBe(false);
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: expect.stringContaining("No record found for 'rec_missing'") as string })
     );
   });
 });

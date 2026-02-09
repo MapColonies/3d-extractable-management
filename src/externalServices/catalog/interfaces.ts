@@ -9,6 +9,6 @@ export interface Record3D extends Layer3DMetadata {
   links: string;
 }
 
-export interface IFindRecordsPayload {
+export interface IfindPublishedRecordsPayload {
   productName: string;
 }

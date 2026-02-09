@@ -23,7 +23,7 @@ describe('catalogCall tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('findRecord Function', () => {
+  describe('findPublishedRecord Function', () => {
     it('returns false when no records exist', async () => {
       const recordName = validCredentials.recordName;
 
@@ -32,7 +32,7 @@ describe('catalogCall tests', () => {
         data: [],
       });
 
-      const response = await catalog.findRecord(recordName);
+      const response = await catalog.findPublishedRecord(recordName);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.post).toHaveBeenCalledWith(`${catalogUrl}/find`, { productName: recordName });
@@ -52,14 +52,14 @@ describe('catalogCall tests', () => {
         ],
       });
 
-      const response = await catalog.findRecord(recordName);
+      const response = await catalog.findPublishedRecord(recordName);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.post).toHaveBeenCalledWith(`${catalogUrl}/find`, { productName: recordName });
       expect(response).toBe(true);
     });
 
-    it('throws error when record exists but not published', async () => {
+    it('returns false when record exists but not published', async () => {
       const recordName = validCredentials.recordName;
 
       mockedAxios.post.mockResolvedValueOnce({
@@ -72,7 +72,7 @@ describe('catalogCall tests', () => {
         ],
       });
 
-      await expect(catalog.findRecord(recordName)).rejects.toThrow('Problem with catalog findRecord');
+      await expect(catalog.findPublishedRecord(recordName)).resolves.toBe(false);
     });
 
     it('throws error on bad status', async () => {
@@ -83,7 +83,7 @@ describe('catalogCall tests', () => {
         data: [],
       });
 
-      await expect(catalog.findRecord(recordName)).rejects.toThrow('Problem with catalog findRecord');
+      await expect(catalog.findPublishedRecord(recordName)).rejects.toThrow('Problem with catalog findPublishedRecord');
     });
 
     it('throws error if service is down', async () => {
@@ -91,7 +91,7 @@ describe('catalogCall tests', () => {
 
       mockedAxios.post.mockRejectedValueOnce(new Error('Service unavailable'));
 
-      await expect(catalog.findRecord(recordName)).rejects.toThrow('Problem with catalog findRecord');
+      await expect(catalog.findPublishedRecord(recordName)).rejects.toThrow('Problem with catalog findPublishedRecord');
     });
   });
 });

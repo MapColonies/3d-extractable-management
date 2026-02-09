@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import config from 'config';
+import axios from 'axios';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
@@ -13,6 +14,8 @@ let validationsManager: ValidationsManager;
 
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('ValidationsManager - User & Record Validation', () => {
   beforeEach(() => {
@@ -57,7 +60,7 @@ describe('ValidationsManager - User & Record Validation', () => {
   describe('#validateCreate', () => {
     it('should succeed when record does not exist and credentials are valid', async () => {
       mockExtractableFindOne.mockResolvedValue(null);
-      mockCatalogCall.findRecord.mockResolvedValueOnce(true);
+      mockCatalogCall.findPublishedRecord.mockResolvedValueOnce(true);
 
       const record_name = 'newRecord';
 
@@ -83,57 +86,64 @@ describe('ValidationsManager - User & Record Validation', () => {
     describe('Remote Validation', () => {
       beforeEach(() => {
         mockExtractableFindOne.mockResolvedValue(null);
-        mockCatalogCall.findRecord.mockResolvedValueOnce(true);
+        mockCatalogCall.findPublishedRecord.mockResolvedValueOnce(true);
       });
 
       it('should skip remote validation when stopRemoteValidation is true', async () => {
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest.fn();
+        mockedAxios.post.mockClear();
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: true };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(true);
-        expect(global.fetch).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockedAxios.post).not.toHaveBeenCalled();
       });
 
       it('should perform remote validation when stopRemoteValidation is undefined (defaults to false)', async () => {
         const routes = [{ url: 'http://site1.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          json: async () => Promise.resolve({ isValid: true, code: 'SUCCESS', message: 'Valid' }),
-        } as unknown as Response);
+        mockedAxios.post.mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } });
 
         jest.spyOn(config, 'get').mockImplementation((key) => {
           if (key === 'externalServices.publicExtractableRoutes') return routes;
           return [{ username: validCredentials.username, password: validCredentials.password }];
         });
+
+        validationsManager = new ValidationsManager(
+          jsLogger({ enabled: false }),
+          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
+          mockCatalogCall as unknown as CatalogCall
+        );
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name };
         const result = await validationsManager.validateCreate(payload);
 
         expect(result.isValid).toBe(true);
-        expect(global.fetch).toHaveBeenCalledTimes(1);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockedAxios.post).toHaveBeenCalledTimes(1);
       });
 
       it('should succeed when remote validation passes on all sites', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest
-          .fn()
-          .mockResolvedValueOnce({
-            json: async () => Promise.resolve({ isValid: true, code: 'SUCCESS', message: 'Valid' }),
-          } as unknown as Response)
-          .mockResolvedValueOnce({
-            json: async () => Promise.resolve({ isValid: true, code: 'SUCCESS', message: 'Valid' }),
-          } as unknown as Response);
+        mockedAxios.post
+          .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
+          .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } });
 
         jest.spyOn(config, 'get').mockImplementation((key) => {
           if (key === 'externalServices.publicExtractableRoutes') return routes;
           return [{ username: validCredentials.username, password: validCredentials.password }];
         });
+
+        validationsManager = new ValidationsManager(
+          jsLogger({ enabled: false }),
+          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
+          mockCatalogCall as unknown as CatalogCall
+        );
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
@@ -141,25 +151,27 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(true);
         expect(result.code).toBe('SUCCESS');
-        expect(global.fetch).toHaveBeenCalledTimes(2);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockedAxios.post).toHaveBeenCalledTimes(2);
       });
 
       it('should fail when remote validation fails on at least one site', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest
-          .fn()
-          .mockResolvedValueOnce({
-            json: async () => Promise.resolve({ isValid: true, code: 'SUCCESS', message: 'Valid' }),
-          } as unknown as Response)
-          .mockResolvedValueOnce({
-            json: async () => Promise.resolve({ isValid: false, code: 'INVALID_RECORD_NAME', message: 'Invalid' }),
-          } as unknown as Response);
+        mockedAxios.post
+          .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
+          .mockResolvedValueOnce({ data: { isValid: false, code: 'INVALID_RECORD_NAME', message: 'Invalid' } });
 
         jest.spyOn(config, 'get').mockImplementation((key) => {
           if (key === 'externalServices.publicExtractableRoutes') return routes;
           return [{ username: validCredentials.username, password: validCredentials.password }];
         });
+
+        validationsManager = new ValidationsManager(
+          jsLogger({ enabled: false }),
+          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
+          mockCatalogCall as unknown as CatalogCall
+        );
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
@@ -173,17 +185,20 @@ describe('ValidationsManager - User & Record Validation', () => {
       it('should return false for remote site when fetch fails', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest
-          .fn()
-          .mockResolvedValueOnce({
-            json: async () => Promise.resolve({ isValid: true, code: 'SUCCESS', message: 'Valid' }),
-          } as unknown as Response)
+        mockedAxios.post
+          .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
           .mockRejectedValueOnce(new Error('Network error'));
 
         jest.spyOn(config, 'get').mockImplementation((key) => {
           if (key === 'externalServices.publicExtractableRoutes') return routes;
           return [{ username: validCredentials.username, password: validCredentials.password }];
         });
+
+        validationsManager = new ValidationsManager(
+          jsLogger({ enabled: false }),
+          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
+          mockCatalogCall as unknown as CatalogCall
+        );
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
@@ -194,28 +209,33 @@ describe('ValidationsManager - User & Record Validation', () => {
         expect(result.code).toBe('INTERNAL_ERROR');
       });
 
-      it('should handle remote validation config retrieval failure', async () => {
-        mockedConfig.get.mockImplementation(() => {
-          throw new Error('Config error');
+      it('should handle remote validation config retrieval failure (routes load failure at construction)', async () => {
+        mockedConfig.get.mockImplementation((key: string) => {
+          if (key === 'externalServices.publicExtractableRoutes') {
+            throw new Error('Config error');
+          }
+          return [{ username: validCredentials.username, password: validCredentials.password }];
         });
+
+        validationsManager = new ValidationsManager(
+          jsLogger({ enabled: false }),
+          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
+          mockCatalogCall as unknown as CatalogCall
+        );
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, stopRemoteValidation: false };
         const result = await validationsManager.validateCreate(payload);
 
-        expect(result.isValid).toBe(false);
-        expect(result.message).toBe('Remote validation service unavailable');
-        expect(result.code).toBe('INTERNAL_ERROR');
+        expect(result.isValid).toBe(true);
+        expect(result.message).toBe(`Record '${record_name}' can be created`);
+        expect(result.code).toBe('SUCCESS');
       });
 
       it('should handle fetch JSON parsing failure', async () => {
         const routes = [{ url: 'http://site1.com' }];
         mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          json: async () => {
-            await Promise.reject(new Error('JSON parse error'));
-          },
-        } as unknown as Response);
+        mockedAxios.post.mockRejectedValueOnce(new Error('JSON parse error'));
 
         jest.spyOn(config, 'get').mockImplementation((key) => {
           if (key === 'externalServices.publicExtractableRoutes') return routes;

@@ -208,7 +208,7 @@ describe('RecordsManager & ValidationsManager', () => {
       });
 
       it('should return INTERNAL_ERROR if catalog throws', async () => {
-        (mockCatalogCall as unknown as CatalogCall).findRecord = jest.fn().mockRejectedValue(new Error('Catalog down'));
+        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockRejectedValue(new Error('Catalog down'));
 
         const result = await validationsManager.validateCreate({
           ...validCredentials,
@@ -222,7 +222,7 @@ describe('RecordsManager & ValidationsManager', () => {
         });
       });
       it('should return INVALID_RECORD_NAME if catalog does not contain record', async () => {
-        (mockCatalogCall as unknown as CatalogCall).findRecord = jest.fn().mockResolvedValue(false);
+        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockResolvedValue(false);
 
         const result = await validationsManager.validateCreate({
           ...validCredentials,

@@ -1,4 +1,8 @@
 {
+  "externalServices": {
+    "catalog": "CATALOG_URL",
+    "publicExtractableRoutes": [{ "url": "EXTRACTABLE_ROUTE_URL" }, { "url": "EXTRACTABLE_ROUTE_URL" }]
+  },
   "users": {
     "__name": "USERS_JSON",
     "__format": "json"

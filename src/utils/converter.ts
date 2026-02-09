@@ -1,4 +1,3 @@
-// istanbul ignore file
 import type { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import type { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { IExtractableRecord, IAuditLog } from '@src/common/constants';

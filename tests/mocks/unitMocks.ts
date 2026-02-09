@@ -117,5 +117,5 @@ export { mockAuditRepoInternal as mockAuditRepo };
 export { resetRepoMocks };
 
 export const mockCatalogCall = {
-  findRecord: jest.fn<Promise<boolean>, [string]>().mockResolvedValue(true),
+  findPublishedRecord: jest.fn<Promise<boolean>, [string]>().mockResolvedValue(true),
 };
