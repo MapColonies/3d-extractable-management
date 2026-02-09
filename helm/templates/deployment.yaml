@@ -4,7 +4,6 @@
 {{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "extractable-management.tag" . -}}
-{{- $postgres := include "merged.postgres" . | fromYaml }}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -70,25 +69,6 @@ spec:
           env:
             - name: SERVER_PORT
               value: {{ .Values.env.targetPort | quote }}
-            - name: USERS_JSON
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.usersSecret.name }}
-                  key: {{ .Values.usersSecret.key }}
-            {{- if $postgres.enabled }}
-            - name: DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $postgres.user.secretName }}
-                  key: username
-            {{- if $postgres.user.requirePassword }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $postgres.user.secretName }}
-                  key: password
-            {{- end }}
-            {{- end }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}

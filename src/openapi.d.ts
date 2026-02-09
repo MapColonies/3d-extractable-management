@@ -71,6 +71,23 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
+  '/audit/{recordName}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get all audit logs by record name */
+    get: operations['getAudit'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/users/validate': {
     parameters: {
       query?: never;
@@ -108,15 +125,26 @@ export type components = {
       recordName: string;
     };
     'extractable-record': {
-      id: string;
+      /** Format: int64 */
+      id: number;
       recordName: string;
+      username?: string;
       authorizedBy: string;
-      /** Format: date-time */
-      authorizedAt: string;
+      authorizedAt?: string;
       /** @description Metadata stored in extractable_records.data */
       data?: {
         [key: string]: unknown;
       };
+    };
+    'audit-log': {
+      /** Format: int64 */
+      id: number;
+      recordName: string;
+      username?: string;
+      authorizedBy: string;
+      /** @enum {string} */
+      action: 'CREATE' | 'DELETE';
+      authorizedAt?: string;
     };
   };
   responses: never;
@@ -381,6 +409,15 @@ export interface operations {
           'application/json': components['schemas']['validateResponse'];
         };
       };
+      /** @description Validation error – already exists */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
       /** @description Internal server error */
       500: {
         headers: {
@@ -425,6 +462,56 @@ export interface operations {
       };
       /** @description Unauthorized – invalid credentials */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Validation error – doesn't exists */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+    };
+  };
+  getAudit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The recordName to fetch audit logs for */
+        recordName: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of audit logs for the record (empty array if none found) */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['audit-log'][];
+        };
+      };
+      /** @description Invalid recordName or request parameters */
+      400: {
         headers: {
           [name: string]: unknown;
         };

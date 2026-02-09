@@ -12,6 +12,8 @@ security: []
 tags:
   - name: records
     description: Record extractability management
+  - name: audit
+    description: Documation of the the record history
   - name: users
     description: User authentication and validation
 
@@ -38,10 +40,11 @@ paths:
                 withRecords:
                   summary: Some records
                   value:
-                    - id: 'abc123'
+                    - id: 123
                       recordName: rec_A
+                      username: username
                       authorizedBy: john_doe
-                      authorizedAt: '2026-01-16T12:00:00Z'
+                      authorizedAt: '2026-02-04T16:26:18.055Z'
                       data:
                         kuku: 'kuku random data'
         '400':
@@ -94,10 +97,11 @@ paths:
                 found:
                   summary: Record exists
                   value:
-                    id: 'abc123'
+                    id: 123
                     recordName: rec_A
+                    username: username
                     authorizedBy: john_doe
-                    authorizedAt: '2026-01-16T12:00:00Z'
+                    authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
         '404':
@@ -171,10 +175,11 @@ paths:
                 created:
                   summary: Record created
                   value:
-                    id: 'abc123'
+                    id: 123
                     recordName: rec_A
+                    username: username
                     authorizedBy: john_doe
-                    authorizedAt: '2026-01-16T12:00:00Z'
+                    authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
         '400':
@@ -367,6 +372,19 @@ paths:
                     isValid: false
                     message: 'Username, password, and recordName are required'
                     code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' already exists"
+                    code: 'INVALID_RECORD_NAME'
         '500':
           description: Internal server error
           content:
@@ -432,6 +450,87 @@ paths:
                   value:
                     isValid: false
                     message: 'Username, password, and recordName are required'
+                    code: 'MISSING_CREDENTIALS'
+        '404':
+          description: Validation error – doesn't exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                missing_fields:
+                  summary: Inappropriate recordName
+                  value:
+                    isValid: false
+                    message: "Record 'rec_name' doesn't exists"
+                    code: 'INVALID_RECORD_NAME'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected server error
+                  value:
+                    isValid: false
+                    message: 'Internal server error, please try again later'
+                    code: 'INTERNAL_ERROR'
+
+  /audit/{recordName}:
+    get:
+      tags:
+        - audit
+      summary: Get all audit logs by record name
+      operationId: getAudit
+      parameters:
+        - name: recordName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The recordName to fetch audit logs for
+      responses:
+        '200':
+          description: List of audit logs for the record (empty array if none found)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/audit-log'
+              examples:
+                withAudits:
+                  summary: Audit logs exist
+                  value:
+                    - id: 1
+                      recordName: rec_A
+                      username: username
+                      authorizedBy: john_doe
+                      action: 'CREATE'
+                      authorizedAt: '2026-02-04T16:26:18.055Z'
+                    - id: 2
+                      recordName: rec_A
+                      username: username
+                      authorizedBy: jane_doe
+                      action: 'DELETE'
+                      authorizedAt: '2026-02-05T16:26:18.055Z'
+                empty:
+                  summary: No audit logs
+                  value: []
+        '400':
+          description: Invalid recordName or request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_format:
+                  summary: Invalid recordName
+                  value:
+                    isValid: false
+                    message: 'Invalid recordName provided'
                     code: 'MISSING_CREDENTIALS'
         '500':
           description: Internal server error
@@ -566,18 +665,42 @@ components:
         - id
         - recordName
         - authorizedBy
-        - authorizedAt
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         recordName:
+          type: string
+        username:
           type: string
         authorizedBy:
           type: string
         authorizedAt:
           type: string
-          format: date-time
         data:
           type: object
           additionalProperties: true
           description: Metadata stored in extractable_records.data
+
+    audit-log:
+      type: object
+      required:
+        - id
+        - recordName
+        - authorizedBy
+        - action
+      properties:
+        id:
+          type: integer
+          format: int64
+        recordName:
+          type: string
+        username:
+          type: string
+        authorizedBy:
+          type: string
+        action:
+          type: string
+          enum: [CREATE, DELETE]
+        authorizedAt:
+          type: string

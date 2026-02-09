@@ -1,180 +1,239 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+import 'reflect-metadata';
 import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
+import { Repository, DeleteResult, EntityManager } from 'typeorm';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { recordInstance, validCredentials, invalidCredentials } from '@src/common/mocks';
+import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
+import { AuditLog } from '@src/DAL/entities/auditLog.entity';
+import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
+import {
+  mockExtractableRepo,
+  mockExtractableFind,
+  mockExtractableFindOne,
+  mockExtractableSave,
+  mockExtractableDelete,
+  resetRepoMocks,
+  mockAuditRepo,
+} from '@tests/mocks/unitMocks';
+import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
+
+jest.mock('config');
+const mockedConfig = config as jest.Mocked<typeof config>;
 
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
 
-jest.mock('config');
-
-const mockedConfig = config as jest.Mocked<typeof config>;
-
-describe('RecordsManager', () => {
+describe('RecordsManager & ValidationsManager', () => {
   beforeEach(() => {
+    const extractableRepo = mockExtractableRepo as unknown as Repository<ExtractableRecord>;
+
+    const repoMap = new Map<unknown, unknown>([
+      [ExtractableRecord, mockExtractableRepo],
+      [AuditLog, mockAuditRepo],
+    ]);
+
+    const fakeEntityManager: Pick<EntityManager, 'getRepository'> = {
+      getRepository: <T extends object>(entity: new () => T): Repository<T> => {
+        const repo = repoMap.get(entity);
+        if (repo === undefined) {
+          const entityName = 'name' in entity ? (entity as { name: string }).name : String(entity);
+          throw new Error(`No mock defined for repository: ${entityName}`);
+        }
+        return repo as Repository<T>;
+      },
+    };
+
+    type MockEntityManager = Pick<EntityManager, 'transaction' | 'getRepository'>;
+
+    (extractableRepo as unknown as { manager?: MockEntityManager }).manager = {
+      transaction: jest.fn().mockImplementation(async <T>(runInTransaction: (manager: EntityManager) => Promise<T>) => {
+        return runInTransaction(fakeEntityManager as EntityManager);
+      }),
+      getRepository: fakeEntityManager.getRepository,
+    };
+
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    recordsManager = new RecordsManager(jsLogger({ enabled: false }));
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }));
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo);
+    recordsManager = new RecordsManager(jsLogger({ enabled: false }), extractableRepo);
   });
 
   afterEach(() => {
+    resetRepoMocks();
     jest.resetAllMocks();
   });
 
   describe('#getRecords', () => {
-    it('should return the records array when records exist', () => {
-      const recordsArray = [recordInstance];
-      const result = recordsManager.getRecords(recordsArray);
-      expect(result).toEqual(recordsArray);
+    it('should return all records', async () => {
+      const dbRecords: ExtractableRecord[] = [
+        {
+          id: 1,
+          record_name: recordInstance.recordName,
+          username: validCredentials.username,
+          authorized_by: recordInstance.authorizedBy,
+          authorized_at: new Date(),
+          data: recordInstance.data,
+        },
+      ];
+
+      mockExtractableFind.mockResolvedValue(dbRecords);
+
+      const result = await recordsManager.getRecords();
+
+      expect(result).toEqual(dbRecords.map(mapExtractableRecordToCamelCase));
     });
 
-    it('should return undefined when records array is empty', () => {
-      const result = recordsManager.getRecords([]);
-      expect(result).toBeUndefined();
-    });
+    it('should return empty array if no records exist', async () => {
+      mockExtractableFind.mockResolvedValue([]);
 
-    it('should return undefined when records is undefined', () => {
-      const result = recordsManager.getRecords();
-      expect(result).toBeUndefined();
+      const result = await recordsManager.getRecords();
+      expect(result).toEqual([]);
     });
   });
 
   describe('#getRecord', () => {
-    it('should return the mocked record instance when record exists', () => {
-      const record = recordsManager.getRecord(recordInstance.recordName);
-      expect(record).toEqual(recordInstance);
+    it('should return a record by name', async () => {
+      const dbRecord: ExtractableRecord = {
+        id: 1,
+        record_name: recordInstance.recordName,
+        username: validCredentials.username,
+        authorized_by: recordInstance.authorizedBy,
+        authorized_at: new Date(),
+        data: recordInstance.data,
+      };
+
+      mockExtractableFindOne.mockResolvedValue(dbRecord);
+
+      const result = await recordsManager.getRecord(dbRecord.record_name);
+
+      expect(result).toEqual(mapExtractableRecordToCamelCase(dbRecord));
     });
 
-    it('should return undefined when record does not exist', () => {
-      const record = recordsManager.getRecord('non_existing_record');
-      expect(record).toBeUndefined();
+    it('should return undefined if record does not exist', async () => {
+      mockExtractableFindOne.mockResolvedValue(null);
+
+      const result = await recordsManager.getRecord(invalidCredentials.recordName);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('#createRecord', () => {
-    it('should create a record when recordName is valid', () => {
-      const createdRecord = recordsManager.createRecord(recordInstance.recordName);
-      expect(createdRecord.recordName).toBe(recordInstance.recordName);
+    it('should create and return the saved record', async () => {
+      const dbRecord: ExtractableRecord = {
+        id: 1,
+        record_name: recordInstance.recordName,
+        username: validCredentials.username,
+        authorized_by: recordInstance.authorizedBy,
+        authorized_at: new Date(),
+        data: recordInstance.data,
+      };
+
+      mockExtractableSave.mockResolvedValue(dbRecord);
+
+      const result = await recordsManager.createRecord({
+        recordName: dbRecord.record_name,
+        username: dbRecord.username,
+        authorizedBy: dbRecord.authorized_by,
+        data: dbRecord.data,
+      });
+
+      expect(result).toEqual(mapExtractableRecordToCamelCase(dbRecord));
+      expect(result.recordName).toBe(dbRecord.record_name);
     });
   });
 
   describe('#deleteRecord', () => {
-    it('should return true when recordName is valid', () => {
-      const result = recordsManager.deleteRecord(recordInstance.recordName);
+    it('should delete an existing record', async () => {
+      const dbRecord: ExtractableRecord = {
+        id: 1,
+        record_name: recordInstance.recordName,
+        username: validCredentials.username,
+        authorized_by: recordInstance.authorizedBy,
+        authorized_at: new Date(),
+        data: recordInstance.data,
+      };
+
+      mockExtractableFindOne.mockResolvedValue(dbRecord);
+
+      const deleteResult: DeleteResult = { raw: null, affected: 1 };
+      mockExtractableDelete.mockResolvedValue(deleteResult);
+
+      const result = await recordsManager.deleteRecord(dbRecord.record_name);
       expect(result).toBe(true);
+    });
+
+    it('should return false when record does not exist', async () => {
+      mockExtractableFindOne.mockResolvedValue(null);
+
+      const result = await recordsManager.deleteRecord(invalidCredentials.recordName);
+      expect(result).toBe(false);
     });
   });
 
-  describe('RecordsManager Validation', () => {
-    describe('#validateCreate', () => {
-      it('should succeed with valid credentials and recordName', () => {
-        const result = validationsManager.validateCreate({
+  describe('ValidationsManager - uncovered branches', () => {
+    describe('#validateCreate - userValidation failure', () => {
+      it('should return invalid if username/password are missing', async () => {
+        const result = await validationsManager.validateCreate({
           ...validCredentials,
-          recordName: validCredentials.recordName,
-        });
-        expect(result.isValid).toBe(true);
-        expect(result.code).toBe('SUCCESS');
-        expect(result.message).toBe('Record can be created');
-      });
-
-      it('should fail when username/password are missing', () => {
-        const result = validationsManager.validateCreate({
           username: '',
           password: '',
-          recordName: validCredentials.recordName,
+          recordName: recordInstance.recordName,
         });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('MISSING_CREDENTIALS');
-        expect(result.message).toBe('Username and password are required');
-      });
 
-      it('should fail when credentials are invalid', () => {
-        const result = validationsManager.validateCreate({
-          username: invalidCredentials.username,
-          password: invalidCredentials.password,
-          recordName: validCredentials.recordName,
+        expect(result).toEqual({
+          isValid: false,
+          message: 'Username and password are required',
+          code: 'MISSING_CREDENTIALS',
         });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('INVALID_CREDENTIALS');
-      });
-
-      it('should fail when recordName is missing', () => {
-        const result = validationsManager.validateCreate({
-          username: validCredentials.username,
-          password: validCredentials.password,
-          recordName: '',
-        });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('MISSING_CREDENTIALS');
-        expect(result.message).toBe('recordName is required');
-      });
-
-      it('should fail when recordName is invalid', () => {
-        const result = validationsManager.validateCreate({
-          username: validCredentials.username,
-          password: validCredentials.password,
-          recordName: invalidCredentials.recordName,
-        });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('INVALID_RECORD_NAME');
-        expect(result.message).toBe(`Record '${invalidCredentials.recordName}' not found`);
       });
     });
 
-    describe('#validateDelete', () => {
-      it('should succeed with valid credentials and recordName', () => {
-        const result = validationsManager.validateDelete({
+    describe('#validateCreate - missing record_name', () => {
+      it('should return invalid if record_name is missing', async () => {
+        const result = await validationsManager.validateCreate({
           ...validCredentials,
-          recordName: validCredentials.recordName,
-        });
-        expect(result.isValid).toBe(true);
-        expect(result.code).toBe('SUCCESS');
-        expect(result.message).toBe('Record can be deleted');
-      });
-
-      it('should fail when username/password are missing', () => {
-        const result = validationsManager.validateDelete({
-          username: '',
-          password: '',
-          recordName: validCredentials.recordName,
-        });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('MISSING_CREDENTIALS');
-        expect(result.message).toBe('Username and password are required');
-      });
-
-      it('should fail when credentials are invalid', () => {
-        const result = validationsManager.validateDelete({
-          username: invalidCredentials.username,
-          password: invalidCredentials.password,
-          recordName: validCredentials.recordName,
-        });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('INVALID_CREDENTIALS');
-      });
-
-      it('should fail when recordName is missing', () => {
-        const result = validationsManager.validateDelete({
-          username: validCredentials.username,
-          password: validCredentials.password,
           recordName: '',
         });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('MISSING_CREDENTIALS');
-        expect(result.message).toBe('recordName is required');
-      });
 
-      it('should fail when recordName is invalid', () => {
-        const result = validationsManager.validateDelete({
-          username: validCredentials.username,
-          password: validCredentials.password,
-          recordName: invalidCredentials.recordName,
+        expect(result).toEqual({
+          isValid: false,
+          message: 'recordName is required',
+          code: 'MISSING_CREDENTIALS',
         });
-        expect(result.isValid).toBe(false);
-        expect(result.code).toBe('INVALID_RECORD_NAME');
-        expect(result.message).toBe(`Record '${invalidCredentials.recordName}' not found`);
+      });
+    });
+
+    describe('#validateDelete - userValidation failure', () => {
+      it('should return invalid if username/password are missing', async () => {
+        const result = await validationsManager.validateDelete({
+          ...validCredentials,
+          username: '',
+          password: '',
+          recordName: recordInstance.recordName,
+        });
+
+        expect(result).toEqual({
+          isValid: false,
+          message: 'Username and password are required',
+          code: 'MISSING_CREDENTIALS',
+        });
+      });
+    });
+
+    describe('#validateDelete - missing record_name', () => {
+      it('should return invalid if record_name is missing', async () => {
+        const result = await validationsManager.validateDelete({
+          ...validCredentials,
+          recordName: '',
+        });
+
+        expect(result).toEqual({
+          isValid: false,
+          message: 'recordName is required',
+          code: 'MISSING_CREDENTIALS',
+        });
       });
     });
   });

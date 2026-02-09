@@ -7,7 +7,9 @@
       "@tests/*": ["tests/*"],
       "@common/*": ["src/common/*"],
       "@openapi": ["src/openapi"]
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "tests"],
   "exclude": ["node_modules", "dist"]
