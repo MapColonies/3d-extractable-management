@@ -1,74 +1,17 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import type { Tracer, Span, SpanOptions, Context } from '@opentelemetry/api';
-import type { Logger } from '@map-colonies/js-logger';
+import type { IConfig } from '@src/common/interfaces';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 import { AppError } from '@src/utils/appError';
-import { IConfig } from '@src/common/interfaces';
+import { createTracerMock, createLoggerMock } from '@tests/mocks/integrationMocks';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-const createSpanMock = (): Span =>
-  ({
-    setAttribute: jest.fn(),
-    setAttributes: jest.fn(),
-    addEvent: jest.fn(),
-    setStatus: jest.fn(),
-    updateName: jest.fn(),
-    end: jest.fn(),
-    isRecording: jest.fn().mockReturnValue(true),
-    recordException: jest.fn(),
-    addLink: jest.fn(),
-  }) as unknown as Span;
-
-const tracerMock: Tracer = {
-  startActiveSpan: (
-    name: string,
-    fnOrOptions?: SpanOptions | ((span: Span) => unknown),
-    fnOrContext?: Context | ((span: Span) => unknown),
-    fn?: (span: Span) => unknown
-  ) => {
-    const span = createSpanMock();
-
-    let callback: ((span: Span) => unknown) | undefined;
-    if (typeof fnOrOptions === 'function') {
-      callback = fnOrOptions;
-    } else if (typeof fnOrContext === 'function') {
-      callback = fnOrContext;
-    } else if (fn) {
-      callback = fn;
-    }
-
-    if (!callback) return span;
-
-    try {
-      const result = callback(span);
-      if (result instanceof Promise) {
-        return result.finally(() => span.end());
-      } else {
-        span.end();
-        return result;
-      }
-    } catch (error) {
-      span.end();
-      throw error;
-    }
-  },
-  startSpan: jest.fn(),
-} as unknown as Tracer;
-
 describe('CatalogCall Integration (axios mocked)', () => {
   let catalogCall: CatalogCall;
-  const loggerMock = {
-    debug: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    log: jest.fn(),
-    trace: jest.fn(),
-    fatal: jest.fn(),
-  } as unknown as Logger;
+  const loggerMock = createLoggerMock();
+  const tracerMock = createTracerMock();
   const configMock = {
     get: jest.fn().mockReturnValue('http://mock-catalog-service'),
   } as unknown as jest.Mocked<IConfig>;

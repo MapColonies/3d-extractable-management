@@ -12,6 +12,7 @@ import { invalidCredentials, recordInstance, validCredentials } from '@tests/moc
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
+import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
 
 jest.mock('axios');
 jest.mock('config');
@@ -31,28 +32,17 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
-    mockedAxios.post.mockResolvedValue({
-      data: { isValid: true },
-    });
+    mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
 
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();
 
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      if (key === 'externalServices.publicExtractableRoutes') {
-        return [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }];
-      }
-      if (key === 'externalServices.catalog') {
-        return 'http://127.0.0.1:8080';
-      }
-      return undefined;
+    configureIntegrationConfigMock(mockedConfig, {
+      dbConfig,
+      userCredentials: validCredentials,
+      catalogUrl: 'http://127.0.0.1:8080',
+      routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
     });
 
     console.log('✅ ConnectionManager DataSource initialized.');

@@ -12,6 +12,7 @@ import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
+import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
 
 jest.mock('axios');
 jest.mock('config');
@@ -21,7 +22,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 jest.mock('@src/externalServices/catalog/catalogCall', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CatalogCall: jest.fn().mockImplementation(() => ({
-    findPublishedRecord: jest.fn().mockResolvedValue(true),
+    findPublishedRecord: jest.fn().mockResolvedValueOnce(true),
   })),
 }));
 
@@ -31,28 +32,17 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
-    mockedAxios.post.mockResolvedValue({
-      data: { isValid: true },
-    });
+    mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
 
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();
 
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      if (key === 'externalServices.publicExtractableRoutes') {
-        return [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }];
-      }
-      if (key === 'externalServices.catalog') {
-        return 'http://127.0.0.1:8080';
-      }
-      return undefined;
+    configureIntegrationConfigMock(mockedConfig, {
+      dbConfig,
+      userCredentials: validCredentials,
+      catalogUrl: 'http://127.0.0.1:8080',
+      routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
     });
 
     console.log('✅ ConnectionManager DataSource initialized.');
