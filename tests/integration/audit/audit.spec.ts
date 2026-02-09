@@ -22,7 +22,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 jest.mock('@src/externalServices/catalog/catalogCall', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CatalogCall: jest.fn().mockImplementation(() => ({
-    findPublishedRecord: jest.fn().mockResolvedValueOnce(true),
+    findPublishedRecord: jest.fn().mockResolvedValue(true),
   })),
 }));
 

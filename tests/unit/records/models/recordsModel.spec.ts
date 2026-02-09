@@ -81,7 +81,7 @@ describe('RecordsManager & ValidationsManager', () => {
         },
       ];
 
-      mockExtractableFind.mockResolvedValue(dbRecords);
+      mockExtractableFind.mockResolvedValueOnce(dbRecords);
 
       const result = await recordsManager.getRecords();
 
@@ -89,7 +89,7 @@ describe('RecordsManager & ValidationsManager', () => {
     });
 
     it('should return empty array if no records exist', async () => {
-      mockExtractableFind.mockResolvedValue([]);
+      mockExtractableFind.mockResolvedValueOnce([]);
 
       const result = await recordsManager.getRecords();
       expect(result).toEqual([]);
@@ -107,7 +107,7 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableFindOne.mockResolvedValue(dbRecord);
+      mockExtractableFindOne.mockResolvedValueOnce(dbRecord);
 
       const result = await recordsManager.getRecord(dbRecord.record_name);
 
@@ -115,7 +115,7 @@ describe('RecordsManager & ValidationsManager', () => {
     });
 
     it('should return undefined if record does not exist', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
 
       const result = await recordsManager.getRecord(invalidCredentials.recordName);
       expect(result).toBeUndefined();
@@ -133,7 +133,7 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableSave.mockResolvedValue(dbRecord);
+      mockExtractableSave.mockResolvedValueOnce(dbRecord);
 
       const result = await recordsManager.createRecord({
         recordName: dbRecord.record_name,
@@ -158,17 +158,17 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableFindOne.mockResolvedValue(dbRecord);
+      mockExtractableFindOne.mockResolvedValueOnce(dbRecord);
 
       const deleteResult: DeleteResult = { raw: null, affected: 1 };
-      mockExtractableDelete.mockResolvedValue(deleteResult);
+      mockExtractableDelete.mockResolvedValueOnce(deleteResult);
 
       const result = await recordsManager.deleteRecord(dbRecord.record_name);
       expect(result).toBe(true);
     });
 
     it('should return false when record does not exist', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
 
       const result = await recordsManager.deleteRecord(invalidCredentials.recordName);
       expect(result).toBe(false);
@@ -222,7 +222,7 @@ describe('RecordsManager & ValidationsManager', () => {
         });
       });
       it('should return INVALID_RECORD_NAME if catalog does not contain record', async () => {
-        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockResolvedValue(false);
+        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockResolvedValueOnce(false);
 
         const result = await validationsManager.validateCreate({
           ...validCredentials,

@@ -59,7 +59,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
   describe('#validateCreate', () => {
     it('should succeed when record does not exist and credentials are valid', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
       mockCatalogCall.findPublishedRecord.mockResolvedValueOnce(true);
 
       const record_name = 'newRecord';
@@ -73,7 +73,7 @@ describe('ValidationsManager - User & Record Validation', () => {
     });
 
     it('should fail when record already exists', async () => {
-      mockExtractableFindOne.mockResolvedValue({ record_name: 'existingRecord' } as ExtractableRecord);
+      mockExtractableFindOne.mockResolvedValueOnce({ record_name: 'existingRecord' } as ExtractableRecord);
 
       const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
       const result = await validationsManager.validateCreate(payload);
@@ -85,7 +85,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
     describe('Remote Validation', () => {
       beforeEach(() => {
-        mockExtractableFindOne.mockResolvedValue(null);
+        mockExtractableFindOne.mockResolvedValueOnce(null);
         mockCatalogCall.findPublishedRecord.mockResolvedValueOnce(true);
       });
 
@@ -255,7 +255,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
   describe('#validateDelete', () => {
     it('should succeed when record exists and credentials are valid', async () => {
-      mockExtractableFindOne.mockResolvedValue({ record_name: 'existingRecord' } as ExtractableRecord);
+      mockExtractableFindOne.mockResolvedValueOnce({ record_name: 'existingRecord' } as ExtractableRecord);
 
       const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'existingRecord' };
       const result = await validationsManager.validateDelete(payload);
@@ -266,7 +266,7 @@ describe('ValidationsManager - User & Record Validation', () => {
     });
 
     it('should fail when record does not exist', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
 
       const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: 'nonExistingRecord' };
       const result = await validationsManager.validateDelete(payload);
