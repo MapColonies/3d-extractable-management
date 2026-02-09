@@ -21,7 +21,9 @@ export const SERVICES = {
 
 export type IExtractableRecord = components['schemas']['extractable-record'];
 
-export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-record'];
+export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-record'] & {
+  multiSiteValidation?: boolean;
+};
 
 export type IAuthPayload = components['schemas']['auth-payload'];
 
