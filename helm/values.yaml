@@ -93,7 +93,9 @@ resources:
       memory: 128Mi
 
 nginx:
-  enabled: false
+  nginx:
+    maxAge: 1728000
+  enabled: true
   fullnameOverride: ""
 
   caSecretName: ''
@@ -102,11 +104,9 @@ nginx:
 
   image:
     repository: nginx
-    tag: "v1.3.0"
+    tag: 'latest' 
   port: 8080
-  internalServicePort: 80
   targetPort: 8080
-  servicePort: 8080
   nodePort: 30001
 
   authorization:
