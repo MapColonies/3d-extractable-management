@@ -3,9 +3,10 @@ import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { StatusCodes } from 'http-status-codes';
 import { trace } from '@opentelemetry/api';
+import { RecordStatus } from '@map-colonies/mc-model-types';
 import { validCredentials } from '@tests/mocks/generalMocks';
 import { Record3D } from '@src/externalServices/catalog/interfaces';
-import { CatalogCall } from '../../../../src/externalServices/catalog/catalogCall';
+import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 
 jest.mock('axios');
 
@@ -47,7 +48,7 @@ describe('catalogCall tests', () => {
         data: [
           {
             productName: recordName,
-            productStatus: 'published',
+            productStatus: RecordStatus.PUBLISHED,
           } as unknown as Record3D,
         ],
       });

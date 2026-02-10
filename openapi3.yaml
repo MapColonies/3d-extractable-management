@@ -340,6 +340,7 @@ paths:
                       description: >
                         When true, performs remote (multi-site) validation.
                         When false or omitted, validation is performed only on local site.
+                      default: true
       responses:
         '200':
           description: Validation result for create

@@ -44,7 +44,7 @@ export class CatalogCall {
         return false;
       }
 
-      const isPublished = records.every((r) => r.productStatus?.toLowerCase() === RecordStatus.PUBLISHED);
+      const isPublished = records.every((r) => r.productStatus === RecordStatus.PUBLISHED);
       this.logger.debug({
         msg: isPublished ? `Record '${recordName}' found and published` : `Record '${recordName}' found but not published`,
         logContext,

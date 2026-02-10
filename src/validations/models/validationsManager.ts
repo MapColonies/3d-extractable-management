@@ -64,7 +64,7 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
-    if (payload.multiSiteValidation == true) {
+    if (payload.multiSiteValidation === true) {
       try {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {

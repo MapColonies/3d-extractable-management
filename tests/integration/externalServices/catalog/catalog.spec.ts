@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
+import { RecordStatus } from '@map-colonies/mc-model-types';
 import type { IConfig } from '@src/common/interfaces';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 import { AppError } from '@src/utils/appError';
@@ -61,7 +62,7 @@ describe('CatalogCall Integration (axios mocked)', () => {
   it('should return true when record exists and is published', async () => {
     mockedAxios.post.mockResolvedValueOnce({
       status: StatusCodes.OK,
-      data: [{ id: '123', name: 'rec_published', productStatus: 'published' }],
+      data: [{ id: '123', name: 'rec_published', productStatus: RecordStatus.PUBLISHED }],
     });
 
     const result = await catalogCall.findPublishedRecord('rec_published');
