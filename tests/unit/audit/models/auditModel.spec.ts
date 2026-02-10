@@ -65,7 +65,7 @@ describe('RecordsManager & ValidationsManager', () => {
         authorized_at: new Date(),
       };
 
-      mockAuditFind.mockResolvedValue([dbAuditLog]);
+      mockAuditFind.mockResolvedValueOnce([dbAuditLog]);
 
       const result = await auditManager.getAuditLogs(dbAuditLog.record_name);
 
@@ -73,7 +73,7 @@ describe('RecordsManager & ValidationsManager', () => {
     });
 
     it('should return empty array when no audit logs found', async () => {
-      mockAuditFind.mockResolvedValue([]);
+      mockAuditFind.mockResolvedValueOnce([]);
 
       const result = await auditManager.getAuditLogs(invalidCredentials.recordName);
 

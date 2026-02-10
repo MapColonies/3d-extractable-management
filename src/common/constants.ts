@@ -21,7 +21,9 @@ export const SERVICES = {
 
 export type IExtractableRecord = components['schemas']['extractable-record'];
 
-export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-record'];
+export type IAuthPayloadWithRecord = components['schemas']['auth-payload-with-record'] & {
+  multiSiteValidation?: boolean;
+};
 
 export type IAuthPayload = components['schemas']['auth-payload'];
 
@@ -32,3 +34,5 @@ export type IAuditLog = components['schemas']['audit-log'];
 export const DB_TIMEOUT = 5000;
 
 export const MAX_CONNECT_RETRIES = 3;
+
+export const REMOTE_VALIDATE_CREATE_PATH = '/records/validateCreate';
