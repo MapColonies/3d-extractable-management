@@ -337,8 +337,9 @@ paths:
                   properties:
                     multiSiteValidation:
                       type: boolean
-                      description: Optional flag to skip remote validation (used internally)
-
+                      description: >
+                        When true, performs remote (multi-site) validation.
+                        When false or omitted, validation is performed only on local site.
       responses:
         '200':
           description: Validation result for create

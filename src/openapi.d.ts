@@ -123,8 +123,6 @@ export type components = {
       username: string;
       password: string;
       recordName: string;
-      /** @description Optional flag to skip remote validation (used internally) */
-      multiSiteValidation?: boolean;
     };
     'extractable-record': {
       /** Format: int64 */
@@ -380,7 +378,10 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload-with-record'];
+        'application/json': components['schemas']['auth-payload-with-record'] & {
+          /** @description When true, performs remote (multi-site) validation. When false or omitted, validation is performed only on local site. */
+          multiSiteValidation?: boolean;
+        };
       };
     };
     responses: {

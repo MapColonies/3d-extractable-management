@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { inject, injectable } from 'tsyringe';
 import type { Logger } from '@map-colonies/js-logger';
+import { RecordStatus } from '@map-colonies/mc-model-types';
 import { StatusCodes } from 'http-status-codes';
 import type { Tracer } from '@opentelemetry/api';
 import { withSpanAsyncV4 } from '@map-colonies/telemetry';
@@ -43,7 +44,7 @@ export class CatalogCall {
         return false;
       }
 
-      const isPublished = records.every((r) => r.productStatus?.toLowerCase() === 'published');
+      const isPublished = records.every((r) => r.productStatus?.toLowerCase() === RecordStatus.PUBLISHED);
       this.logger.debug({
         msg: isPublished ? `Record '${recordName}' found and published` : `Record '${recordName}' found but not published`,
         logContext,

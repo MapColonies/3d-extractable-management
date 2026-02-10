@@ -51,27 +51,27 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'INVALID_RECORD_NAME' };
     }
 
-    let existsInCatalog: boolean;
+    let existsAndPublishedInCatalog: boolean;
     try {
-      existsInCatalog = await this.catalog.findPublishedRecord(payload.recordName);
+      existsAndPublishedInCatalog = await this.catalog.findPublishedRecord(payload.recordName);
     } catch (err) {
       this.logger.warn({ msg: 'catalog unavailable during create validation', recordName: payload.recordName, logContext, err });
       return { isValid: false, message: 'Catalog service is currently unavailable', code: 'INTERNAL_ERROR' };
     }
 
-    if (!existsInCatalog) {
+    if (!existsAndPublishedInCatalog) {
       this.logger.debug({ msg: 'record does not exist in catalog', recordName: payload.recordName, logContext });
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
-    if (payload.multiSiteValidation !== true) {
+    if (payload.multiSiteValidation == true) {
       try {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {
             try {
               const response = await axios.post<IValidateResponse>(`${route.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
                 ...payload,
-                multiSiteValidation: true,
+                multiSiteValidation: false,
               });
 
               return response.data.isValid;
