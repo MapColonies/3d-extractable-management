@@ -4,6 +4,7 @@
 {{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "extractable-management.tag" . -}}
+{{- $postgres := include "merged.postgres" . | fromYaml }}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment

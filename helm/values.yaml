@@ -135,6 +135,12 @@ nginx:
     - name: nginx-config
       mountPath: "/etc/nginx/conf.d/default.conf"
       subPath: default.conf
+    - name: nginx-config
+      mountPath: "/etc/nginx/nginx.conf"
+      subPath: nginx.conf
+    - name: nginx-config
+      mountPath: "/etc/nginx/log_format.conf"
+      subPath: log_format.conf
 
   env:
     opentelemetry:
@@ -160,23 +166,23 @@ nginx:
           cpu: 100m
           memory: 128Mi  
 
-  route:
-    enabled: true
-    routesMapping:
-      - host:
-        path: /
-    timeout:
-      enabled: false # defaults to 30s by openshift
-      duration: 60s # supported units (us, ms, s, m, h, d)
-    rewriteTarget: ''
-    tls:
-      enabled: true
-      termination: edge
-      insecureEdgeTerminationPolicy: Redirect
-      useCerts: false
-      certificate: ''
-      key: ''
-      caCertificate: ''
+route:
+  enabled: false
+  #   routesMapping:
+  #     - host:
+  #       path: /
+  #   timeout:
+  #     enabled: false # defaults to 30s by openshift
+  #     duration: 60s # supported units (us, ms, s, m, h, d)
+  #   rewriteTarget: ''
+  #   tls:
+  #     enabled: true
+  #     termination: edge
+  #     insecureEdgeTerminationPolicy: Redirect
+  #     useCerts: false
+  #     certificate: ''
+  #     key: ''
+  #     caCertificate: ''
 
 # route:
 #   enabled: false
