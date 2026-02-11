@@ -1,5 +1,6 @@
 {{- if .Values.nginx.enabled -}}
 {{- $chartName := include "extractable-management.name" . -}}
+{{- $environment := include "extractable-management.environment" . -}}
 {{- $releaseName := .Release.Name -}}
 apiVersion: v1
 kind: ConfigMap
@@ -8,7 +9,7 @@ metadata:
   labels:
     app: {{ $releaseName }}-{{ $chartName }}
     component: nginx-configmap
-    environment: {{ .Values.environment }}
+    environment: {{ $environment }}
     release: {{ $releaseName }}
 data:
   log_format.conf: {{ tpl (.Files.Get "config/nginx/log_format.conf") . | quote }}

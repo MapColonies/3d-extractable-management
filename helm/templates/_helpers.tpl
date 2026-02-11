@@ -160,7 +160,7 @@ Returns the tracing url from global if exists or from the chart's values
 {{/*
 Generate OpenTelemetry trace configuration
 */}}
-{{- define "extractable-managementNginx.otelTrace" -}}
+{{- define "extractable-management-nginx.otelTrace" -}}
 {{- if eq .Values.nginx.opentelemetry.samplerMethod "AlwaysOn" -}}
 otel_trace on;
 {{- else if eq .Values.nginx.opentelemetry.samplerMethod "TraceIdRatioBased" -}}

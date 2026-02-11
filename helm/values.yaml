@@ -116,6 +116,21 @@ nginx:
     token:
       queryName: token
 
+  route:
+    enabled: true
+    # routesMapping:
+    #   - host: tiles-dev.mapcolonies.net
+    #     path: /api/raster/v1
+    tls:
+      enabled: true
+      useCerts: false
+      # certificate: *certificate
+      # key: *key
+      # caCertificate: *caCertificate
+    timeout:
+      enabled: false # defaults to 30s by openshift
+      duration: 60s # supported units (us, ms, s, m, h, d)
+
   resources:
     enabled: true
     value:
@@ -164,42 +179,10 @@ nginx:
           memory: 128Mi
         requests:
           cpu: 100m
-          memory: 128Mi  
+          memory: 128Mi
 
 route:
   enabled: false
-  #   routesMapping:
-  #     - host:
-  #       path: /
-  #   timeout:
-  #     enabled: false # defaults to 30s by openshift
-  #     duration: 60s # supported units (us, ms, s, m, h, d)
-  #   rewriteTarget: ''
-  #   tls:
-  #     enabled: true
-  #     termination: edge
-  #     insecureEdgeTerminationPolicy: Redirect
-  #     useCerts: false
-  #     certificate: ''
-  #     key: ''
-  #     caCertificate: ''
-
-# route:
-#   enabled: false
-#   path: /
-#   host: ''
-#   timeout:
-#     enabled: false  # defaults to 30s by openshift
-#     duration: 60s  # supported units (us, ms, s, m, h, d)
-#   rewriteTarget: ''
-#   tls:
-#     enabled: true
-#     termination: edge
-#     insecureEdgeTerminationPolicy: Redirect
-#     useCerts: false
-#     certificate: ''
-#     key: ''
-#     caCertificate: ''
 
 ingress:
   enabled: false
