@@ -378,7 +378,13 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['auth-payload-with-record'];
+        'application/json': components['schemas']['auth-payload-with-record'] & {
+          /**
+           * @description When true, performs remote (multi-site) validation. When false or omitted, validation is performed only on local site.
+           * @default true
+           */
+          multiSiteValidation?: boolean;
+        };
       };
     };
     responses: {

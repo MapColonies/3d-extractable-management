@@ -1,5 +1,6 @@
 import config from 'config';
 import httpStatusCodes from 'http-status-codes';
+import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -11,8 +12,19 @@ import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
+import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
 
+jest.mock('axios');
 jest.mock('config');
+
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+jest.mock('@src/externalServices/catalog/catalogCall', () => ({
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  CatalogCall: jest.fn().mockImplementation(() => ({
+    findPublishedRecord: jest.fn().mockResolvedValue(true),
+  })),
+}));
 
 const mockedConfig = config as jest.Mocked<typeof config>;
 
@@ -20,18 +32,17 @@ describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
+    mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
+
     await initConfig(true);
 
     const dbConfig = getTestDbConfig();
 
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
+    configureIntegrationConfigMock(mockedConfig, {
+      dbConfig,
+      userCredentials: validCredentials,
+      catalogUrl: 'http://127.0.0.1:8080',
+      routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
     });
 
     console.log('✅ ConnectionManager DataSource initialized.');
@@ -41,22 +52,9 @@ describe('records', function () {
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
-  beforeEach(() => {
-    const dbConfig = getTestDbConfig();
-
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
-    });
-  });
-
   afterAll(async () => {
     try {
+      jest.restoreAllMocks();
       const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
       await connectionManager.shutdown()();
       console.log('🧹 ConnectionManager shut down.');
@@ -65,15 +63,10 @@ describe('records', function () {
     }
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-    delete process.env.USERS_JSON;
-  });
-
   describe('Happy Path', function () {
     it('should return 200 and the available audits', async function () {
       await requestSender.createRecord({
-        pathParams: { recordName: validCredentials.recordName },
+        pathParams: { recordName: 'rec_test' },
         requestBody: {
           ...recordInstance,
           username: validCredentials.username,
@@ -82,7 +75,7 @@ describe('records', function () {
       });
 
       const response = await requestSender.getAudit({
-        pathParams: { recordName: recordInstance.recordName },
+        pathParams: { recordName: 'rec_test' },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -90,7 +83,7 @@ describe('records', function () {
       expect(response.body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            recordName: recordInstance.recordName,
+            recordName: 'rec_test',
             authorizedBy: recordInstance.authorizedBy,
             action: IAuditAction.CREATE,
           }),

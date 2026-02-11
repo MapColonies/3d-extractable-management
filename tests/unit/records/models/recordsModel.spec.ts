@@ -16,8 +16,11 @@ import {
   mockExtractableDelete,
   resetRepoMocks,
   mockAuditRepo,
+  mockCatalogCall,
 } from '@tests/mocks/unitMocks';
+
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
+import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 
 jest.mock('config');
 const mockedConfig = config as jest.Mocked<typeof config>;
@@ -56,7 +59,7 @@ describe('RecordsManager & ValidationsManager', () => {
 
     mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo);
+    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo, mockCatalogCall as unknown as CatalogCall);
     recordsManager = new RecordsManager(jsLogger({ enabled: false }), extractableRepo);
   });
 
@@ -78,7 +81,7 @@ describe('RecordsManager & ValidationsManager', () => {
         },
       ];
 
-      mockExtractableFind.mockResolvedValue(dbRecords);
+      mockExtractableFind.mockResolvedValueOnce(dbRecords);
 
       const result = await recordsManager.getRecords();
 
@@ -86,7 +89,7 @@ describe('RecordsManager & ValidationsManager', () => {
     });
 
     it('should return empty array if no records exist', async () => {
-      mockExtractableFind.mockResolvedValue([]);
+      mockExtractableFind.mockResolvedValueOnce([]);
 
       const result = await recordsManager.getRecords();
       expect(result).toEqual([]);
@@ -104,7 +107,7 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableFindOne.mockResolvedValue(dbRecord);
+      mockExtractableFindOne.mockResolvedValueOnce(dbRecord);
 
       const result = await recordsManager.getRecord(dbRecord.record_name);
 
@@ -112,7 +115,7 @@ describe('RecordsManager & ValidationsManager', () => {
     });
 
     it('should return undefined if record does not exist', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
 
       const result = await recordsManager.getRecord(invalidCredentials.recordName);
       expect(result).toBeUndefined();
@@ -130,7 +133,7 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableSave.mockResolvedValue(dbRecord);
+      mockExtractableSave.mockResolvedValueOnce(dbRecord);
 
       const result = await recordsManager.createRecord({
         recordName: dbRecord.record_name,
@@ -155,17 +158,17 @@ describe('RecordsManager & ValidationsManager', () => {
         data: recordInstance.data,
       };
 
-      mockExtractableFindOne.mockResolvedValue(dbRecord);
+      mockExtractableFindOne.mockResolvedValueOnce(dbRecord);
 
       const deleteResult: DeleteResult = { raw: null, affected: 1 };
-      mockExtractableDelete.mockResolvedValue(deleteResult);
+      mockExtractableDelete.mockResolvedValueOnce(deleteResult);
 
       const result = await recordsManager.deleteRecord(dbRecord.record_name);
       expect(result).toBe(true);
     });
 
     it('should return false when record does not exist', async () => {
-      mockExtractableFindOne.mockResolvedValue(null);
+      mockExtractableFindOne.mockResolvedValueOnce(null);
 
       const result = await recordsManager.deleteRecord(invalidCredentials.recordName);
       expect(result).toBe(false);
@@ -201,6 +204,35 @@ describe('RecordsManager & ValidationsManager', () => {
           isValid: false,
           message: 'recordName is required',
           code: 'MISSING_CREDENTIALS',
+        });
+      });
+
+      it('should return INTERNAL_ERROR if catalog throws', async () => {
+        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockRejectedValue(new Error('Catalog down'));
+
+        const result = await validationsManager.validateCreate({
+          ...validCredentials,
+          recordName: 'someRecord',
+        });
+
+        expect(result).toEqual({
+          isValid: false,
+          message: 'Catalog service is currently unavailable',
+          code: 'INTERNAL_ERROR',
+        });
+      });
+      it('should return INVALID_RECORD_NAME if catalog does not contain record', async () => {
+        (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockResolvedValueOnce(false);
+
+        const result = await validationsManager.validateCreate({
+          ...validCredentials,
+          recordName: 'missingRecord',
+        });
+
+        expect(result).toEqual({
+          isValid: false,
+          message: "Record 'missingRecord' is missing from the catalog",
+          code: 'INVALID_RECORD_NAME',
         });
       });
     });

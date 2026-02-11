@@ -1,29 +1,46 @@
 const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions } = require('../../../tsconfig.json');
+const tsconfigJson = require('../../../tsconfig.json');
 
 /** @type {import('jest').Config} */
 module.exports = {
   transform: {
-    '^.+\\.ts$': ['@swc/jest'],
+    '^.+\\.(ts|js)$': ['@swc/jest'],
   },
-  coverageReporters: ['text', 'html'],
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
+
+  transformIgnorePatterns: ['/node_modules/(?!(@map-colonies/mc-model-types|concaveman|@turf|tinyqueue|rbush|quickselect|robust-predicates)/)'],
+
+  moduleNameMapper: pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, {
+    prefix: '<rootDir>/',
+  }),
+
+  testMatch: ['<rootDir>/tests/integration/**/*.spec.ts'],
+
   collectCoverage: true,
   collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!*/node_modules/', '!/vendor/**', '!*/common/**', '!**/models/**', '!<rootDir>/src/*'],
+
+  coverageReporters: ['text', 'html'],
   coverageDirectory: '<rootDir>/coverage/integration',
-  rootDir: '../../../.',
-  testMatch: ['<rootDir>/tests/integration/**/*.spec.ts'],
-  setupFiles: ['<rootDir>/tests/configurations/jest.setup.ts'],
-  setupFilesAfterEnv: ['jest-openapi', '<rootDir>/tests/configurations/initJestOpenapi.setup.ts'],
+
   reporters: [
     'default',
     [
       'jest-html-reporters',
-      { multipleReportsUnitePath: './reports', pageTitle: 'integration', publicPath: './reports', filename: 'integration.html' },
+      {
+        multipleReportsUnitePath: './reports',
+        pageTitle: 'integration',
+        publicPath: './reports',
+        filename: 'integration.html',
+      },
     ],
   ],
-  moduleDirectories: ['node_modules', 'src'],
+
+  rootDir: '../../../.',
+  setupFiles: ['<rootDir>/tests/configurations/jest.setup.ts'],
+  setupFilesAfterEnv: ['jest-openapi', '<rootDir>/tests/configurations/initJestOpenapi.setup.ts'],
+
   testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+
   coverageThreshold: {
     global: {
       branches: 80,
@@ -32,6 +49,7 @@ module.exports = {
       statements: -10,
     },
   },
+
   globalSetup: '<rootDir>/tests/global-setup.js',
   globalTeardown: '<rootDir>/tests/global-teardown.js',
 };
