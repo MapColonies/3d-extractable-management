@@ -34,10 +34,9 @@
     "catalog": "http://127.0.0.1:8080",
     "publicExtractableRoutes": [{ "url": "https://linl-to-env1" }, { "url": "https://linl-to-env2" }]
   },
-  "users": [{ "username": "username", "password": "password" }],
   "db": {
     "type": "postgres",
-    "host": "localhost",
+    "host": "10.0",
     "port": 5432,
     "username": "postgres",
     "password": "postgres",
