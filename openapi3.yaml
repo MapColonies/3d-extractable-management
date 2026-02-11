@@ -13,7 +13,7 @@ tags:
   - name: records
     description: Record extractability management
   - name: audit
-    description: Documation of the the record history
+    description: Documentation of the the record history
   - name: users
     description: User authentication and validation
 
@@ -159,11 +159,11 @@ paths:
                   type: string
                 authorizedBy:
                   type: string
-                  description: 'User authorizing this record creation'
+                  description: User authorizing this record creation
                 data:
                   type: object
                   additionalProperties: true
-                  description: 'Optional metadata for the record'
+                  description: Optional metadata for the record
       responses:
         '201':
           description: Record created successfully
@@ -263,7 +263,7 @@ paths:
                   type: string
                 authorizedBy:
                   type: string
-                  description: 'User authorizing this deletion'
+                  description: User authorizing this deletion
       responses:
         '204':
           description: Record deleted successfully
