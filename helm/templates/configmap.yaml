@@ -1,5 +1,6 @@
 {{- $fullName := include "extractable-management.fullname" . -}}
 {{- $postgres := (include "merged.postgres" . ) | fromYaml }}
+{{- $ca := (include "merged.ca" . ) | fromYaml }}
 {{- $tracingUrl := include "extractable-management.tracingUrl" . -}}
 {{- $metricsUrl := include "extractable-management.metricsUrl" . -}}
 {{- if .Values.enabled -}}
@@ -15,7 +16,7 @@ data:
   LOG_LEVEL: {{ .Values.env.logLevel | quote }}
   DB_HOST: {{ quote $postgres.host }}
   DB_PORT: {{ quote $postgres.port }}
-  DB_NAME: {{ $postgres.name | quote }}  
+  DB_NAME: {{ $postgres.name | quote }}
   DB_CERT_PATH: /tmp/certs/{{ $postgres.ssl.certFileName }}
   DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
   DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
@@ -36,4 +37,8 @@ data:
   CONFIG_OFFLINE_MODE: {{ .offlineMode | quote }}
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
   {{- end -}}
+  {{- if $ca.enabled }}
+  REQUESTS_CA_BUNDLE: {{ printf "%s/%s" $ca.path $ca.key | quote }}
+  NODE_EXTRA_CA_CERTS: {{ printf "%s/%s" $ca.path $ca.key | quote }}
+  {{- end }}
 {{- end }}
