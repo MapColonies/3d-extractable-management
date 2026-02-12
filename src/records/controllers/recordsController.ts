@@ -19,12 +19,17 @@ export class RecordsController {
     @inject(ValidationsManager) private readonly validationsManager: ValidationsManager,
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry
   ) {
-    this.requestsCounter = new Counter({
-      name: 'records_requests_total',
-      help: 'Total number of requests to records endpoints, labeled by HTTP status code',
-      labelNames: ['status'],
-      registers: [this.metricsRegistry],
-    });
+    const existingCounter = metricsRegistry.getSingleMetric('records_requests_total') as Counter | undefined;
+    if (existingCounter) {
+      this.requestsCounter = existingCounter;
+    } else {
+      this.requestsCounter = new Counter({
+        name: 'records_requests_total',
+        help: 'Total number of requests to records endpoints, labeled by HTTP status code',
+        labelNames: ['status'],
+        registers: [metricsRegistry],
+      });
+    }
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 

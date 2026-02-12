@@ -132,6 +132,7 @@ paths:
                     code: 'INTERNAL_ERROR'
 
     post:
+      x-internal: true
       tags:
         - records
       summary: Create extractable record
@@ -236,6 +237,7 @@ paths:
                     code: 'INTERNAL_ERROR'
 
     delete:
+      x-internal: true
       tags:
         - records
       summary: Delete extractable record
@@ -322,6 +324,7 @@ paths:
 
   /records/validateCreate:
     post:
+      x-internal: true
       tags:
         - records
       summary: Validate record can be created
@@ -410,6 +413,7 @@ paths:
 
   /records/validateDelete:
     post:
+      x-internal: true
       tags:
         - records
       summary: Validate record can be deleted
@@ -557,6 +561,7 @@ paths:
 
   /users/validate:
     post:
+      x-internal: true
       tags:
         - users
       summary: Validate a user's username and password

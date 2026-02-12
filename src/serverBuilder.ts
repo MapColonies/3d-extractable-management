@@ -24,7 +24,7 @@ export class ServerBuilder {
     @inject(SERVICES.CONFIG) private readonly config: ConfigType,
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry,
-    @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouter: Router,
+    @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouterFactory: (internal?: boolean) => Router,
     @inject(USERS_ROUTER_SYMBOL) private readonly usersRouter: Router,
     @inject(AUDIT_ROUTER_SYMBOL) private readonly auditRouter: Router
   ) {
@@ -49,9 +49,11 @@ export class ServerBuilder {
   }
 
   private buildRoutes(): void {
-    this.serverInstance.use('/records', this.recordsRouter);
-    this.serverInstance.use('/users', this.usersRouter);
+    this.serverInstance.use('/records', this.recordsRouterFactory(false));
+    this.serverInstance.use('/internal/records', this.recordsRouterFactory(true));
     this.serverInstance.use('/audit', this.auditRouter);
+    this.serverInstance.use('/internal/audit', this.auditRouter);
+    this.serverInstance.use('/internal/users', this.usersRouter);
 
     this.buildDocsRoutes();
   }
@@ -67,9 +69,19 @@ export class ServerBuilder {
     this.serverInstance.use(bodyParser.json(this.config.get('server.request.payload')));
     this.serverInstance.use(getTraceContexHeaderMiddleware());
 
-    const ignorePathRegex = new RegExp(`^${this.config.get('openapiConfig.basePath')}/.*`, 'i');
+    const basePath = this.config.get('openapiConfig.basePath');
     const apiSpecPath = this.config.get('openapiConfig.filePath');
-    this.serverInstance.use(OpenApiMiddleware({ apiSpec: apiSpecPath, validateRequests: true, ignorePaths: ignorePathRegex }));
+
+    this.serverInstance.use(
+      OpenApiMiddleware({
+        apiSpec: apiSpecPath,
+        validateRequests: true,
+        ignorePaths: (path: string) => {
+          const basePathRegex = new RegExp(`^${basePath}/.*`, 'i');
+          return basePathRegex.test(path) || path.startsWith('/internal/');
+        },
+      })
+    );
   }
 
   private registerPostRoutesMiddleware(): void {

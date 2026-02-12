@@ -3,6 +3,8 @@ import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
+import { Router } from 'express';
+import type { DependencyContainer } from 'tsyringe';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
@@ -13,6 +15,7 @@ import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
 import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
+import { RECORDS_ROUTER_SYMBOL } from '@src/records/routes/recordsRouter';
 
 jest.mock('axios');
 jest.mock('config');
@@ -48,6 +51,11 @@ describe('records', function () {
     console.log('✅ ConnectionManager DataSource initialized.');
 
     const [app] = await getApp({ useChild: false });
+
+    const recordsRouterFactory =
+      tsyringeContainer.resolve<(dependencyContainer: DependencyContainer, options?: { internal?: boolean }) => Router>(RECORDS_ROUTER_SYMBOL);
+
+    app.use('/records', recordsRouterFactory(tsyringeContainer, { internal: true }));
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
