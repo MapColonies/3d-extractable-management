@@ -181,26 +181,6 @@ nginx:
           cpu: 100m
           memory: 128Mi
 
-route:
-  enabled: false
-
-ingress:
-  enabled: false
-  path: /
-  host: 'localhost'
-  cors:
-    enabled: true
-    origin: '*'
-
 usersSecret:
   name: extractable-management-users-secret
   key: users-json
-
-postgres:
-  enabled: true
-  user:
-    useExternal: false
-    secretName: extractable-management-db-secrets
-    requirePassword: true
-  ssl:
-    enabled: false
