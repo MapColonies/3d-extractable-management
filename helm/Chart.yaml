@@ -2,8 +2,8 @@ apiVersion: v2
 name: extractable-management
 description: A Helm chart for extractable-management service
 type: application
-version: 0.9.3
-appVersion: 0.9.3
+version: 0.9.7
+appVersion: 0.9.7
 dependencies:
   - name: mclabels
     version: 1.0.1
