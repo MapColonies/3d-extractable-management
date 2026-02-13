@@ -1,17 +1,20 @@
 import { Router } from 'express';
-import { FactoryFunction } from 'tsyringe';
+import type { DependencyContainer } from 'tsyringe';
 import { RecordsController } from '../controllers/recordsController';
 
-const recordsRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
+const recordsRouterFactory = (dependencyContainer: DependencyContainer, options?: { internal?: boolean }): Router => {
   const router = Router();
   const controller = dependencyContainer.resolve(RecordsController);
 
   router.get('/', controller.getRecords);
-  router.post('/validateCreate', controller.validateCreate);
-  router.post('/validateDelete', controller.validateDelete);
   router.get('/:recordName', controller.getRecord);
-  router.post('/:recordName', controller.createRecord);
-  router.delete('/:recordName', controller.deleteRecord);
+
+  if (options?.internal === true) {
+    router.post('/validateCreate', controller.validateCreate);
+    router.post('/validateDelete', controller.validateDelete);
+    router.post('/:recordName', controller.createRecord);
+    router.delete('/:recordName', controller.deleteRecord);
+  }
 
   return router;
 };

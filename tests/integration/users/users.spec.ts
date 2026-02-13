@@ -12,6 +12,7 @@ import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getApp } from '@src/app';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
+import { usersRouterFactory } from '@src/users/routes/usersRouter';
 
 jest.mock('config');
 
@@ -38,6 +39,9 @@ describe('users', function () {
     console.log('✅ ConnectionManager DataSource initialized.');
 
     const [app] = await getApp({ useChild: false });
+
+    const usersRouter = usersRouterFactory(tsyringeContainer, { internal: true });
+    app.use('/users', usersRouter);
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
@@ -192,6 +196,9 @@ describe('users', function () {
           ],
           useChild: true,
         });
+
+        const usersRouter = usersRouterFactory(tsyringeContainer, { internal: true });
+        app.use('/users', usersRouter);
 
         return createRequestSender<paths, operations>('openapi3.yaml', app);
       }

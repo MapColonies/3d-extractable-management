@@ -39,8 +39,22 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
-    { token: RECORDS_ROUTER_SYMBOL, provider: { useFactory: recordsRouterFactory } },
-    { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
+    {
+      token: RECORDS_ROUTER_SYMBOL,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer) => {
+          return (internal?: boolean) => recordsRouterFactory(dependencyContainer, { internal });
+        },
+      },
+    },
+    {
+      token: USERS_ROUTER_SYMBOL,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer) => {
+          return (internal?: boolean) => usersRouterFactory(dependencyContainer, { internal });
+        },
+      },
+    },
     { token: AUDIT_ROUTER_SYMBOL, provider: { useFactory: auditRouterFactory } },
     {
       token: SERVICES.HEALTH_CHECK,

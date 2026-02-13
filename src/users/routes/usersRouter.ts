@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { FactoryFunction } from 'tsyringe';
+import type { DependencyContainer } from 'tsyringe';
 import { UsersController } from '../controllers/usersController';
 
-const usersRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
+const usersRouterFactory = (dependencyContainer: DependencyContainer, options?: { internal?: boolean }): Router => {
   const router = Router();
   const controller = dependencyContainer.resolve(UsersController);
 
-  router.post('/validate', controller.validateUser);
+  if (options?.internal === true) {
+    router.post('/validate', controller.validateUser);
+  }
 
   return router;
 };

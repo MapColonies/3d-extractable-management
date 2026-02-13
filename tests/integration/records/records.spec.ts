@@ -13,6 +13,7 @@ import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
+import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from '@src/records/routes/recordsRouter';
 
 jest.mock('axios');
 jest.mock('config');
@@ -45,9 +46,17 @@ describe('records', function () {
       routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
     });
 
-    console.log('✅ ConnectionManager DataSource initialized.');
-
-    const [app] = await getApp({ useChild: false });
+    const [app] = await getApp({
+      useChild: false,
+      override: [
+        {
+          token: RECORDS_ROUTER_SYMBOL,
+          provider: {
+            useValue: () => recordsRouterFactory(tsyringeContainer, { internal: true }),
+          },
+        },
+      ],
+    });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
@@ -211,7 +220,7 @@ describe('records', function () {
         expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
         expect(response.body).toEqual({
           isValid: false,
-          message: `Record 'rec_name' already exists`,
+          message: `Record '${validCredentials.recordName}' already exists`, // Adjusted to match spec example pattern
           code: 'INVALID_RECORD_NAME',
         });
       });
@@ -459,7 +468,7 @@ describe('records', function () {
     it('should return 404 when validateCreate returns INVALID_RECORD_NAME', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
-        message: 'Record does not exist',
+        message: `Record '${invalidCredentials.recordName}' already exists`,
         code: 'INVALID_RECORD_NAME',
       });
 
@@ -474,7 +483,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         isValid: false,
-        message: 'Record does not exist',
+        message: `Record '${invalidCredentials.recordName}' already exists`,
         code: 'INVALID_RECORD_NAME',
       });
 
@@ -484,7 +493,7 @@ describe('records', function () {
     it('should return 404 when validateDelete returns INVALID_RECORD_NAME', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
-        message: 'Record does not exist',
+        message: `Record '${invalidCredentials.recordName}' doesn't exists`, // Adjusted to match spec
         code: 'INVALID_RECORD_NAME',
       });
 
@@ -499,7 +508,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         isValid: false,
-        message: 'Record does not exist',
+        message: `Record '${invalidCredentials.recordName}' doesn't exists`,
         code: 'INVALID_RECORD_NAME',
       });
 
