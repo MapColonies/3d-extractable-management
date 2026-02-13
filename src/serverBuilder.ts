@@ -25,7 +25,7 @@ export class ServerBuilder {
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry,
     @inject(RECORDS_ROUTER_SYMBOL) private readonly recordsRouterFactory: (internal?: boolean) => Router,
-    @inject(USERS_ROUTER_SYMBOL) private readonly usersRouter: Router,
+    @inject(USERS_ROUTER_SYMBOL) private readonly usersRouterFactory: (internal?: boolean) => Router,
     @inject(AUDIT_ROUTER_SYMBOL) private readonly auditRouter: Router
   ) {
     this.serverInstance = express();
@@ -53,7 +53,7 @@ export class ServerBuilder {
     this.serverInstance.use('/internal/records', this.recordsRouterFactory(true));
     this.serverInstance.use('/audit', this.auditRouter);
     this.serverInstance.use('/internal/audit', this.auditRouter);
-    this.serverInstance.use('/internal/users', this.usersRouter);
+    this.serverInstance.use('/internal/users', this.usersRouterFactory(true));
 
     this.buildDocsRoutes();
   }

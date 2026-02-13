@@ -3,8 +3,6 @@ import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
-import { Router } from 'express';
-import type { DependencyContainer } from 'tsyringe';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
@@ -15,7 +13,7 @@ import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
-import { RECORDS_ROUTER_SYMBOL } from '@src/records/routes/recordsRouter';
+import { recordsRouterFactory, RECORDS_ROUTER_SYMBOL } from '@src/records/routes/recordsRouter';
 
 jest.mock('axios');
 jest.mock('config');
@@ -48,12 +46,18 @@ describe('records', function () {
       routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
     });
 
-    const [app] = await getApp({ useChild: false });
+    const [app] = await getApp({
+      useChild: false,
+      override: [
+        {
+          token: RECORDS_ROUTER_SYMBOL,
+          provider: {
+            useValue: () => recordsRouterFactory(tsyringeContainer, { internal: true }),
+          },
+        },
+      ],
+    });
 
-    const recordsRouterFactory =
-      tsyringeContainer.resolve<(dependencyContainer: DependencyContainer, options?: { internal?: boolean }) => Router>(RECORDS_ROUTER_SYMBOL);
-
-    app.use('/records', recordsRouterFactory(tsyringeContainer, { internal: true }));
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
 

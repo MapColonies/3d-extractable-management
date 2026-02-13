@@ -47,7 +47,14 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
         },
       },
     },
-    { token: USERS_ROUTER_SYMBOL, provider: { useFactory: usersRouterFactory } },
+    {
+      token: USERS_ROUTER_SYMBOL,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer) => {
+          return (internal?: boolean) => usersRouterFactory(dependencyContainer, { internal });
+        },
+      },
+    },
     { token: AUDIT_ROUTER_SYMBOL, provider: { useFactory: auditRouterFactory } },
     {
       token: SERVICES.HEALTH_CHECK,
