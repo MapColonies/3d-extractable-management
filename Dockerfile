@@ -11,10 +11,13 @@ RUN npm install
 COPY . .
 RUN npm run build
 
+# Production stage with GDAL setup
 FROM node:24-slim AS production
 
-RUN apt-get update && apt-get install -y dumb-init --no-install-recommends && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    dumb-init \
+    gdal-bin \
+    && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV SERVER_PORT=8080
 
