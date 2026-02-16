@@ -8,26 +8,6 @@ global:
   metrics:
     url: ""
 
-  postgres:
-    host:
-    port:
-    schema: ''
-    name: ''
-    user:
-      requirePassword: false
-      rejectUnauthorized: true
-      useExternal: false
-      secretName: ''
-      username: ''
-      password: ''
-    ssl:
-      enabled: false
-      useExternal: true
-      secretName: ''
-      caFileName: ''
-      certFileName: ''
-      keyFileName: ''
-
 mclabels:
   component: backend
   partOf: extractable

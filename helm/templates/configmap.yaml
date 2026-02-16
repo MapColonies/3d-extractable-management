@@ -14,9 +14,14 @@ data:
   REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
   RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
   LOG_LEVEL: {{ .Values.env.logLevel | quote }}
+  DB_TYPE: "postgres"
   DB_HOST: {{ quote $postgres.host }}
   DB_PORT: {{ quote $postgres.port }}
   DB_NAME: {{ $postgres.name | quote }}
+  DB_USERNAME: {{ $postgres.user.username | quote }}
+  {{- if $postgres.user.requirePassword }}
+  DB_PASSWORD: {{ $postgres.user.password | quote }}
+  {{- end }}
   DB_CERT_PATH: /tmp/certs/{{ $postgres.ssl.certFileName }}
   DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
   DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
@@ -31,6 +36,8 @@ data:
   TELEMETRY_METRICS_URL: {{ $metricsUrl }}
   {{ end }}
   npm_config_cache: /tmp/
+  NODE_ENV: development
+  NODE_CONFIG_DIR: /usr/src/app/config
   {{- with .Values.configManagement }}
   CONFIG_NAME: {{ .name| quote }}
   CONFIG_VERSION: {{ .version | quote }}
