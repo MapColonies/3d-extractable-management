@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import 'reflect-metadata';
-import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { Repository, EntityManager } from 'typeorm';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
@@ -9,9 +8,6 @@ import { invalidCredentials, recordInstance, validCredentials } from '@tests/moc
 import { mockExtractableRepo, mockAuditFind, resetRepoMocks, mockAuditRepo } from '@tests/mocks/unitMocks';
 import { IAuditAction } from '@src/common/interfaces';
 import { mapAuditLogToCamelCase } from '@src/utils/converter';
-
-jest.mock('config');
-const mockedConfig = config as jest.Mocked<typeof config>;
 
 let auditManager: AuditManager;
 
@@ -43,8 +39,6 @@ describe('RecordsManager & ValidationsManager', () => {
       }),
       getRepository: fakeEntityManager.getRepository,
     };
-
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
 
     auditManager = new AuditManager(jsLogger({ enabled: false }), auditRepo);
   });
