@@ -1,4 +1,3 @@
-import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
@@ -8,14 +7,12 @@ import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
-import { getTestDbConfig } from '@tests/configurations/testConfig';
 import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
-import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
+import { getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
 
 jest.mock('axios');
-jest.mock('config');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -26,8 +23,6 @@ jest.mock('@src/externalServices/catalog/catalogCall', () => ({
   })),
 }));
 
-const mockedConfig = config as jest.Mocked<typeof config>;
-
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
@@ -35,15 +30,6 @@ describe('records', function () {
     mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
 
     await initConfig(true);
-
-    const dbConfig = getTestDbConfig();
-
-    configureIntegrationConfigMock(mockedConfig, {
-      dbConfig,
-      userCredentials: validCredentials,
-      catalogUrl: 'http://127.0.0.1:8080',
-      routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
-    });
 
     console.log('✅ ConnectionManager DataSource initialized.');
 

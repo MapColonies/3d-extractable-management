@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import 'reflect-metadata';
-import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { Repository, DeleteResult, EntityManager } from 'typeorm';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
+import type { IConfig } from '@src/common/interfaces';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
@@ -21,9 +21,6 @@ import {
 
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
-
-jest.mock('config');
-const mockedConfig = config as jest.Mocked<typeof config>;
 
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
@@ -48,6 +45,19 @@ describe('RecordsManager & ValidationsManager', () => {
       },
     };
 
+    // Mock config for ValidationsManager
+    const mockConfig = {
+      get: jest.fn((key: string) => {
+        if (key === 'externalServices.publicExtractableRoutes') {
+          return [];
+        }
+        if (key === 'users') {
+          return [{ username: validCredentials.username, password: validCredentials.password }];
+        }
+        return undefined;
+      }),
+    };
+
     type MockEntityManager = Pick<EntityManager, 'transaction' | 'getRepository'>;
 
     (extractableRepo as unknown as { manager?: MockEntityManager }).manager = {
@@ -57,9 +67,12 @@ describe('RecordsManager & ValidationsManager', () => {
       getRepository: fakeEntityManager.getRepository,
     };
 
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo, mockCatalogCall as unknown as CatalogCall);
+    validationsManager = new ValidationsManager(
+      jsLogger({ enabled: false }),
+      mockConfig as unknown as IConfig,
+      extractableRepo,
+      mockCatalogCall as unknown as CatalogCall
+    );
     recordsManager = new RecordsManager(jsLogger({ enabled: false }), extractableRepo);
   });
 
