@@ -78,7 +78,7 @@ export type paths = {
       path?: never;
       cookie?: never;
     };
-    /** Get all audit logs by record name */
+    /** Get audit logs by record name */
     get: operations['getAudit'];
     put?: never;
     post?: never;
@@ -146,6 +146,18 @@ export type components = {
       action: 'CREATE' | 'DELETE';
       authorizedAt?: string;
     };
+    paginatedExtractableRecords: {
+      numberOfRecords: number;
+      numberOfRecordsReturned: number;
+      nextRecord?: number | null;
+      records: components['schemas']['extractable-record'][];
+    };
+    paginatedAuditLogs: {
+      numberOfRecords: number;
+      numberOfRecordsReturned: number;
+      nextRecord?: number | null;
+      records: components['schemas']['audit-log'][];
+    };
   };
   responses: never;
   parameters: never;
@@ -157,7 +169,12 @@ export type $defs = Record<string, never>;
 export interface operations {
   getRecords: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description 1-based index of first record to return */
+        startPosition?: number;
+        /** @description Maximum number of records to return */
+        maxRecords?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -170,7 +187,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['extractable-record'][];
+          'application/json': components['schemas']['paginatedExtractableRecords'];
         };
       };
       /** @description Bad request */
@@ -497,7 +514,10 @@ export interface operations {
   };
   getAudit: {
     parameters: {
-      query?: never;
+      query?: {
+        startPosition?: number;
+        maxRecords?: number;
+      };
       header?: never;
       path: {
         /** @description The recordName to fetch audit logs for */
@@ -513,7 +533,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['audit-log'][];
+          'application/json': components['schemas']['paginatedAuditLogs'];
         };
       };
       /** @description Invalid recordName or request parameters */

@@ -97,20 +97,81 @@ describe('records', function () {
     });
 
     it('should return 200 and the available records', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([recordInstance]);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 1,
+        numberOfRecordsReturned: 1,
+        nextRecord: null,
+        records: [recordInstance],
+      });
       const response = await requestSender.getRecords();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([recordInstance]);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: null };
+      expect(body.numberOfRecords).toBe(1);
+      expect(body.numberOfRecordsReturned).toBe(1);
+      expect(body.nextRecord).toBeNull();
     });
 
     it('should return 200 and empty array when no records exist', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([]);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: null,
+        records: [],
+      });
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([]);
+      expect(response.body).toMatchObject({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: null,
+        records: [],
+      });
+    });
+
+    it('should return 200 with default pagination parameters when not provided', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 2,
+        numberOfRecordsReturned: 2,
+        nextRecord: null,
+        records: [recordInstance],
+      });
+      const response = await requestSender.getRecords();
+      // No query parameters - should use defaults (startPosition=1, maxRecords=10)
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: null };
+      expect(body.numberOfRecords).toBe(2);
+      expect(body.numberOfRecordsReturned).toBe(2);
+      expect(body.nextRecord).toBeNull();
+    });
+
+    it('should return 200 with pagination parameters', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 50,
+        numberOfRecordsReturned: 10,
+        nextRecord: 11,
+        records: [recordInstance],
+      });
+      const response = await requestSender.getRecords({
+        queryParams: { startPosition: 1, maxRecords: 10 },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as {
+        numberOfRecords: number;
+        numberOfRecordsReturned: number;
+        nextRecord: number;
+        records: (typeof recordInstance)[];
+      };
+      expect(body.numberOfRecords).toBe(50);
+      expect(body.numberOfRecordsReturned).toBe(10);
+      expect(body.nextRecord).toBe(11);
+      expect(Array.isArray(body.records)).toBe(true);
     });
 
     it('should return 200 when credentials are valid', async function () {
@@ -509,7 +570,8 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
+      const body = response.body as { isValid: boolean; message: string; code: string };
+      expect(body).toEqual({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
     });
 
     it('should return 500 if getRecord throws an unexpected error', async function () {

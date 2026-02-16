@@ -10,13 +10,13 @@ import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import {
   mockExtractableRepo,
-  mockExtractableFind,
   mockExtractableFindOne,
   mockExtractableSave,
   mockExtractableDelete,
   resetRepoMocks,
   mockAuditRepo,
   mockCatalogCall,
+  mockExtractableFindAndCount,
 } from '@tests/mocks/unitMocks';
 
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
@@ -82,7 +82,7 @@ describe('RecordsManager & ValidationsManager', () => {
   });
 
   describe('#getRecords', () => {
-    it('should return all records', async () => {
+    it('should return paginated records', async () => {
       const dbRecords: ExtractableRecord[] = [
         {
           id: 1,
@@ -94,18 +94,52 @@ describe('RecordsManager & ValidationsManager', () => {
         },
       ];
 
-      mockExtractableFind.mockResolvedValueOnce(dbRecords);
+      mockExtractableFindAndCount.mockResolvedValueOnce([dbRecords, 1]);
 
-      const result = await recordsManager.getRecords();
+      const result = await recordsManager.getRecords(1, 10);
 
-      expect(result).toEqual(dbRecords.map(mapExtractableRecordToCamelCase));
+      expect(result).toEqual({
+        numberOfRecords: 1,
+        numberOfRecordsReturned: 1,
+        nextRecord: null,
+        records: dbRecords.map(mapExtractableRecordToCamelCase),
+      });
     });
 
     it('should return empty array if no records exist', async () => {
-      mockExtractableFind.mockResolvedValueOnce([]);
+      mockExtractableFindAndCount.mockResolvedValueOnce([[], 0]);
 
-      const result = await recordsManager.getRecords();
-      expect(result).toEqual([]);
+      const result = await recordsManager.getRecords(1, 10);
+      expect(result).toEqual({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: null,
+        records: [],
+      });
+    });
+
+    it('should return nextRecord when more records exist', async () => {
+      const dbRecords: ExtractableRecord[] = [
+        {
+          id: 1,
+          record_name: recordInstance.recordName,
+          username: validCredentials.username,
+          authorized_by: recordInstance.authorizedBy,
+          authorized_at: new Date(),
+          data: recordInstance.data,
+        },
+      ];
+
+      mockExtractableFindAndCount.mockResolvedValueOnce([dbRecords, 25]);
+
+      const result = await recordsManager.getRecords(1, 10);
+
+      expect(result).toEqual({
+        numberOfRecords: 25,
+        numberOfRecordsReturned: 1,
+        nextRecord: 2,
+        records: dbRecords.map(mapExtractableRecordToCamelCase),
+      });
     });
   });
 

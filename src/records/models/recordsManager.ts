@@ -19,17 +19,18 @@ export class RecordsManager {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
-  public async getRecords(): Promise<IExtractableRecord[]> {
-    const logContext = { ...this.logContext, function: this.getRecords.name };
-    this.logger.debug({ msg: 'getting all records', logContext });
+  public async getRecords(
+    startPosition: number,
+    maxRecords: number
+  ): Promise<{ numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number | null; records: IExtractableRecord[] }> {
+    const skip = startPosition - 1;
+    const [records, total] = await this.extractableRepo.findAndCount({ order: { id: 'ASC' }, skip, take: maxRecords });
 
-    const records = await this.extractableRepo.find();
+    const mapped = records.map(mapExtractableRecordToCamelCase);
 
-    if (records.length === 0) {
-      this.logger.warn({ msg: 'no records found', logContext });
-    }
+    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : null;
 
-    return records.map(mapExtractableRecordToCamelCase);
+    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
   }
 
   public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {

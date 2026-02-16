@@ -17,13 +17,20 @@ export class AuditManager {
     this.logContext = { fileName: __filename, class: AuditManager.name };
   }
 
-  public async getAuditLogs(recordName: string): Promise<IAuditLog[]> {
-    const logContext = { ...this.logContext, function: this.getAuditLogs.name };
-    this.logger.debug({ msg: `Fetching audit logs for record '${recordName}'`, recordName, logContext });
+  public async getAuditLogs(
+    recordName: string,
+    startPosition: number,
+    maxRecords: number
+  ): Promise<{ numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number | null; records: IAuditLog[] }> {
+    const skip = startPosition - 1;
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const records = await this.auditRepo.find({ where: { record_name: recordName } });
+    const [records, total] = await this.auditRepo.findAndCount({ where: { record_name: recordName }, order: { id: 'ASC' }, skip, take: maxRecords });
 
-    return records.map(mapAuditLogToCamelCase);
+    const mapped = records.map(mapAuditLogToCamelCase);
+
+    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : null;
+
+    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
   }
 }

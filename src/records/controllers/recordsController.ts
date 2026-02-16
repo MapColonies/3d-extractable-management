@@ -3,7 +3,7 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
-import { SERVICES } from '@common/constants';
+import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { LogContext } from '@src/common/interfaces';
 import { RecordsManager } from '../models/recordsManager';
@@ -28,12 +28,15 @@ export class RecordsController {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
-  public getRecords: TypedRequestHandlers['GET /records'] = async (_req, res) => {
+  public getRecords: TypedRequestHandlers['GET /records'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getRecords.name };
 
+    const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
+    const max = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
+
     try {
-      const records = await this.manager.getRecords();
-      return res.status(httpStatus.OK).json(records);
+      const result = await this.manager.getRecords(start, max);
+      return res.status(httpStatus.OK).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting records', err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });

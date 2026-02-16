@@ -24,29 +24,60 @@ paths:
         - records
       summary: Get all extractable records
       operationId: getRecords
+      parameters:
+        - name: startPosition
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: 1-based index of first record to return
+        - name: maxRecords
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Maximum number of records to return
       responses:
         '200':
           description: List of extractable records (empty array if none found)
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/extractable-record'
+                $ref: '#/components/schemas/paginatedExtractableRecords'
               examples:
-                empty:
-                  summary: No records
-                  value: []
                 withRecords:
-                  summary: Some records
+                  summary: Some records exist
                   value:
-                    - id: 123
-                      recordName: rec_A
-                      username: username
-                      authorizedBy: john_doe
-                      authorizedAt: '2026-02-04T16:26:18.055Z'
-                      data:
-                        kuku: 'kuku random data'
+                    numberOfRecords: 25
+                    numberOfRecordsReturned: 2
+                    nextRecord: 3
+                    records:
+                      - id: 123
+                        recordName: rec_A
+                        username: username
+                        authorizedBy: john_doe
+                        authorizedAt: '2026-02-04T16:26:18.055Z'
+                        data:
+                          kuku: 'kuku random data'
+                      - id: 124
+                        recordName: rec_B
+                        username: another_user
+                        authorizedBy: jane_doe
+                        authorizedAt: '2026-02-05T10:12:11.000Z'
+                        data:
+                          field: 'value'
+                empty:
+                  summary: No records found
+                  value:
+                    numberOfRecords: 0
+                    numberOfRecordsReturned: 0
+                    nextRecord: null
+                    records: []
+
         '400':
           description: Bad request
           content:
@@ -491,7 +522,7 @@ paths:
     get:
       tags:
         - audit
-      summary: Get all audit logs by record name
+      summary: Get audit logs by record name
       operationId: getAudit
       parameters:
         - name: recordName
@@ -500,34 +531,54 @@ paths:
           schema:
             type: string
           description: The recordName to fetch audit logs for
+        - name: startPosition
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: maxRecords
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
       responses:
         '200':
           description: List of audit logs for the record (empty array if none found)
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/audit-log'
+                $ref: '#/components/schemas/paginatedAuditLogs'
               examples:
                 withAudits:
                   summary: Audit logs exist
                   value:
-                    - id: 1
-                      recordName: rec_A
-                      username: username
-                      authorizedBy: john_doe
-                      action: 'CREATE'
-                      authorizedAt: '2026-02-04T16:26:18.055Z'
-                    - id: 2
-                      recordName: rec_A
-                      username: username
-                      authorizedBy: jane_doe
-                      action: 'DELETE'
-                      authorizedAt: '2026-02-05T16:26:18.055Z'
+                    numberOfRecords: 7
+                    numberOfRecordsReturned: 2
+                    nextRecord: 3
+                    records:
+                      - id: 1
+                        recordName: rec_A
+                        username: username
+                        authorizedBy: john_doe
+                        action: CREATE
+                        authorizedAt: '2026-02-04T16:26:18.055Z'
+                      - id: 2
+                        recordName: rec_A
+                        username: username
+                        authorizedBy: jane_doe
+                        action: DELETE
+                        authorizedAt: '2026-02-05T16:26:18.055Z'
                 empty:
-                  summary: No audit logs
-                  value: []
+                  summary: No audit logs found
+                  value:
+                    numberOfRecords: 0
+                    numberOfRecordsReturned: 0
+                    nextRecord: null
+                    records: []
         '400':
           description: Invalid recordName or request parameters
           content:
@@ -713,3 +764,41 @@ components:
           enum: [CREATE, DELETE]
         authorizedAt:
           type: string
+
+    paginatedExtractableRecords:
+      type: object
+      required:
+        - numberOfRecords
+        - numberOfRecordsReturned
+        - records
+      properties:
+        numberOfRecords:
+          type: integer
+        numberOfRecordsReturned:
+          type: integer
+        nextRecord:
+          type: integer
+          nullable: true
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/extractable-record'
+
+    paginatedAuditLogs:
+      type: object
+      required:
+        - numberOfRecords
+        - numberOfRecordsReturned
+        - records
+      properties:
+        numberOfRecords:
+          type: integer
+        numberOfRecordsReturned:
+          type: integer
+        nextRecord:
+          type: integer
+          nullable: true
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/audit-log'
