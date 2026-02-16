@@ -22,10 +22,6 @@ describe('users', function () {
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
 
-  beforeEach(() => {
-    // No config mocking needed - @map-colonies/config is initialized once at startup
-  });
-
   afterAll(async () => {
     try {
       const connectionManager = tsyringeContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
@@ -132,11 +128,5 @@ describe('users', function () {
 
       spy.mockRestore();
     });
-  });
-
-  describe('Config-driven users behavior', function () {
-    // Note: These tests have been removed as they relied on mocking the npm 'config' package
-    // With @map-colonies/config, the configuration is loaded from the configuration server
-    // and is injected into services, so direct mocking is no longer possible
   });
 });
