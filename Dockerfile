@@ -24,10 +24,10 @@ ENV SERVER_PORT=8080
 WORKDIR /usr/src/app
 
 COPY --chown=node:node package*.json ./
-COPY .husky/ .husky/
 
 RUN apt-get update && apt-get install -y python3 make g++ --no-install-recommends \
-    && npm ci --only=production \
+    && npm install --omit=dev --ignore-scripts \
+    && npm rebuild \
     && apt-get purge -y python3 make g++ && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=node:node --from=build /tmp/buildApp/dist .
