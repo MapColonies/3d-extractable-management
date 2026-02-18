@@ -18,26 +18,34 @@ data:
   DB_HOST: {{ quote $postgres.host }}
   DB_PORT: {{ quote $postgres.port }}
   DB_NAME: {{ $postgres.name | quote }}
-  DB_USERNAME: {{ $postgres.user.username | quote }}
-  {{- if $postgres.user.requirePassword }}
-  DB_PASSWORD: {{ $postgres.user.password | quote }}
-  {{- end }}
   DB_CERT_PATH: /tmp/certs/{{ $postgres.ssl.certFileName }}
   DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
   DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
   DB_ENABLE_SSL_AUTH: {{ $postgres.ssl.enabled | quote }}
   LOG_PRETTY_PRINT_ENABLED: {{ .Values.env.logPrettyPrintEnabled | quote }}
-  {{ if .Values.env.tracing.enabled }}
+  {{- if .Values.env.tracing.enabled }}
   TELEMETRY_TRACING_ENABLED: 'true'
   TELEMETRY_TRACING_URL: {{ $tracingUrl }}
-  {{ end }}
-  {{ if .Values.env.metrics.enabled }}
+  {{- end }}
+  {{- if .Values.env.metrics.enabled }}
   TELEMETRY_METRICS_ENABLED: 'true'
   TELEMETRY_METRICS_URL: {{ $metricsUrl }}
-  {{ end }}
+  {{- end }}
   npm_config_cache: /tmp/
-  NODE_ENV: development
-  NODE_CONFIG_DIR: /usr/src/app/config
+  NODE_CONFIG_DIR: /etc/config
+  NODE_ENV: production
+  SUPPRESS_NO_CONFIG_WARNING: 'false'
+  production.json: |
+    {
+      "server": {
+        "port": 8080
+      },
+      "db": {
+        "host": {{ quote $postgres.host }},
+        "port": {{ $postgres.port }},
+        "name": {{ quote $postgres.name }}
+      }
+    }
   {{- with .Values.configManagement }}
   CONFIG_NAME: {{ .name| quote }}
   CONFIG_VERSION: {{ .version | quote }}
