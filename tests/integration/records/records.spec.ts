@@ -4,7 +4,7 @@ import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
@@ -127,7 +127,7 @@ describe('records', function () {
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: unknown[] };
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: IExtractableRecord[] };
       expect(body.numberOfRecords).toBe(0);
       expect(body.numberOfRecordsReturned).toBe(0);
       expect(body.nextRecord).toBe(0);
