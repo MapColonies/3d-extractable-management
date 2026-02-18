@@ -12,10 +12,12 @@ security: []
 tags:
   - name: records
     description: Record extractability management
-  - name: audit
+  - name: internal - audit
     description: Documentation of the the record history
-  - name: users
-    description: User authentication and validation
+  - name: internal - records
+    description: Internal records extractability management
+  - name: internal - users
+    description: Internal users authentication and validation
 
 paths:
   /records:
@@ -133,7 +135,7 @@ paths:
 
     post:
       tags:
-        - records
+        - internal - records
       summary: Create extractable record
       operationId: createRecord
       parameters:
@@ -237,7 +239,7 @@ paths:
 
     delete:
       tags:
-        - records
+        - internal - records
       summary: Delete extractable record
       operationId: deleteRecord
       parameters:
@@ -323,7 +325,7 @@ paths:
   /records/validateCreate:
     post:
       tags:
-        - records
+        - internal - records
       summary: Validate record can be created
       operationId: validateCreate
       requestBody:
@@ -411,7 +413,7 @@ paths:
   /records/validateDelete:
     post:
       tags:
-        - records
+        - internal - records
       summary: Validate record can be deleted
       operationId: validateDelete
       requestBody:
@@ -490,7 +492,7 @@ paths:
   /audit/{recordName}:
     get:
       tags:
-        - audit
+        - internal - audit
       summary: Get all audit logs by record name
       operationId: getAudit
       parameters:
@@ -558,7 +560,7 @@ paths:
   /users/validate:
     post:
       tags:
-        - users
+        - internal - users
       summary: Validate a user's username and password
       operationId: validateUser
       requestBody:
