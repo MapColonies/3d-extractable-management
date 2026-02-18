@@ -236,8 +236,8 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
         isValid: false,
-        message: 'maxRecords must be a positive integer',
-        code: 'INVALID_START_POSITION',
+        message: 'maxRecords must be a positive integer and at most 10000',
+        code: 'INVALID_MAX_RECORDS',
       });
     });
   });
