@@ -12,7 +12,7 @@ security: []
 tags:
   - name: records
     description: Record extractability management
-  - name: audit
+  - name: internal - audit
     description: Documentation of the the record history
   - name: internal - records
     description: Internal records extractability management
@@ -492,7 +492,7 @@ paths:
   /audit/{recordName}:
     get:
       tags:
-        - audit
+        - internal - audit
       summary: Get all audit logs by record name
       operationId: getAudit
       parameters:
