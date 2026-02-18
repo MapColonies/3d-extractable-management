@@ -87,8 +87,7 @@ env:
     enabled: false
     url: http://localhost:55681/v1/metrics
   pagination:
-    defaultStartPosition: 1
-    defaultMaxRecords: 10000
+    maxRecords: 10000
 
 resources:
   enabled: true

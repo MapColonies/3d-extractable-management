@@ -36,3 +36,7 @@ export const DB_TIMEOUT = 5000;
 export const MAX_CONNECT_RETRIES = 3;
 
 export const REMOTE_VALIDATE_CREATE_PATH = '/records/validateCreate';
+
+export const DEFAULT_MAX_RECORDS = 50;
+
+export const DEFAULT_START_POSITION = 1;

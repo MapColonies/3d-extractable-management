@@ -31,8 +31,7 @@
     }
   },
   "pagination": {
-    "defaultStartPosition": 1,
-    "defaultMaxRecords": 10000
+    "maxRecords": 10000
   },
   "externalServices": {
     "catalog": "http://127.0.0.1:8080",
