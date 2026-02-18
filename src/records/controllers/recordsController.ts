@@ -36,7 +36,7 @@ export class RecordsController {
 
     try {
       const result = await this.manager.getRecords(start, max);
-      return res.status(httpStatus.OK).json(result);
+      return res.status(httpStatus.OK).json({ ...result.paginationResponse, records: result.records });
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting records', err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });

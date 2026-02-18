@@ -39,7 +39,7 @@ paths:
           schema:
             type: integer
             minimum: 1
-            default: 10
+            default: 50
           description: Maximum number of records to return
       responses:
         '200':
@@ -75,7 +75,7 @@ paths:
                   value:
                     numberOfRecords: 0
                     numberOfRecordsReturned: 0
-                    nextRecord: null
+                    nextRecord: 0
                     records: []
 
         '400':
@@ -544,7 +544,7 @@ paths:
           schema:
             type: integer
             minimum: 1
-            default: 10
+            default: 50
       responses:
         '200':
           description: List of audit logs for the record (empty array if none found)
@@ -577,7 +577,7 @@ paths:
                   value:
                     numberOfRecords: 0
                     numberOfRecordsReturned: 0
-                    nextRecord: null
+                    nextRecord: 0
                     records: []
         '400':
           description: Invalid recordName or request parameters
@@ -767,6 +767,7 @@ components:
 
     paginatedExtractableRecords:
       type: object
+      description: Paginated response containing extractable records.
       required:
         - numberOfRecords
         - numberOfRecordsReturned
@@ -774,18 +775,27 @@ components:
       properties:
         numberOfRecords:
           type: integer
+          description: Total number of extractable records available in the system.
+          example: 60
         numberOfRecordsReturned:
           type: integer
+          description: Number of records included in this response page.
+          example: 50
         nextRecord:
           type: integer
-          nullable: true
+          description: >
+            1-based index of the next record to request for pagination.
+            0 if there are no more records available.
+          example: 51
         records:
           type: array
+          description: List of extractable records for the current page.
           items:
             $ref: '#/components/schemas/extractable-record'
 
     paginatedAuditLogs:
       type: object
+      description: Paginated response containing audit log entries for a specific record.
       required:
         - numberOfRecords
         - numberOfRecordsReturned
@@ -793,12 +803,20 @@ components:
       properties:
         numberOfRecords:
           type: integer
+          description: Total number of audit log entries available for the specified record.
+          example: 12
         numberOfRecordsReturned:
           type: integer
+          description: Number of audit log entries included in this response page.
+          example: 5
         nextRecord:
           type: integer
-          nullable: true
+          description: >
+            1-based index of the next audit log entry to request.
+            0 if there are no more audit logs available.
+          example: 6
         records:
           type: array
+          description: List of audit log entries for the current page.
           items:
             $ref: '#/components/schemas/audit-log'

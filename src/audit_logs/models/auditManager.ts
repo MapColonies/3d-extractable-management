@@ -2,7 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { Repository } from 'typeorm';
 import { SERVICES, IAuditLog } from '@common/constants';
-import { LogContext } from '@common/interfaces';
+import { LogContext, IPaginationResponse } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { mapAuditLogToCamelCase } from '@src/utils/converter';
 
@@ -21,16 +21,21 @@ export class AuditManager {
     recordName: string,
     startPosition: number,
     maxRecords: number
-  ): Promise<{ numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number | null; records: IAuditLog[] }> {
+  ): Promise<{ paginationResponse: IPaginationResponse; records: IAuditLog[] }> {
     const skip = startPosition - 1;
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const [records, total] = await this.auditRepo.findAndCount({ where: { record_name: recordName }, order: { id: 'ASC' }, skip, take: maxRecords });
+    const [records, total] = await this.auditRepo.findAndCount({
+      where: { record_name: recordName },
+      order: { authorized_at: 'DESC' },
+      skip,
+      take: maxRecords,
+    });
 
     const mapped = records.map(mapAuditLogToCamelCase);
 
-    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : null;
+    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : 0;
 
-    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
+    return { paginationResponse: { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord }, records: mapped };
   }
 }

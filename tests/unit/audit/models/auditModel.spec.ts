@@ -64,9 +64,11 @@ describe('RecordsManager & ValidationsManager', () => {
       const result = await auditManager.getAuditLogs(dbAuditLog.record_name, 1, 10);
 
       expect(result).toEqual({
-        numberOfRecords: 1,
-        numberOfRecordsReturned: 1,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 1,
+          numberOfRecordsReturned: 1,
+          nextRecord: 0,
+        },
         records: [mapAuditLogToCamelCase(dbAuditLog)],
       });
     });
@@ -77,9 +79,11 @@ describe('RecordsManager & ValidationsManager', () => {
       const result = await auditManager.getAuditLogs(invalidCredentials.recordName, 1, 10);
 
       expect(result).toEqual({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+        },
         records: [],
       });
     });
@@ -99,9 +103,11 @@ describe('RecordsManager & ValidationsManager', () => {
       const result = await auditManager.getAuditLogs(recordInstance.recordName, 1, 10);
 
       expect(result).toEqual({
-        numberOfRecords: 25,
-        numberOfRecordsReturned: 1,
-        nextRecord: 2,
+        paginationResponse: {
+          numberOfRecords: 25,
+          numberOfRecordsReturned: 1,
+          nextRecord: 2,
+        },
         records: [mapAuditLogToCamelCase(dbAuditLog)],
       });
     });

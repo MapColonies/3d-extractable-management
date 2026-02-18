@@ -99,9 +99,11 @@ describe('RecordsManager & ValidationsManager', () => {
       const result = await recordsManager.getRecords(1, 10);
 
       expect(result).toEqual({
-        numberOfRecords: 1,
-        numberOfRecordsReturned: 1,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 1,
+          numberOfRecordsReturned: 1,
+          nextRecord: 0,
+        },
         records: dbRecords.map(mapExtractableRecordToCamelCase),
       });
     });
@@ -111,9 +113,11 @@ describe('RecordsManager & ValidationsManager', () => {
 
       const result = await recordsManager.getRecords(1, 10);
       expect(result).toEqual({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+        },
         records: [],
       });
     });
@@ -135,9 +139,11 @@ describe('RecordsManager & ValidationsManager', () => {
       const result = await recordsManager.getRecords(1, 10);
 
       expect(result).toEqual({
-        numberOfRecords: 25,
-        numberOfRecordsReturned: 1,
-        nextRecord: 2,
+        paginationResponse: {
+          numberOfRecords: 25,
+          numberOfRecordsReturned: 1,
+          nextRecord: 2,
+        },
         records: dbRecords.map(mapExtractableRecordToCamelCase),
       });
     });

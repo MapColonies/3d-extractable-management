@@ -146,16 +146,44 @@ export type components = {
       action: 'CREATE' | 'DELETE';
       authorizedAt?: string;
     };
+    /** @description Paginated response containing extractable records. */
     paginatedExtractableRecords: {
+      /**
+       * @description Total number of extractable records available in the system.
+       * @example 60
+       */
       numberOfRecords: number;
+      /**
+       * @description Number of records included in this response page.
+       * @example 50
+       */
       numberOfRecordsReturned: number;
-      nextRecord?: number | null;
+      /**
+       * @description 1-based index of the next record to request for pagination. 0 if there are no more records available.
+       * @example 51
+       */
+      nextRecord?: number;
+      /** @description List of extractable records for the current page. */
       records: components['schemas']['extractable-record'][];
     };
+    /** @description Paginated response containing audit log entries for a specific record. */
     paginatedAuditLogs: {
+      /**
+       * @description Total number of audit log entries available for the specified record.
+       * @example 12
+       */
       numberOfRecords: number;
+      /**
+       * @description Number of audit log entries included in this response page.
+       * @example 5
+       */
       numberOfRecordsReturned: number;
-      nextRecord?: number | null;
+      /**
+       * @description 1-based index of the next audit log entry to request. 0 if there are no more audit logs available.
+       * @example 6
+       */
+      nextRecord?: number;
+      /** @description List of audit log entries for the current page. */
       records: components['schemas']['audit-log'][];
     };
   };

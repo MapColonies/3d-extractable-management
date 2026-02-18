@@ -29,7 +29,7 @@ export class AuditController {
 
     try {
       const result = await this.manager.getAuditLogs(recordName, start, max);
-      return res.status(httpStatus.OK).json(result);
+      return res.status(httpStatus.OK).json({ ...result.paginationResponse, records: result.records });
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting audit logs', recordName, err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get audit logs', code: 'INTERNAL_ERROR' });

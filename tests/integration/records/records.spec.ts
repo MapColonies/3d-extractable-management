@@ -98,26 +98,30 @@ describe('records', function () {
 
     it('should return 200 and the available records', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 1,
-        numberOfRecordsReturned: 1,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 1,
+          numberOfRecordsReturned: 1,
+          nextRecord: 0,
+        },
         records: [recordInstance],
       });
       const response = await requestSender.getRecords();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: null };
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
       expect(body.numberOfRecords).toBe(1);
       expect(body.numberOfRecordsReturned).toBe(1);
-      expect(body.nextRecord).toBeNull();
+      expect(body.nextRecord).toBe(0);
     });
 
     it('should return 200 and empty array when no records exist', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+        },
         records: [],
       });
       const response = await requestSender.getRecords();
@@ -133,27 +137,30 @@ describe('records', function () {
 
     it('should return 200 with default pagination parameters when not provided', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 2,
-        numberOfRecordsReturned: 2,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 2,
+          numberOfRecordsReturned: 2,
+          nextRecord: 0,
+        },
         records: [recordInstance],
       });
       const response = await requestSender.getRecords();
-      // No query parameters - should use defaults (startPosition=1, maxRecords=10)
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: null };
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
       expect(body.numberOfRecords).toBe(2);
       expect(body.numberOfRecordsReturned).toBe(2);
-      expect(body.nextRecord).toBeNull();
+      expect(body.nextRecord).toBe(0);
     });
 
     it('should return 200 with pagination parameters', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 50,
-        numberOfRecordsReturned: 10,
-        nextRecord: 11,
+        paginationResponse: {
+          numberOfRecords: 50,
+          numberOfRecordsReturned: 10,
+          nextRecord: 11,
+        },
         records: [recordInstance],
       });
       const response = await requestSender.getRecords({

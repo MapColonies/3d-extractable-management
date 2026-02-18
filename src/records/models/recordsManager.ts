@@ -3,7 +3,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { Repository, EntityManager } from 'typeorm';
 import { SERVICES, IExtractableRecord } from '@common/constants';
-import { LogContext, IAuditAction } from '@common/interfaces';
+import { LogContext, IAuditAction, IPaginationResponse } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
@@ -22,15 +22,15 @@ export class RecordsManager {
   public async getRecords(
     startPosition: number,
     maxRecords: number
-  ): Promise<{ numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number | null; records: IExtractableRecord[] }> {
+  ): Promise<{ paginationResponse: IPaginationResponse; records: IExtractableRecord[] }> {
     const skip = startPosition - 1;
-    const [records, total] = await this.extractableRepo.findAndCount({ order: { id: 'ASC' }, skip, take: maxRecords });
+    const [records, total] = await this.extractableRepo.findAndCount({ order: { authorized_at: 'DESC' }, skip, take: maxRecords });
 
     const mapped = records.map(mapExtractableRecordToCamelCase);
 
-    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : null;
+    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : 0;
 
-    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
+    return { paginationResponse: { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord }, records: mapped };
   }
 
   public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {

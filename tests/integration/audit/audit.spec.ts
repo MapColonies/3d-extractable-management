@@ -88,9 +88,11 @@ describe('records', function () {
 
     it('should return 200 and empty records when no audit logs by recordName found', async function () {
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+        },
         records: [],
       });
       const response = await requestSender.getAudit({
@@ -115,15 +117,16 @@ describe('records', function () {
       };
 
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        numberOfRecords: 5,
-        numberOfRecordsReturned: 5,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 5,
+          numberOfRecordsReturned: 5,
+          nextRecord: 0,
+        },
         records: [dbAuditLog],
       });
 
       const response = await requestSender.getAudit({
         pathParams: { recordName: 'rec_default_pagination' },
-        // No query parameters - should use defaults
       });
 
       expect(response).toSatisfyApiSpec();
@@ -148,9 +151,11 @@ describe('records', function () {
       };
 
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        numberOfRecords: 50,
-        numberOfRecordsReturned: 10,
-        nextRecord: 11,
+        paginationResponse: {
+          numberOfRecords: 50,
+          numberOfRecordsReturned: 10,
+          nextRecord: 11,
+        },
         records: [dbAuditLog],
       });
 
@@ -170,7 +175,6 @@ describe('records', function () {
       expect(body.numberOfRecordsReturned).toBe(10);
       expect(body.nextRecord).toBe(11);
       expect(Array.isArray(body.records)).toBe(true);
-      // Verify the controller processed pagination parameters correctly
       const getAuditLogsSpy = jest.spyOn(AuditManager.prototype, 'getAuditLogs');
       expect(getAuditLogsSpy).toHaveBeenCalledWith('rec_pagination_test', 1, 10);
     });
