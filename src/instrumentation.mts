@@ -4,8 +4,7 @@
 import { tracingFactory } from './common/tracing.js';
 import { getConfig, initConfig } from './common/config.js';
 
-const offlineMode = process.env.CONFIG_OFFLINE_MODE === 'true';
-await initConfig(offlineMode);
+await initConfig();
 
 const config = getConfig();
 
