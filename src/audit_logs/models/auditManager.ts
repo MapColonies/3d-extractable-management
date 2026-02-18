@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { Repository } from 'typeorm';
-import { SERVICES, IAuditLog } from '@common/constants';
+import { IAuditLog, SERVICES } from '@common/constants';
 import { LogContext, IPaginationResponse } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { mapAuditLogToCamelCase } from '@src/utils/converter';
@@ -17,11 +17,7 @@ export class AuditManager {
     this.logContext = { fileName: __filename, class: AuditManager.name };
   }
 
-  public async getAuditLogs(
-    recordName: string,
-    startPosition: number,
-    maxRecords: number
-  ): Promise<{ paginationResponse: IPaginationResponse; records: IAuditLog[] }> {
+  public async getAuditLogs(recordName: string, startPosition: number, maxRecords: number): Promise<IPaginationResponse<IAuditLog>> {
     const skip = startPosition - 1;
 
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -36,6 +32,6 @@ export class AuditManager {
 
     const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : 0;
 
-    return { paginationResponse: { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord }, records: mapped };
+    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
   }
 }

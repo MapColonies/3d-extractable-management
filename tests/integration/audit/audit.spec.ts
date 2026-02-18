@@ -88,11 +88,9 @@ describe('records', function () {
 
     it('should return 200 and empty records when no audit logs by recordName found', async function () {
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 0,
-          numberOfRecordsReturned: 0,
-          nextRecord: 0,
-        },
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: 0,
         records: [],
       });
       const response = await requestSender.getAudit({
@@ -117,11 +115,9 @@ describe('records', function () {
       };
 
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 5,
-          numberOfRecordsReturned: 5,
-          nextRecord: 0,
-        },
+        numberOfRecords: 5,
+        numberOfRecordsReturned: 5,
+        nextRecord: 0,
         records: [dbAuditLog],
       });
 
@@ -151,11 +147,9 @@ describe('records', function () {
       };
 
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 50,
-          numberOfRecordsReturned: 10,
-          nextRecord: 11,
-        },
+        numberOfRecords: 50,
+        numberOfRecordsReturned: 10,
+        nextRecord: 11,
         records: [dbAuditLog],
       });
 

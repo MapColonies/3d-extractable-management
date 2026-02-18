@@ -36,8 +36,9 @@ export enum IAuditAction {
   DELETE = 'DELETE',
 }
 
-export interface IPaginationResponse {
+export interface IPaginationResponse<T> {
   numberOfRecords: number;
   numberOfRecordsReturned: number;
   nextRecord: number;
+  records: T[];
 }

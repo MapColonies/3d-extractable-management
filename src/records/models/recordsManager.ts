@@ -19,10 +19,7 @@ export class RecordsManager {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
-  public async getRecords(
-    startPosition: number,
-    maxRecords: number
-  ): Promise<{ paginationResponse: IPaginationResponse; records: IExtractableRecord[] }> {
+  public async getRecords(startPosition: number, maxRecords: number): Promise<IPaginationResponse<IExtractableRecord>> {
     const skip = startPosition - 1;
     const [records, total] = await this.extractableRepo.findAndCount({ order: { authorized_at: 'DESC' }, skip, take: maxRecords });
 
@@ -30,7 +27,7 @@ export class RecordsManager {
 
     const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : 0;
 
-    return { paginationResponse: { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord }, records: mapped };
+    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
   }
 
   public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {

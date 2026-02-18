@@ -35,7 +35,7 @@ export class RecordsController {
     const logContext = { ...this.logContext, function: this.getRecords.name };
 
     const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
-    const max = Math.min(Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS), this.maxRecords);
+    const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
 
     if (!Number.isInteger(start) || start < 1) {
       return res
@@ -43,7 +43,7 @@ export class RecordsController {
         .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     }
 
-    if (!Number.isInteger(max) || max < 1) {
+    if (!Number.isInteger(requestedMax) || requestedMax < 1 || requestedMax > this.maxRecords) {
       return res.status(httpStatus.BAD_REQUEST).json({
         isValid: false,
         message: `maxRecords must be a positive integer and at most ${this.maxRecords}`,
@@ -52,8 +52,8 @@ export class RecordsController {
     }
 
     try {
-      const result = await this.manager.getRecords(start, max);
-      return res.status(httpStatus.OK).json({ ...result.paginationResponse, records: result.records });
+      const result = await this.manager.getRecords(start, requestedMax);
+      return res.status(httpStatus.OK).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting records', err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });

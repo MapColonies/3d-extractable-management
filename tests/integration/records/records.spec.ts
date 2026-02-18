@@ -98,11 +98,9 @@ describe('records', function () {
 
     it('should return 200 and the available records', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 1,
-          numberOfRecordsReturned: 1,
-          nextRecord: 0,
-        },
+        numberOfRecords: 1,
+        numberOfRecordsReturned: 1,
+        nextRecord: 0,
         records: [recordInstance],
       });
       const response = await requestSender.getRecords();
@@ -117,11 +115,9 @@ describe('records', function () {
 
     it('should return 200 and empty array when no records exist', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 0,
-          numberOfRecordsReturned: 0,
-          nextRecord: 0,
-        },
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: 0,
         records: [],
       });
       const response = await requestSender.getRecords();
@@ -136,11 +132,9 @@ describe('records', function () {
 
     it('should return 200 with default pagination parameters when not provided', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 2,
-          numberOfRecordsReturned: 2,
-          nextRecord: 0,
-        },
+        numberOfRecords: 2,
+        numberOfRecordsReturned: 2,
+        nextRecord: 0,
         records: [recordInstance],
       });
       const response = await requestSender.getRecords();
@@ -155,11 +149,9 @@ describe('records', function () {
 
     it('should return 200 with pagination parameters', async function () {
       jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        paginationResponse: {
-          numberOfRecords: 50,
-          numberOfRecordsReturned: 10,
-          nextRecord: 11,
-        },
+        numberOfRecords: 50,
+        numberOfRecordsReturned: 10,
+        nextRecord: 11,
         records: [recordInstance],
       });
       const response = await requestSender.getRecords({
