@@ -128,9 +128,11 @@ describe('records', function () {
 
       expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toMatchObject({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: null,
+        paginationResponse: {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+        },
         records: [],
       });
     });
