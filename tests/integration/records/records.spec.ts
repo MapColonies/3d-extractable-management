@@ -127,14 +127,11 @@ describe('records', function () {
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toMatchObject({
-        paginationResponse: {
-          numberOfRecords: 0,
-          numberOfRecordsReturned: 0,
-          nextRecord: 0,
-        },
-        records: [],
-      });
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: unknown[] };
+      expect(body.numberOfRecords).toBe(0);
+      expect(body.numberOfRecordsReturned).toBe(0);
+      expect(body.nextRecord).toBe(0);
+      expect(body.records).toEqual([]);
     });
 
     it('should return 200 with default pagination parameters when not provided', async function () {
