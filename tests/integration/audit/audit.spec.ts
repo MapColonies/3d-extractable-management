@@ -202,7 +202,7 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       const body = response.body as { isValid: boolean; message: string; code: string };
-      expect(body).toEqual({ isValid: false, message: 'maxRecords must be a positive integer and at most 100', code: 'INVALID_MAX_RECORDS' });
+      expect(body).toEqual({ isValid: false, message: 'maxRecords must be a positive integer and at most 10000', code: 'INVALID_MAX_RECORDS' });
     });
   });
 
