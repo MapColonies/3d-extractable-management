@@ -180,6 +180,32 @@ describe('records', function () {
     });
   });
 
+  describe('Bad Path - Validation Errors', function () {
+    it('should return 400 if startPosition is invalid for getAudit', async function () {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { startPosition: -5 },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      const body = response.body as { isValid: boolean; message: string; code: string };
+      expect(body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+    });
+
+    it('should return 400 if maxRecords is invalid for getAudit', async function () {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { maxRecords: 0 },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      const body = response.body as { isValid: boolean; message: string; code: string };
+      expect(body).toEqual({ isValid: false, message: 'maxRecords must be a positive integer and at most 100', code: 'INVALID_MAX_RECORDS' });
+    });
+  });
+
   describe('Sad Path', function () {
     it('should return 500 if getAudit throws an unexpected error', async function () {
       jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockImplementation(() => {

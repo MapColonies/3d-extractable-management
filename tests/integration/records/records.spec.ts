@@ -214,6 +214,34 @@ describe('records', function () {
     });
   });
 
+  describe('Bad Path - Validation Failures', function () {
+    it('should return 400 if startPosition is invalid', async () => {
+      const response = await requestSender.getRecords({
+        queryParams: { startPosition: -5 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'startPosition must be a positive integer',
+        code: 'INVALID_START_POSITION',
+      });
+    });
+
+    it('should return 400 if maxRecords is invalid', async () => {
+      const response = await requestSender.getRecords({
+        queryParams: { maxRecords: 0 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'maxRecords must be a positive integer',
+        code: 'INVALID_MAX_RECORDS',
+      });
+    });
+  });
+
   describe('Bad Path', function () {
     beforeAll(async () => {
       await requestSender.createRecord({

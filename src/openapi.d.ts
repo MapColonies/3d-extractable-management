@@ -113,7 +113,14 @@ export type components = {
       isValid: boolean;
       message: string;
       /** @enum {string} */
-      code: 'SUCCESS' | 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME' | 'INTERNAL_ERROR';
+      code:
+        | 'SUCCESS'
+        | 'MISSING_CREDENTIALS'
+        | 'INVALID_CREDENTIALS'
+        | 'INVALID_RECORD_NAME'
+        | 'INTERNAL_ERROR'
+        | 'INVALID_START_POSITION'
+        | 'INVALID_MAX_RECORDS';
     };
     'auth-payload': {
       username: string;

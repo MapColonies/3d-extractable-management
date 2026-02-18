@@ -3,21 +3,25 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
-import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS } from '@common/constants';
+import { SERVICES } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { LogContext } from '@src/common/interfaces';
+import type { IConfig, LogContext } from '@src/common/interfaces';
 import { RecordsManager } from '../models/recordsManager';
 
 @injectable()
 export class RecordsController {
   private readonly requestsCounter: Counter;
   private readonly logContext: LogContext;
+  /* eslint-disable @typescript-eslint/naming-convention */
+  private readonly DEFAULT_START_POSITION: number;
+  private readonly DEFAULT_MAX_RECORDS: number;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(RecordsManager) private readonly manager: RecordsManager,
     @inject(ValidationsManager) private readonly validationsManager: ValidationsManager,
-    @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry
+    @inject(SERVICES.METRICS) private readonly metricsRegistry: Registry,
+    @inject(SERVICES.CONFIG) private readonly config: IConfig
   ) {
     this.requestsCounter = new Counter({
       name: 'records_requests_total',
@@ -26,13 +30,31 @@ export class RecordsController {
       registers: [this.metricsRegistry],
     });
     this.logContext = { fileName: __filename, class: RecordsManager.name };
+    this.DEFAULT_START_POSITION = this.config.get<number>('pagination.defaultStartPosition');
+    this.DEFAULT_MAX_RECORDS = this.config.get<number>('pagination.defaultMaxRecords');
   }
 
   public getRecords: TypedRequestHandlers['GET /records'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getRecords.name };
 
-    const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
-    const max = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
+    const start = Number(req.query?.startPosition ?? this.DEFAULT_START_POSITION);
+    const max = Number(req.query?.maxRecords ?? this.DEFAULT_MAX_RECORDS);
+
+    if (!Number.isInteger(start) || start < 1) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+    }
+
+    if (!Number.isInteger(max) || max < 1 || max > this.DEFAULT_MAX_RECORDS) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({
+          isValid: false,
+          message: `maxRecords must be a positive integer and at most ${this.DEFAULT_MAX_RECORDS}`,
+          code: 'INVALID_MAX_RECORDS',
+        });
+    }
 
     try {
       const result = await this.manager.getRecords(start, max);

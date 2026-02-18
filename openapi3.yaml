@@ -693,6 +693,8 @@ components:
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME
             - INTERNAL_ERROR
+            - INVALID_START_POSITION
+            - INVALID_MAX_RECORDS
 
     auth-payload:
       type: object
