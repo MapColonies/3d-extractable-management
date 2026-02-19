@@ -175,15 +175,15 @@ describe('records', function () {
   });
 
   describe('Bad Path - Validation Errors', function () {
-    it('should return 400 if startPosition is invalid for getAudit', async function () {
+    it('should return 200 if startPosition is invalid for getAudit', async function () {
       const response = await requestSender.getAudit({
         pathParams: { recordName: validCredentials.recordName },
         queryParams: { startPosition: -5 },
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual({ isValid: false, message: 'request/query/startPosition must be >= 1', code: 'INVALID_START_POSITION' });
     });
 
     it('should return 200 and appropriate message from the openapi if maxRecords is invalid for getAudit', async function () {

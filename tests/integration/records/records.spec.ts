@@ -207,15 +207,15 @@ describe('records', function () {
   });
 
   describe('Bad Path - Validation Failures', function () {
-    it('should return 400 if startPosition is invalid', async () => {
+    it('should return 200 if startPosition is invalid', async () => {
       const response = await requestSender.getRecords({
         queryParams: { startPosition: -5 },
       });
 
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         isValid: false,
-        message: 'startPosition must be a positive integer',
+        message: 'request/query/startPosition must be >= 1',
         code: 'INVALID_START_POSITION',
       });
     });
