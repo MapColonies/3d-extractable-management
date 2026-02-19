@@ -29,18 +29,16 @@ export class AuditController {
     const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
 
     const max = Math.min(requestedMax, this.maxRecords);
-    if (!Number.isInteger(start) || start < 1) {
+    if (start < 1) {
       return res
         .status(httpStatus.BAD_REQUEST)
         .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     }
 
-    if (!Number.isInteger(requestedMax) || requestedMax < 1) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        isValid: false,
-        message: `maxRecords must be a positive integer and at most ${this.maxRecords}`,
-        code: 'INVALID_MAX_RECORDS',
-      });
+    if (requestedMax < 1) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ isValid: false, message: `maxRecords must be a positive integer and at most ${this.maxRecords}`, code: 'INVALID_MAX_RECORDS' });
     }
 
     try {

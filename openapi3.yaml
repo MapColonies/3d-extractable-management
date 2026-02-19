@@ -32,6 +32,7 @@ paths:
           required: false
           schema:
             type: integer
+            minimum: 1
             default: 1
           description: 1-based index of first record to return
         - name: maxRecords
@@ -39,6 +40,7 @@ paths:
           required: false
           schema:
             type: integer
+            minimum: 1
             default: 50
           description: Maximum number of records to return
       responses:
@@ -536,12 +538,14 @@ paths:
           required: false
           schema:
             type: integer
+            minimum: 1
             default: 1
         - name: maxRecords
           in: query
           required: false
           schema:
             type: integer
+            minimum: 1
             default: 50
       responses:
         '200':

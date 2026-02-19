@@ -183,8 +183,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      const body = response.body as { isValid: boolean; message: string; code: string };
-      expect(body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+      expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     });
 
     it('should return 400 if maxRecords is invalid for getAudit', async function () {
@@ -195,8 +194,11 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      const body = response.body as { isValid: boolean; message: string; code: string };
-      expect(body).toEqual({ isValid: false, message: 'maxRecords must be a positive integer and at most 10000', code: 'INVALID_MAX_RECORDS' });
+      expect(response.body).toEqual({
+        isValid: false,
+        message: 'maxRecords must be a positive integer and at most 10000',
+        code: 'INVALID_MAX_RECORDS',
+      });
     });
 
     it('should return 400 if maxRecords exceeds max allowed for getAudit', async function () {
@@ -206,8 +208,7 @@ describe('records', function () {
       });
 
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      const body = response.body as { isValid: boolean; message: string; code: string };
-      expect(body).toEqual({
+      expect(response.body).toEqual({
         isValid: false,
         message: 'maxRecords must be a positive integer and at most 10000',
         code: 'INVALID_MAX_RECORDS',
@@ -227,8 +228,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      const body = response.body as { isValid: boolean; message: string; code: string };
-      expect(body).toEqual({ isValid: false, message: 'Failed to get audit logs', code: 'INTERNAL_ERROR' });
+      expect(response.body).toEqual({ isValid: false, message: 'Failed to get audit logs', code: 'INTERNAL_ERROR' });
     });
   });
 });
