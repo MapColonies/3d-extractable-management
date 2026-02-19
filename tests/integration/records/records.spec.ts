@@ -220,19 +220,6 @@ describe('records', function () {
       });
     });
 
-    it('should return 400 if maxRecords is invalid', async () => {
-      const response = await requestSender.getRecords({
-        queryParams: { maxRecords: 0 },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'maxRecords must be a positive integer and at most 10000',
-        code: 'INVALID_MAX_RECORDS',
-      });
-    });
-
     it('should return 400 if maxRecords is invalid for getRecords', async function () {
       const response = await requestSender.getRecords({
         queryParams: { maxRecords: 0 },
@@ -241,9 +228,7 @@ describe('records', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
-        isValid: false,
-        message: 'maxRecords must be a positive integer and at most 10000',
-        code: 'INVALID_MAX_RECORDS',
+        message: 'request/query/maxRecords must be >= 1',
       });
     });
 
@@ -254,9 +239,7 @@ describe('records', function () {
 
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
-        isValid: false,
-        message: 'maxRecords must be a positive integer and at most 10000',
-        code: 'INVALID_MAX_RECORDS',
+        message: 'request/query/maxRecords must be >= 1',
       });
     });
   });

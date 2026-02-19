@@ -33,6 +33,7 @@ paths:
           schema:
             type: integer
             default: 1
+            minimum: 1
           description: 1-based index of first record to return
         - name: maxRecords
           in: query
@@ -40,6 +41,7 @@ paths:
           schema:
             type: integer
             default: 50
+            minimum: 1
           description: Maximum number of records to return
       responses:
         '200':
@@ -537,12 +539,14 @@ paths:
           schema:
             type: integer
             default: 1
+            minimum: 1
         - name: maxRecords
           in: query
           required: false
           schema:
             type: integer
             default: 50
+            minimum: 1
       responses:
         '200':
           description: List of audit logs for the record (empty array if none found)

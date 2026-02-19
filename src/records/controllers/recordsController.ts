@@ -12,7 +12,7 @@ import { RecordsManager } from '../models/recordsManager';
 export class RecordsController {
   private readonly requestsCounter: Counter;
   private readonly logContext: LogContext;
-  private readonly maxRecords: number;
+  private readonly maxConfiguredBatchSize: number;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -28,7 +28,7 @@ export class RecordsController {
       registers: [this.metricsRegistry],
     });
     this.logContext = { fileName: __filename, class: RecordsManager.name };
-    this.maxRecords = this.config.get<number>('pagination.maxRecords');
+    this.maxConfiguredBatchSize = this.config.get<number>('pagination.maxConfiguredBatchSize');
   }
 
   public getRecords: TypedRequestHandlers['GET /records'] = async (req, res) => {
@@ -36,6 +36,7 @@ export class RecordsController {
 
     const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
     const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
+    const max = Math.min(requestedMax, this.maxConfiguredBatchSize);
 
     if (start < 1) {
       return res
@@ -43,13 +44,25 @@ export class RecordsController {
         .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     }
 
-    if (requestedMax < 1 || requestedMax > this.maxRecords) {
+    if (requestedMax < 1) {
       return res
         .status(httpStatus.BAD_REQUEST)
-        .json({ isValid: false, message: `maxRecords must be a positive integer and at most ${this.maxRecords}`, code: 'INVALID_MAX_RECORDS' });
+        .json({
+          isValid: false,
+          message: `maxRecords must be a positive integer and at most ${this.maxConfiguredBatchSize}`,
+          code: 'INVALID_MAX_RECORDS',
+        });
     }
 
-    const max = requestedMax;
+    if (requestedMax > this.maxConfiguredBatchSize) {
+      this.logger.warn({
+        msg: 'Requested maxRecords exceeds configured maximum, capping to maxConfiguredBatchSize',
+        requestedMax,
+        maxConfiguredBatchSize: this.maxConfiguredBatchSize,
+        logContext,
+      });
+    }
+
     try {
       const result = await this.manager.getRecords(start, max);
       return res.status(httpStatus.OK).json(result);

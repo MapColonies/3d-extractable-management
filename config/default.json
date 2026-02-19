@@ -31,7 +31,7 @@
     }
   },
   "pagination": {
-    "maxRecords": 10000
+    "maxConfiguredBatchSize": 10000
   },
   "externalServices": {
     "catalog": "http://127.0.0.1:8080",
