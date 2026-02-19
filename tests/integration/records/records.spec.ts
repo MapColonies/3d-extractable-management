@@ -4,7 +4,7 @@ import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord, DEFAULT_MAX_RECORDS } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
@@ -207,28 +207,26 @@ describe('records', function () {
   });
 
   describe('Bad Path - Validation Failures', function () {
-    it('should return 200 if startPosition is invalid', async () => {
+    it('should return 400 if startPosition is invalid', async () => {
       const response = await requestSender.getRecords({
         queryParams: { startPosition: -5 },
       });
 
-      expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual({
-        isValid: false,
-        message: 'request/query/startPosition must be >= 1',
-        code: 'INVALID_START_POSITION',
-      });
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     });
 
-    it('should return 200 and appropriate message from the openapi if maxRecords is invalid for getRecords', async function () {
+    it('should return 400 and appropriate message from the openapi if maxRecords is invalid for getRecords', async function () {
       const response = await requestSender.getRecords({
         queryParams: { maxRecords: 0 },
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
-        message: 'request/query/maxRecords must be >= 1',
+        isValid: false,
+        message: `maxRecords must be a positive integer and at most ${DEFAULT_MAX_RECORDS}`,
+        code: 'INVALID_MAX_RECORDS',
       });
     });
   });
