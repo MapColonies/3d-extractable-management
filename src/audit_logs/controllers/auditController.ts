@@ -38,11 +38,7 @@ export class AuditController {
     if (requestedMax < 1) {
       return res
         .status(httpStatus.BAD_REQUEST)
-        .json({
-          isValid: false,
-          message: `maxRecords must be a positive integer and at most ${this.maxConfiguredBatchSize}`,
-          code: 'INVALID_MAX_RECORDS',
-        });
+        .json({ isValid: false, message: 'maxRecords must be a positive integer', code: 'INVALID_MAX_RECORDS' });
     }
 
     if (requestedMax > this.maxConfiguredBatchSize) {

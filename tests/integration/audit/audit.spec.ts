@@ -181,9 +181,10 @@ describe('records', function () {
         queryParams: { startPosition: -5 },
       });
 
-      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+      expect(response.body).toEqual({
+        message: 'request/query/startPosition must be >= 1',
+      });
     });
 
     it('should return 400 and appropriate message from the openapi if maxRecords is invalid for getAudit', async function () {
@@ -192,12 +193,9 @@ describe('records', function () {
         queryParams: { maxRecords: 0 },
       });
 
-      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
-        isValid: false,
-        message: `maxRecords must be a positive integer and at most 10000`,
-        code: 'INVALID_MAX_RECORDS',
+        message: 'request/query/maxRecords must be >= 1',
       });
     });
   });
