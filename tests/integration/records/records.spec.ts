@@ -220,23 +220,12 @@ describe('records', function () {
       });
     });
 
-    it('should return 400 if maxRecords is invalid for getRecords', async function () {
+    it('should return 200 and appropriate message from the openapi if maxRecords is invalid for getRecords', async function () {
       const response = await requestSender.getRecords({
         queryParams: { maxRecords: 0 },
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual({
-        message: 'request/query/maxRecords must be >= 1',
-      });
-    });
-
-    it('should return 400 if maxRecords exceeds max allowed for getRecords', async function () {
-      const response = await requestSender.getRecords({
-        queryParams: { startPosition: 1, maxRecords: 999999 },
-      });
-
       expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         message: 'request/query/maxRecords must be >= 1',

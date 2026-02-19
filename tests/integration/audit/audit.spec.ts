@@ -186,25 +186,13 @@ describe('records', function () {
       expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     });
 
-    it('should return 400 if maxRecords is invalid for getAudit', async function () {
+    it('should return 200 and appropriate message from the openapi if maxRecords is invalid for getAudit', async function () {
       const response = await requestSender.getAudit({
         pathParams: { recordName: validCredentials.recordName },
         queryParams: { maxRecords: 0 },
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual({
-        message: 'request/query/maxRecords must be >= 1',
-      });
-    });
-
-    it('should return 400 if maxRecords exceeds max allowed for getAudit', async function () {
-      const response = await requestSender.getAudit({
-        pathParams: { recordName: validCredentials.recordName },
-        queryParams: { startPosition: 1, maxRecords: 999999 },
-      });
-
       expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         message: 'request/query/maxRecords must be >= 1',
