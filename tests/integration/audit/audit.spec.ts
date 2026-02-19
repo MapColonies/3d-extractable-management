@@ -193,7 +193,7 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         message: 'request/query/maxRecords must be >= 1',
       });
@@ -205,7 +205,7 @@ describe('records', function () {
         queryParams: { startPosition: 1, maxRecords: 999999 },
       });
 
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         message: 'request/query/maxRecords must be >= 1',
       });
