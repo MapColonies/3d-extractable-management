@@ -95,5 +95,8 @@
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.11",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "globals": "^15.14.0"
   }
 }
