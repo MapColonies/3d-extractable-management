@@ -183,7 +183,7 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
+      expect(response.body).toEqual({ isValid: false, message: 'request/query/startPosition must be >= 1', code: 'INVALID_START_POSITION' });
     });
 
     it('should return 400 if maxRecords is invalid for getAudit', async function () {
