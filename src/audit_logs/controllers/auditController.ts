@@ -28,13 +28,14 @@ export class AuditController {
     const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
     const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
 
+    const max = Math.min(requestedMax, this.maxRecords);
     if (!Number.isInteger(start) || start < 1) {
       return res
         .status(httpStatus.BAD_REQUEST)
         .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
     }
 
-    if (!Number.isInteger(requestedMax) || requestedMax < 1 || requestedMax > this.maxRecords) {
+    if (!Number.isInteger(requestedMax) || requestedMax < 1) {
       return res.status(httpStatus.BAD_REQUEST).json({
         isValid: false,
         message: `maxRecords must be a positive integer and at most ${this.maxRecords}`,
@@ -43,7 +44,7 @@ export class AuditController {
     }
 
     try {
-      const result = await this.manager.getAuditLogs(recordName, start, requestedMax);
+      const result = await this.manager.getAuditLogs(recordName, start, max);
       return res.status(httpStatus.OK).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting audit logs', recordName, err, logContext });

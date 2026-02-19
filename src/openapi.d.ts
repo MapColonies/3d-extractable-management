@@ -78,7 +78,7 @@ export type paths = {
       path?: never;
       cookie?: never;
     };
-    /** Get audit logs by record name */
+    /** Get all audit logs by record name */
     get: operations['getAudit'];
     put?: never;
     post?: never;

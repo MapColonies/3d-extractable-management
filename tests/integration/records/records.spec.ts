@@ -232,6 +232,31 @@ describe('records', function () {
         code: 'INVALID_MAX_RECORDS',
       });
     });
+
+    it('should return 400 if maxRecords is invalid for getRecords', async function () {
+      const response = await requestSender.getRecords({
+        queryParams: { maxRecords: 0 },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      const body = response.body as { isValid: boolean; message: string; code: string };
+      expect(body).toEqual({ isValid: false, message: 'maxRecords must be a positive integer and at most 10000', code: 'INVALID_MAX_RECORDS' });
+    });
+
+    it('should return 400 if maxRecords exceeds max allowed for getRecords', async function () {
+      const response = await requestSender.getRecords({
+        queryParams: { startPosition: 1, maxRecords: 999999 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      const body = response.body as { isValid: boolean; message: string; code: string };
+      expect(body).toEqual({
+        isValid: false,
+        message: 'maxRecords must be a positive integer and at most 10000',
+        code: 'INVALID_MAX_RECORDS',
+      });
+    });
   });
 
   describe('Bad Path', function () {
