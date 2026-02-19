@@ -4,7 +4,7 @@ import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord, DEFAULT_MAX_RECORDS } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
@@ -225,7 +225,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
         isValid: false,
-        message: `maxRecords must be a positive integer and at most ${DEFAULT_MAX_RECORDS}`,
+        message: `maxRecords must be a positive integer and at most 10000`,
         code: 'INVALID_MAX_RECORDS',
       });
     });

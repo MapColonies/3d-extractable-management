@@ -4,7 +4,7 @@ import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { DEFAULT_MAX_RECORDS, SERVICES } from '@common/constants';
+import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { IAuditAction } from '@src/common/interfaces';
@@ -196,7 +196,7 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
         isValid: false,
-        message: `maxRecords must be a positive integer and at most ${DEFAULT_MAX_RECORDS}`,
+        message: `maxRecords must be a positive integer and at most 10000`,
         code: 'INVALID_MAX_RECORDS',
       });
     });
