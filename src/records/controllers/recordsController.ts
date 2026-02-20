@@ -38,18 +38,6 @@ export class RecordsController {
     const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
     const max = Math.min(requestedMax, this.maxConfiguredBatchSize);
 
-    if (start < 1) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ isValid: false, message: 'startPosition must be a positive integer', code: 'INVALID_START_POSITION' });
-    }
-
-    if (requestedMax < 1) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ isValid: false, message: 'maxRecords must be a positive integer', code: 'INVALID_MAX_RECORDS' });
-    }
-
     if (requestedMax > this.maxConfiguredBatchSize) {
       this.logger.warn({
         msg: 'Requested maxRecords exceeds configured maximum, capping to maxConfiguredBatchSize',

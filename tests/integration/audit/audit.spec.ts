@@ -198,6 +198,15 @@ describe('records', function () {
         message: 'request/query/maxRecords must be >= 1',
       });
     });
+
+    it('should cap maxRecords to configured max', async () => {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { maxRecords: 999999 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
   });
 
   describe('Sad Path', function () {
