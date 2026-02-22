@@ -42,6 +42,12 @@
       }
     }
   },
+  "pagination": {
+    "maxRecords": {
+      "__name": "PAGINATION_MAX_RECORDS",
+      "__format": "number"
+    }
+  },
   "externalServices": {
     "catalog": "CATALOG_URL",
     "publicExtractableRoutes": {

@@ -65,8 +65,17 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body).toEqual(
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as {
+        numberOfRecords: number;
+        numberOfRecordsReturned: number;
+        nextRecord: number | null;
+        records: { recordName: string; authorizedBy: string; action: string }[];
+      };
+      expect(body.numberOfRecords).toBeGreaterThan(0);
+      expect(body.numberOfRecordsReturned).toBeGreaterThan(0);
+      expect(Array.isArray(body.records)).toBe(true);
+      expect(body.records).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             recordName: 'rec_test',
@@ -77,14 +86,126 @@ describe('records', function () {
       );
     });
 
-    it('should return 200 and empty array when no audit logs by recordName found', async function () {
-      jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce([]);
+    it('should return 200 and empty records when no audit logs by recordName found', async function () {
+      jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: 0,
+        records: [],
+      });
       const response = await requestSender.getAudit({
         pathParams: { recordName: validCredentials.recordName },
       });
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([]);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; records: [] };
+      expect(body.numberOfRecords).toBe(0);
+      expect(body.numberOfRecordsReturned).toBe(0);
+      expect(body.records).toEqual([]);
+    });
+
+    it('should return 200 with default pagination parameters when not provided', async function () {
+      const dbAuditLog = {
+        id: 1,
+        recordName: 'rec_default_pagination',
+        username: validCredentials.username,
+        authorizedBy: recordInstance.authorizedBy,
+        action: IAuditAction.CREATE,
+        authorizedAt: new Date().toISOString(),
+      };
+
+      jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
+        numberOfRecords: 5,
+        numberOfRecordsReturned: 5,
+        nextRecord: 0,
+        records: [dbAuditLog],
+      });
+
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: 'rec_default_pagination' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as {
+        numberOfRecords: number;
+        numberOfRecordsReturned: number;
+        records: { recordName: string }[];
+      };
+      expect(body.numberOfRecords).toBe(5);
+      expect(Array.isArray(body.records)).toBe(true);
+    });
+
+    it('should return 200 with pagination parameters', async function () {
+      const dbAuditLog = {
+        id: 1,
+        recordName: 'rec_pagination_test',
+        username: validCredentials.username,
+        authorizedBy: recordInstance.authorizedBy,
+        action: IAuditAction.CREATE,
+        authorizedAt: new Date().toISOString(),
+      };
+
+      jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
+        numberOfRecords: 50,
+        numberOfRecordsReturned: 10,
+        nextRecord: 11,
+        records: [dbAuditLog],
+      });
+
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: 'rec_pagination_test' },
+        queryParams: { startPosition: 1, maxRecords: 10 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as {
+        numberOfRecords: number;
+        numberOfRecordsReturned: number;
+        nextRecord: number;
+        records: { recordName: string }[];
+      };
+      expect(body.numberOfRecords).toBe(50);
+      expect(body.numberOfRecordsReturned).toBe(10);
+      expect(body.nextRecord).toBe(11);
+      expect(Array.isArray(body.records)).toBe(true);
+      const getAuditLogsSpy = jest.spyOn(AuditManager.prototype, 'getAuditLogs');
+      expect(getAuditLogsSpy).toHaveBeenCalledWith('rec_pagination_test', 1, 10);
+    });
+  });
+
+  describe('Bad Path - Validation Errors', function () {
+    it('should return 400 if startPosition is invalid for getAudit', async function () {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { startPosition: -5 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: 'request/query/startPosition must be >= 1',
+      });
+    });
+
+    it('should return 400 and appropriate message from the openapi if maxRecords is invalid for getAudit', async function () {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { maxRecords: 0 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: 'request/query/maxRecords must be >= 1',
+      });
+    });
+
+    it('should cap maxRecords to configured max', async () => {
+      const response = await requestSender.getAudit({
+        pathParams: { recordName: validCredentials.recordName },
+        queryParams: { maxRecords: 999999 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 

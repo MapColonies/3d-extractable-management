@@ -86,6 +86,8 @@ env:
   metrics:
     enabled: false
     url: http://localhost:55681/v1/metrics
+  pagination:
+    maxConfiguredBatchSize: 10000
 
 resources:
   enabled: true

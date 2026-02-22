@@ -2,33 +2,47 @@ import type { Logger } from '@map-colonies/js-logger';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import type { TypedRequestHandlers } from '@openapi';
-import { SERVICES } from '@common/constants';
-import { ValidationsManager } from '@src/validations/models/validationsManager';
-import { LogContext } from '@src/common/interfaces';
+import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS } from '@common/constants';
+import type { IConfig, LogContext } from '@src/common/interfaces';
 import { AuditManager } from '../models/auditManager';
 
 @injectable()
 export class AuditController {
   private readonly logContext: LogContext;
+  private readonly maxConfiguredBatchSize: number;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(AuditManager) private readonly manager: AuditManager,
-    @inject(ValidationsManager) private readonly validationsManager: ValidationsManager
+    @inject(SERVICES.CONFIG) private readonly config: IConfig
   ) {
     this.logContext = { fileName: __filename, class: AuditController.name };
+    this.maxConfiguredBatchSize = this.config.get<number>('pagination.maxConfiguredBatchSize');
   }
 
   public getAudit: TypedRequestHandlers['GET /audit/{recordName}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getAudit.name };
+
     const { recordName } = req.params;
 
-    try {
-      const records = await this.manager.getAuditLogs(recordName);
+    const start = Number(req.query?.startPosition ?? DEFAULT_START_POSITION);
+    const requestedMax = Number(req.query?.maxRecords ?? DEFAULT_MAX_RECORDS);
+    const max = Math.min(requestedMax, this.maxConfiguredBatchSize);
 
-      return res.status(httpStatus.OK).json(records);
+    if (requestedMax > this.maxConfiguredBatchSize) {
+      this.logger.warn({
+        msg: 'Requested maxRecords exceeds configured maximum, capping to maxConfiguredBatchSize',
+        requestedMax,
+        maxConfiguredBatchSize: this.maxConfiguredBatchSize,
+        logContext,
+      });
+    }
+
+    try {
+      const result = await this.manager.getAuditLogs(recordName, start, max);
+      return res.status(httpStatus.OK).json(result);
     } catch (err) {
-      this.logger.error({ msg: 'Unexpected error getting record', recordName, err, logContext });
+      this.logger.error({ msg: 'Unexpected error getting audit logs', recordName, err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get audit logs', code: 'INTERNAL_ERROR' });
     }
   };
