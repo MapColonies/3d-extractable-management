@@ -35,3 +35,10 @@ export enum IAuditAction {
   CREATE = 'CREATE',
   DELETE = 'DELETE',
 }
+
+export interface IPaginationResponse<T> {
+  numberOfRecords: number;
+  numberOfRecordsReturned: number;
+  nextRecord: number;
+  records: T[];
+}

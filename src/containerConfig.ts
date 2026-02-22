@@ -31,9 +31,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
-  const connectionManager = new ConnectionManager(logger);
-  await connectionManager.init();
-
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
@@ -53,11 +50,15 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
         },
       },
     },
-    { token: SERVICES.CONNECTION_MANAGER, provider: { useValue: connectionManager } },
+    {
+      token: SERVICES.CONNECTION_MANAGER,
+      provider: { useFactory: (dependencyContainer: DependencyContainer) => dependencyContainer.resolve(ConnectionManager) },
+    },
     {
       token: SERVICES.EXTRACTABLE_RECORD_REPOSITORY,
       provider: {
-        useFactory: (): Repository<ExtractableRecord> => {
+        useFactory: (dependencyContainer: DependencyContainer): Repository<ExtractableRecord> => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
           return connectionManager.getDataSourceConnection().getRepository(ExtractableRecord);
         },
       },
@@ -65,7 +66,8 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     {
       token: SERVICES.AUDIT_LOG_REPOSITORY,
       provider: {
-        useFactory: (): Repository<AuditLog> => {
+        useFactory: (dependencyContainer: DependencyContainer): Repository<AuditLog> => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
           return connectionManager.getDataSourceConnection().getRepository(AuditLog);
         },
       },
@@ -80,5 +82,9 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     },
   ];
 
-  return Promise.resolve(registerDependencies(dependencies, options?.override, options?.useChild));
+  const container = registerDependencies(dependencies, options?.override, options?.useChild);
+  const connectionManager = container.resolve<ConnectionManager>(ConnectionManager);
+  await connectionManager.init();
+
+  return container;
 };

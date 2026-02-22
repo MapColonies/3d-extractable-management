@@ -7,6 +7,25 @@ global:
     url: ""
   metrics:
     url: ""
+  postgres:
+    # host: 127.0.0.1
+    # port: 5432
+    # schema: public
+    # name: 3d-extractable-management
+    user:
+      # requirePassword: true
+      # rejectUnauthorized: true
+      useExternal: true
+      secretName: secret-name
+      # username: postgres
+      # password: postgres
+    ssl:
+      # enabled: false
+      useExternal: true
+      secretName: secret-name
+      # caFileName: caFile
+      # certFileName: certFile
+      # keyFileName: keyFile
 
 mclabels:
   component: backend
@@ -86,6 +105,14 @@ env:
   metrics:
     enabled: false
     url: http://localhost:55681/v1/metrics
+  pagination:
+    maxConfiguredBatchSize: 10000
+  externalServices:
+    catalog: 'http://ingestion-3d-catalog'
+    publicExtractableRoutes:
+      pairs:
+        # - name: service1
+        #   url: http://service1:8080
 
 resources:
   enabled: true
@@ -125,12 +152,7 @@ ingress:
 usersSecret:
   name: extractable-management-users-secret
   key: users-json
+users:
+  - username: "username"
+    password: "password"
 
-postgres:
-  enabled: true
-  user:
-    useExternal: false
-    secretName: extractable-management-db-secrets
-    requirePassword: true
-  ssl:
-    enabled: false

@@ -1,14 +1,21 @@
 {{- $releaseName := .Release.Name -}}
 {{- $chartName := include "extractable-management.name" . -}}
-{{- $cloudProviderFlavor := include "extractable-management.cloudProviderFlavor" . -}}
+{{- $fullname := include "extractable-management.fullname" . -}}
 {{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "extractable-management.tag" . -}}
-{{- if .Values.enabled -}}
+{{- $postgres := include "merged.postgres" . | fromYaml -}}
+{{- $ca := (include "merged.ca" . ) | fromYaml }}
+{{- $podAnnotations := (include "merged.podAnnotations" . ) | fromYaml }}
+{{- $extraVolumes := (include "merged.extraVolumes" . ) | fromYamlArray }}
+{{- $extraVolumeMounts := (include "merged.extraVolumeMounts" . ) | fromYamlArray }}
+{{- $sidecars := (include "merged.sidecars" . ) | fromYamlArray }}
+
+{{- if .Values.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-deployment" (include "extractable-management.fullname" .) }}
+  name: {{ printf "%s-deployment" $fullname }}
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
@@ -32,99 +39,120 @@ spec:
         {{- include "extractable-management.labels" . | nindent 8 }}
       annotations:
         {{ include "mclabels.annotations" . | nindent 8 }}
-      {{- if .Values.resetOnConfigChange }}
+        {{- if .Values.resetOnConfigChange }}
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-      {{- end }}
-      {{- if .Values.podAnnotations }}
-      {{- toYaml .Values.podAnnotations | nindent 8 }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-    {{- if $cloudProviderImagePullSecretName }}
+      {{- if $cloudProviderImagePullSecretName }}
       imagePullSecrets:
         - name: {{ $cloudProviderImagePullSecretName | quote }}
-    {{- end }}
+      {{- end }}
       containers:
         - name: {{ $releaseName }}-{{ $chartName }}-deployment
           {{- with .Values.image }}
           image: {{ $cloudProviderDockerRegistryUrl }}{{ .repository }}:{{ $imageTag }}
           imagePullPolicy: {{ .pullPolicy | default "IfNotPresent" }}
           {{- end }}
-          {{- if .Values.command }}
-          command: 
-          {{- toYaml .Values.command | nindent 12 }}
-          {{- if .Values.args }}
-          args: 
-          {{- toYaml .Values.args | nindent 12 }}
-          {{- end }}
-          {{- end }}
+
           volumeMounts:
-            {{- if .Values.caSecretName }}
-            - mountPath: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
+            - name: config-volume
+              mountPath: /etc/config
+            {{- if $ca.enabled }}
+            - mountPath: {{ printf "%s/%s" $ca.path $ca.key | quote }}
               name: root-ca
-              subPath: {{ quote .Values.caKey }}
+              subPath: {{ quote $ca.key }}
             {{- end }}
-            {{- if .Values.extraVolumeMounts -}}
-              {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- if $postgres.ssl.enabled }}
+            - name: cert-conf
+              mountPath: /tmp/certs
+              readOnly: true
             {{- end }}
-          env:
-            - name: SERVER_PORT
-              value: {{ .Values.env.targetPort | quote }}
-            {{- if .Values.caSecretName }}
-            - name: REQUESTS_CA_BUNDLE
-              value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: {{ printf "[%s/%s]" .Values.caPath .Values.caKey | quote }}
+            {{- if $extraVolumeMounts -}}
+              {{ toYaml $extraVolumeMounts | nindent 12 }}
             {{- end }}
-            {{- if .Values.extraEnvVars }}
-            {{- toYaml .Values.extraEnvVars | nindent 12 }}
-            {{- end }}            
-          envFrom:
-            - configMapRef:
-                name: {{ printf "%s-configmap" (include "extractable-management.fullname" .) }}
+
+          {{- with .Values.command }}
+          command:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.args }}
+          args:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+
           ports:
             - name: http
               containerPort: {{ .Values.env.targetPort }}
-              protocol: {{ .Values.env.protocol }}
+              protocol: {{ default "TCP" .Values.env.protocol }}
+
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-db-secret" $fullname) $postgres.user.secretName }}
+                  key: username
+            {{- if $postgres.user.requirePassword }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-db-secret" $fullname) $postgres.user.secretName }}
+                  key: password
+            {{- end }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ printf "%s-configmap" $fullname }}
+
+          {{- if .Values.resources.enabled }}
+          resources:
+            {{ toYaml .Values.resources.value | nindent 12 }}
+          {{- end }}
+
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             httpGet:
               path: {{ .Values.livenessProbe.path }}
               port: {{ .Values.env.targetPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
           {{- end }}
+
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             httpGet:
               path: {{ .Values.readinessProbe.path }}
               port: {{ .Values.env.targetPort }}
-          {{- end }}        
-          {{- if .Values.resources.enabled }}
-          resources:
-            {{- toYaml .Values.resources.value | nindent 12 }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
           {{- end }}
-        {{- if .Values.sidecars }}
-        {{ tpl (toYaml .Values.sidecars) . | nindent 8 }}
+
+        {{- with .Values.sidecars }}
+        {{ tpl (toYaml .) $ | nindent 8 }}
         {{- end }}
+
       volumes:
+        - name: config-volume
+          configMap:
+            name: {{ printf "%s-configmap" $fullname }}
         - name: nginx-config
           configMap:
             name: 'nginx-extra-configmap'
-        {{- if .Values.caSecretName }}
-        - name: root-ca
-          secret:
-            secretName: {{ .Values.caSecretName }}
-        {{- end }}
-        {{- if $postgres.ssl.enabled }}
-        - name: postgres-cert
+        {{- if and $postgres.enabled $postgres.ssl.enabled }}
+        - name: cert-conf
           secret:
             secretName: {{ $postgres.ssl.secretName }}
         {{- end }}
-        {{- if .Values.extraVolumes -}}
-          {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{- if $ca.enabled }}
+        - name: root-ca
+          secret:
+            secretName: {{ $ca.secretName }}
         {{- end }}
-{{- end -}}
+        {{- if $extraVolumes -}}
+          {{ tpl (toYaml $extraVolumes) . | nindent 8 }}
+        {{- end }}
+{{- end }}

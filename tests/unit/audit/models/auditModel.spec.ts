@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import 'reflect-metadata';
-import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { Repository, EntityManager } from 'typeorm';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
-import { mockExtractableRepo, mockAuditFind, resetRepoMocks, mockAuditRepo } from '@tests/mocks/unitMocks';
+import { mockExtractableRepo, resetRepoMocks, mockAuditRepo, mockAuditFindAndCount } from '@tests/mocks/unitMocks';
 import { IAuditAction } from '@src/common/interfaces';
 import { mapAuditLogToCamelCase } from '@src/utils/converter';
-
-jest.mock('config');
-const mockedConfig = config as jest.Mocked<typeof config>;
 
 let auditManager: AuditManager;
 
@@ -44,8 +40,6 @@ describe('RecordsManager & ValidationsManager', () => {
       getRepository: fakeEntityManager.getRepository,
     };
 
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-
     auditManager = new AuditManager(jsLogger({ enabled: false }), auditRepo);
   });
 
@@ -55,7 +49,7 @@ describe('RecordsManager & ValidationsManager', () => {
   });
 
   describe('#getAuditLogs', () => {
-    it('should return audit logs by record name', async () => {
+    it('should return paginated audit logs by record name', async () => {
       const dbAuditLog: AuditLog = {
         id: 1,
         record_name: recordInstance.recordName,
@@ -65,19 +59,51 @@ describe('RecordsManager & ValidationsManager', () => {
         authorized_at: new Date(),
       };
 
-      mockAuditFind.mockResolvedValueOnce([dbAuditLog]);
+      mockAuditFindAndCount.mockResolvedValueOnce([[dbAuditLog], 1]);
 
-      const result = await auditManager.getAuditLogs(dbAuditLog.record_name);
+      const result = await auditManager.getAuditLogs(dbAuditLog.record_name, 1, 10);
 
-      expect(result).toEqual([mapAuditLogToCamelCase(dbAuditLog)]);
+      expect(result).toEqual({
+        numberOfRecords: 1,
+        numberOfRecordsReturned: 1,
+        nextRecord: 0,
+        records: [mapAuditLogToCamelCase(dbAuditLog)],
+      });
     });
 
     it('should return empty array when no audit logs found', async () => {
-      mockAuditFind.mockResolvedValueOnce([]);
+      mockAuditFindAndCount.mockResolvedValueOnce([[], 0]);
 
-      const result = await auditManager.getAuditLogs(invalidCredentials.recordName);
+      const result = await auditManager.getAuditLogs(invalidCredentials.recordName, 1, 10);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: 0,
+        records: [],
+      });
+    });
+
+    it('should return nextRecord when more audit logs exist', async () => {
+      const dbAuditLog: AuditLog = {
+        id: 1,
+        record_name: recordInstance.recordName,
+        username: validCredentials.username,
+        authorized_by: recordInstance.authorizedBy,
+        action: IAuditAction.CREATE,
+        authorized_at: new Date(),
+      };
+
+      mockAuditFindAndCount.mockResolvedValueOnce([[dbAuditLog], 25]);
+
+      const result = await auditManager.getAuditLogs(recordInstance.recordName, 1, 10);
+
+      expect(result).toEqual({
+        numberOfRecords: 25,
+        numberOfRecordsReturned: 1,
+        nextRecord: 2,
+        records: [mapAuditLogToCamelCase(dbAuditLog)],
+      });
     });
   });
 });

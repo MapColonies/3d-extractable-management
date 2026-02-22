@@ -48,12 +48,15 @@ const mockExtractableDelete: jest.MockedFunction<
   (criteria: string | number | Date | FindOptionsWhere<ExtractableRecord> | FindOptionsWhere<ExtractableRecord>[] | object) => Promise<DeleteResult>
 > = jest.fn();
 
+const mockExtractableFindAndCount: jest.MockedFunction<(options?: unknown) => Promise<[ExtractableRecord[], number]>> = jest.fn();
+
 const mockExtractableRepoInternal: Partial<Repository<ExtractableRecord>> = {
   find: mockExtractableFind,
   findOne: mockExtractableFindOne,
   create: mockExtractableCreate,
   save: mockExtractableSave,
   delete: mockExtractableDelete,
+  findAndCount: mockExtractableFindAndCount,
 };
 
 const mockAuditSave: jest.MockedFunction<<T extends DeepPartial<AuditLog>>(entityOrEntities: T | T[], options?: SaveOptions) => Promise<T | T[]>> =
@@ -91,10 +94,13 @@ const mockAuditCreateImpl = (entityLike?: DeepPartial<AuditLog> | DeepPartial<Au
 
 const mockAuditCreate = mockAuditCreateImpl as unknown as Repository<AuditLog>['create'];
 
+const mockAuditFindAndCount: jest.MockedFunction<(options?: unknown) => Promise<[AuditLog[], number]>> = jest.fn();
+
 const mockAuditRepoInternal: Partial<Repository<AuditLog>> = {
   find: mockAuditFind,
   save: mockAuditSave,
   create: mockAuditCreate,
+  findAndCount: mockAuditFindAndCount,
 };
 
 const resetRepoMocks = (): void => {
@@ -104,14 +110,23 @@ const resetRepoMocks = (): void => {
   mockExtractableFindOne.mockReset();
   mockExtractableSave.mockReset();
   mockExtractableDelete.mockReset();
+  mockExtractableFindAndCount.mockReset();
 
   mockAuditSave.mockReset();
   mockAuditFind.mockReset();
+  mockAuditFindAndCount.mockReset();
 };
 
-export { mockExtractableFind, mockExtractableFindOne, mockExtractableCreate, mockExtractableSave, mockExtractableDelete };
+export {
+  mockExtractableFind,
+  mockExtractableFindOne,
+  mockExtractableCreate,
+  mockExtractableSave,
+  mockExtractableDelete,
+  mockExtractableFindAndCount,
+};
 export { mockExtractableRepoInternal as mockExtractableRepo };
-export { mockAuditSave, mockAuditCreate };
+export { mockAuditSave, mockAuditCreate, mockAuditFindAndCount };
 export { mockAuditFind };
 export { mockAuditRepoInternal as mockAuditRepo };
 export { resetRepoMocks };

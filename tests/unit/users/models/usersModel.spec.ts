@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import config from 'config';
 import axios from 'axios';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
+import type { IConfig } from '@src/common/interfaces';
 import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks';
 import { IAuthPayloadWithRecord } from '@src/common/constants';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
@@ -12,18 +12,35 @@ import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 
 let validationsManager: ValidationsManager;
 
-jest.mock('config');
-const mockedConfig = config as jest.Mocked<typeof config>;
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+// Helper function to create ValidationsManager with custom config
+const createValidationsManager = (customConfig?: Partial<IConfig>) => {
+  const extractableRepo = mockExtractableRepo as unknown as Repository<ExtractableRecord>;
+  const mockConfig = {
+    get: jest.fn((key: string) => {
+      if (key === 'externalServices.publicExtractableRoutes') {
+        return customConfig?.get?.('externalServices.publicExtractableRoutes') ?? [];
+      }
+      if (key === 'users') {
+        return customConfig?.get?.('users') ?? [{ username: validCredentials.username, password: validCredentials.password }];
+      }
+      return customConfig?.get?.(key);
+    }),
+  };
+
+  return new ValidationsManager(
+    jsLogger({ enabled: false }),
+    mockConfig as unknown as IConfig,
+    extractableRepo,
+    mockCatalogCall as unknown as CatalogCall
+  );
+};
+
 describe('ValidationsManager - User & Record Validation', () => {
   beforeEach(() => {
-    const extractableRepo = mockExtractableRepo as unknown as Repository<ExtractableRecord>;
-
-    mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
-
-    validationsManager = new ValidationsManager(jsLogger({ enabled: false }), extractableRepo, mockCatalogCall as unknown as CatalogCall);
+    validationsManager = createValidationsManager();
   });
 
   afterEach(() => {
@@ -90,7 +107,6 @@ describe('ValidationsManager - User & Record Validation', () => {
       });
 
       it('should skip remote validation when multiSiteValidation is true', async () => {
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post.mockClear();
 
         const record_name = 'remoteTestRecord';
@@ -104,19 +120,15 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       it('should perform remote validation when multiSiteValidation is undefined (defaults to false)', async () => {
         const routes = [{ url: 'http://site1.com' }];
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post.mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } });
 
-        jest.spyOn(config, 'get').mockImplementation((key) => {
-          if (key === 'externalServices.publicExtractableRoutes') return routes;
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
-
-        validationsManager = new ValidationsManager(
-          jsLogger({ enabled: false }),
-          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
-          mockCatalogCall as unknown as CatalogCall
-        );
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') return routes;
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name };
@@ -129,21 +141,17 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       it('should succeed when remote validation passes on all sites', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post
           .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
           .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } });
 
-        jest.spyOn(config, 'get').mockImplementation((key) => {
-          if (key === 'externalServices.publicExtractableRoutes') return routes;
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
-
-        validationsManager = new ValidationsManager(
-          jsLogger({ enabled: false }),
-          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
-          mockCatalogCall as unknown as CatalogCall
-        );
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') return routes;
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
@@ -157,21 +165,17 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       it('should fail when remote validation fails on at least one site', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post
           .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
           .mockResolvedValueOnce({ data: { isValid: false, code: 'INVALID_RECORD_NAME', message: 'Invalid' } });
 
-        jest.spyOn(config, 'get').mockImplementation((key) => {
-          if (key === 'externalServices.publicExtractableRoutes') return routes;
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
-
-        validationsManager = new ValidationsManager(
-          jsLogger({ enabled: false }),
-          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
-          mockCatalogCall as unknown as CatalogCall
-        );
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') return routes;
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
@@ -184,21 +188,17 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       it('should return false for remote site when fetch fails', async () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post
           .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
           .mockRejectedValueOnce(new Error('Network error'));
 
-        jest.spyOn(config, 'get').mockImplementation((key) => {
-          if (key === 'externalServices.publicExtractableRoutes') return routes;
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
-
-        validationsManager = new ValidationsManager(
-          jsLogger({ enabled: false }),
-          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
-          mockCatalogCall as unknown as CatalogCall
-        );
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') return routes;
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
@@ -210,18 +210,15 @@ describe('ValidationsManager - User & Record Validation', () => {
       });
 
       it('should handle remote validation config retrieval failure (routes load failure at construction)', async () => {
-        mockedConfig.get.mockImplementation((key: string) => {
-          if (key === 'externalServices.publicExtractableRoutes') {
-            throw new Error('Config error');
-          }
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
-
-        validationsManager = new ValidationsManager(
-          jsLogger({ enabled: false }),
-          mockExtractableRepo as unknown as Repository<ExtractableRecord>,
-          mockCatalogCall as unknown as CatalogCall
-        );
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') {
+              throw new Error('Config error');
+            }
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: false };
@@ -234,13 +231,15 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       it('should handle fetch JSON parsing failure', async () => {
         const routes = [{ url: 'http://site1.com' }];
-        mockedConfig.get.mockReturnValue([{ username: validCredentials.username, password: validCredentials.password }]);
         mockedAxios.post.mockRejectedValueOnce(new Error('JSON parse error'));
 
-        jest.spyOn(config, 'get').mockImplementation((key) => {
-          if (key === 'externalServices.publicExtractableRoutes') return routes;
-          return [{ username: validCredentials.username, password: validCredentials.password }];
-        });
+        validationsManager = createValidationsManager({
+          get: (key: string) => {
+            if (key === 'externalServices.publicExtractableRoutes') return routes;
+            if (key === 'users') return [{ username: validCredentials.username, password: validCredentials.password }];
+            return undefined;
+          },
+        } as unknown as Partial<IConfig>);
 
         const record_name = 'remoteTestRecord';
         const payload: IAuthPayloadWithRecord = { ...validCredentials, recordName: record_name, multiSiteValidation: true };
