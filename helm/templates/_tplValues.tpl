@@ -92,12 +92,3 @@ Custom definitions
 {{- define "merged.tracing" -}}
 {{- include "common.tplvalues.merge" ( dict "values" ( list .Values.env.tracing .Values.global.tracing ) "context" . ) }}
 {{- end -}}
-
-{{/*
-{{- define "merged.postgres" -}}
-{{- $pg := .Values.postgres | default dict -}}
-{{- $globalPg := .Values.global.postgres | default dict -}}
-{{- $merged := merge $globalPg $pg -}}
-{{- toYaml $merged -}}
-{{- end -}}
-*/}}

@@ -43,7 +43,7 @@
     }
   },
   "pagination": {
-    "maxRecords": {
+    "maxConfiguredBatchSize": {
       "__name": "PAGINATION_MAX_RECORDS",
       "__format": "number"
     }
