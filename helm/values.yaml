@@ -110,9 +110,10 @@ env:
   externalServices:
     catalog: 'http://ingestion-3d-catalog'
     publicExtractableRoutes:
+      enabled: false
       pairs:
-        # - name: service1
-        #   url: http://service1:8080
+      - name: service1
+        url: http://service1:8080
 
 resources:
   enabled: true

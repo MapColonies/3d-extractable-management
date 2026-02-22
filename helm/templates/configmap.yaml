@@ -28,8 +28,11 @@ data:
   CONFIG_OFFLINE_MODE: {{ .offlineMode | quote }}
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
   {{- end }}
+  CATALOG_URL: {{ .Values.env.externalServices.catalog | quote }}
+  {{- if .Values.env.externalServices.publicExtractableRoutes.enabled }}
   {{- with .Values.env.externalServices.publicExtractableRoutes }}
   EXTRACTABLE_ROUTES: {{ .pairs | toJson | quote }}
+  {{- end }}
   {{- end }}
   REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
   RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
