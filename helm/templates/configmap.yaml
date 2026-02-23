@@ -1,11 +1,14 @@
 {{- $fullName := include "extractable-management.fullname" . -}}
 {{- $postgres := (include "merged.postgres" . ) | fromYaml }}
+{{- $fullName := include "extractable-management.fullname" . -}}
+{{- $postgres := (include "merged.postgres" . ) | fromYaml }}
 {{- $tracingUrl := include "extractable-management.tracingUrl" . -}}
 {{- $metricsUrl := include "extractable-management.metricsUrl" . -}}
 {{- if .Values.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: {{ printf "%s-configmap" $fullName }}
   name: {{ printf "%s-configmap" $fullName }}
 data:
   REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
@@ -17,8 +20,10 @@ data:
   TELEMETRY_TRACING_URL: {{ $tracingUrl }}
   {{ end }}
   {{- if .Values.env.metrics.enabled }}
+  {{- if .Values.env.metrics.enabled }}
   TELEMETRY_METRICS_ENABLED: 'true'
   TELEMETRY_METRICS_URL: {{ $metricsUrl }}
+  {{- end }}
   {{- end }}
   npm_config_cache: /tmp/
   {{- with .Values.configManagement }}
