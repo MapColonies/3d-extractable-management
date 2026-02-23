@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM node:24.10.0-alpine3.22 AS production
+FROM node:24-slim AS production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dumb-init \
