@@ -3,7 +3,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { Repository, EntityManager } from 'typeorm';
 import { SERVICES, IExtractableRecord } from '@common/constants';
-import { LogContext, IAuditAction } from '@common/interfaces';
+import { LogContext, IAuditAction, IPaginationResponse } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
@@ -19,17 +19,15 @@ export class RecordsManager {
     this.logContext = { fileName: __filename, class: RecordsManager.name };
   }
 
-  public async getRecords(): Promise<IExtractableRecord[]> {
-    const logContext = { ...this.logContext, function: this.getRecords.name };
-    this.logger.debug({ msg: 'getting all records', logContext });
+  public async getRecords(startPosition: number, maxRecords: number): Promise<IPaginationResponse<IExtractableRecord>> {
+    const skip = startPosition - 1;
+    const [records, total] = await this.extractableRepo.findAndCount({ order: { authorized_at: 'DESC' }, skip, take: maxRecords });
 
-    const records = await this.extractableRepo.find();
+    const mapped = records.map(mapExtractableRecordToCamelCase);
 
-    if (records.length === 0) {
-      this.logger.warn({ msg: 'no records found', logContext });
-    }
+    const nextRecord = skip + mapped.length < total ? skip + mapped.length + 1 : 0;
 
-    return records.map(mapExtractableRecordToCamelCase);
+    return { numberOfRecords: total, numberOfRecordsReturned: mapped.length, nextRecord, records: mapped };
   }
 
   public async getRecord(recordName: string): Promise<IExtractableRecord | undefined> {

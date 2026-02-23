@@ -2,9 +2,8 @@
 import axios from 'axios';
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
-import config from 'config';
 import { Repository } from 'typeorm';
-import { IUser, LogContext } from '@src/common/interfaces';
+import type { IUser, LogContext, IConfig } from '@src/common/interfaces';
 import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse, REMOTE_VALIDATE_CREATE_PATH } from '@common/constants';
 import { UsersSchema } from '@src/users/utils/userSchema';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
@@ -18,6 +17,7 @@ export class ValidationsManager {
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.CONFIG) private readonly config: IConfig,
     @inject(SERVICES.EXTRACTABLE_RECORD_REPOSITORY) private readonly extractableRepo: Repository<ExtractableRecord>,
     @inject(CatalogCall) private readonly catalog: CatalogCall
   ) {
@@ -25,7 +25,7 @@ export class ValidationsManager {
     this.users = this.loadUsers();
 
     try {
-      this.routesConfig = config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
+      this.routesConfig = this.config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
     } catch (err) {
       this.logger.error({ msg: 'Failed to load routes from config', err, logContext: this.logContext });
       this.routesConfig = [];
@@ -143,7 +143,7 @@ export class ValidationsManager {
   // istanbul ignore next
   private loadUsers(): IAuthPayload[] {
     try {
-      const usersConfig = config.get<IUser>('users');
+      const usersConfig = this.config.get<IUser>('users');
       const result = UsersSchema.safeParse(usersConfig);
 
       if (!result.success) {

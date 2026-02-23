@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 import { readFileSync } from 'fs';
-import config from 'config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import type { Logger } from '@map-colonies/js-logger';
@@ -9,6 +8,7 @@ import { promiseTimeout } from '@src/utils/promiseTimeout';
 import { AppError } from '@src/utils/appError';
 import { DB_TIMEOUT, MAX_CONNECT_RETRIES, SERVICES } from '../common/constants';
 import { DbConfig, LogContext } from '../common/interfaces';
+import type { ConfigType } from '../common/config';
 import { ExtractableRecord } from './entities/extractableRecord.entity';
 import { AuditLog } from './entities/auditLog.entity';
 
@@ -18,8 +18,11 @@ export class ConnectionManager {
   private readonly dbConfig: DbConfig;
   private readonly logContext: LogContext;
 
-  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
-    this.dbConfig = config.get<DbConfig>('db');
+  public constructor(
+    @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.CONFIG) private readonly configInstance: ConfigType
+  ) {
+    this.dbConfig = this.configInstance.get('db') as DbConfig;
     this.logContext = { fileName: __filename, class: ConnectionManager.name };
   }
 

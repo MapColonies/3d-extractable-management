@@ -1,5 +1,4 @@
 import axios from 'axios';
-import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
 import { StatusCodes } from 'http-status-codes';
 import { trace } from '@opentelemetry/api';
@@ -7,6 +6,7 @@ import { RecordStatus } from '@map-colonies/mc-model-types';
 import { validCredentials } from '@tests/mocks/generalMocks';
 import { Record3D } from '@src/externalServices/catalog/interfaces';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
+import type { IConfig } from '@src/common/interfaces';
 
 jest.mock('axios');
 
@@ -14,10 +14,19 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 let catalog: CatalogCall;
 
 describe('catalogCall tests', () => {
-  const catalogUrl = `${config.get<string>('externalServices.catalog')}/metadata`;
+  const mockConfig = {
+    get: jest.fn((key: string) => {
+      if (key === 'externalServices.catalog') {
+        return 'http://localhost:3000/catalog';
+      }
+      return undefined;
+    }),
+  } as unknown as IConfig;
+
+  const catalogUrl = `${mockConfig.get<string>('externalServices.catalog')}/metadata`;
 
   beforeEach(() => {
-    catalog = new CatalogCall(config, jsLogger({ enabled: false }), trace.getTracer('testTracer'));
+    catalog = new CatalogCall(mockConfig, jsLogger({ enabled: false }), trace.getTracer('testTracer'));
   });
 
   afterEach(() => {

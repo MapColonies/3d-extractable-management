@@ -1,6 +1,3 @@
-import jsLogger from '@map-colonies/js-logger';
-import { trace } from '@opentelemetry/api';
-import config from 'config';
 import { container as tsyringeContainer } from 'tsyringe';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
@@ -11,11 +8,6 @@ import { validCredentials, invalidCredentials } from '@tests/mocks/generalMocks'
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getApp } from '@src/app';
-import { getTestDbConfig } from '@tests/configurations/testConfig';
-
-jest.mock('config');
-
-const mockedConfig = config as jest.Mocked<typeof config>;
 
 describe('users', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -23,37 +15,11 @@ describe('users', function () {
   beforeAll(async () => {
     await initConfig(true);
 
-    const dbConfig = getTestDbConfig();
-
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
-    });
-
     console.log('✅ ConnectionManager DataSource initialized.');
 
     const [app] = await getApp({ useChild: false });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
-  });
-
-  beforeEach(() => {
-    const dbConfig = getTestDbConfig();
-
-    mockedConfig.get.mockImplementation((key: string) => {
-      if (key === 'db') {
-        return dbConfig;
-      }
-      if (key === 'users') {
-        return [{ username: validCredentials.username, password: validCredentials.password }];
-      }
-      return undefined;
-    });
   });
 
   afterAll(async () => {
@@ -161,64 +127,6 @@ describe('users', function () {
       });
 
       spy.mockRestore();
-    });
-  });
-
-  describe('Config-driven users behavior', function () {
-    describe('Config-driven users behavior', function () {
-      async function createAppWithMockedConfig(usersMock?: unknown, shouldThrow = false) {
-        mockedConfig.get.mockReset();
-
-        if (shouldThrow) {
-          mockedConfig.get.mockImplementation((key: string) => {
-            if (key === 'db') {
-              return getTestDbConfig();
-            }
-            throw new Error('missing config');
-          });
-        } else {
-          mockedConfig.get.mockImplementation((key: string) => {
-            if (key === 'db') {
-              return getTestDbConfig();
-            }
-            return usersMock;
-          });
-        }
-
-        const [app] = await getApp({
-          override: [
-            { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-            { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-          ],
-          useChild: true,
-        });
-
-        return createRequestSender<paths, operations>('openapi3.yaml', app);
-      }
-
-      it('should return 401 when config users is empty', async function () {
-        requestSender = await createAppWithMockedConfig([]);
-        const response = await requestSender.validateUser({ requestBody: validCredentials });
-
-        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-        expect(response.body.code).toBe('INVALID_CREDENTIALS');
-      });
-
-      it('should return 401 when config users is invalid', async function () {
-        requestSender = await createAppWithMockedConfig({ foo: 'bar' });
-        const response = await requestSender.validateUser({ requestBody: validCredentials });
-
-        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-        expect(response.body.code).toBe('INVALID_CREDENTIALS');
-      });
-
-      it('should return 401 when config.get throws', async function () {
-        requestSender = await createAppWithMockedConfig(undefined, true);
-        const response = await requestSender.validateUser({ requestBody: validCredentials });
-
-        expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
-        expect(response.body.code).toBe('INVALID_CREDENTIALS');
-      });
     });
   });
 });

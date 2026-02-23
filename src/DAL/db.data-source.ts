@@ -1,12 +1,19 @@
 // Notice: The following file is used only for running loacl migration from CLI
 /* istanbul ignore file */
 import { DataSource } from 'typeorm';
-import config from 'config';
 import { DbConfig } from '@src/common/interfaces';
 import { ExtractableRecord } from './entities/extractableRecord.entity';
 import { AuditLog } from './entities/auditLog.entity';
 
-const dbConfig = config.get<DbConfig>('db');
+// Get DB config from environment variables (used for CLI migrations)
+const dbConfig: DbConfig = {
+  type: 'postgres',
+  host: process.env.DB_HOST ?? 'localhost',
+  port: parseInt(process.env.DB_PORT ?? '5432', 10),
+  username: process.env.DB_USERNAME ?? 'postgres',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME ?? '3d-extractable-management',
+};
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export const ExtractabledDataSource = new DataSource({

@@ -30,6 +30,9 @@
       }
     }
   },
+  "pagination": {
+    "maxConfiguredBatchSize": 10000
+  },
   "externalServices": {
     "catalog": "http://127.0.0.1:8080",
     "publicExtractableRoutes": [{ "url": "https://linl-to-env1" }, { "url": "https://linl-to-env2" }]
