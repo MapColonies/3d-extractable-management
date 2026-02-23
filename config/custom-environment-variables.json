@@ -55,10 +55,6 @@
       "__format": "json"
     }
   },
-  "users": {
-    "__name": "USERS_JSON",
-    "__format": "json"
-  },
   "db": {
     "type": "DB_TYPE",
     "host": "DB_HOST",
