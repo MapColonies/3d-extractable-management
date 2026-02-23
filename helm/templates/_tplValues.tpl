@@ -41,54 +41,8 @@ End of usage example
 */}}
 
 {{/*
-Common definitions
-*/}}
-{{- define "merged.ca" -}}
-{{- include "common.tplvalues.merge" ( dict "values" ( list .Values.ca .Values.global.ca ) "context" . ) }}
-{{- end -}}
-
-{{/*
 Custom definitions
 */}}
 {{- define "merged.postgres" -}}
 {{- include "common.tplvalues.merge" ( dict "values" ( list .Values.postgres .Values.global.postgres ) "context" . ) }}
-{{- end -}}
-
-{{- define "merged.podAnnotations" -}}
-{{- $globalAnnotations := dict }}
-{{- range $key, $value := .Values.global.podAnnotations }}
-  {{- if $value.enabled }}
-    {{- $globalAnnotations = merge $globalAnnotations $value.annotations }}
-  {{- end }}
-{{- end }}
-{{- $mergedAnnotations := merge .Values.podAnnotations $globalAnnotations }}
-{{- range $key, $value := $mergedAnnotations }}
-{{ $key }}: "{{ $value }}"
-{{- end }}
-{{- end }}
-
-{{- define "merged.extraVolumes" -}}
-{{- $local := include "common.tplvalues.render" ( dict "value" .Values.extraVolumes "context" . ) | fromYamlArray | default (list) -}}
-{{- $global := include "common.tplvalues.render" ( dict "value" .Values.global.extraVolumes "context" . ) | fromYamlArray | default (list) -}}
-{{- concat $local $global | toYaml -}}
-{{- end -}}
-
-{{- define "merged.sidecars" -}}
-{{- $local := include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" . ) | fromYamlArray | default (list) -}}
-{{- $global := include "common.tplvalues.render" ( dict "value" .Values.global.sidecars "context" . ) | fromYamlArray | default (list) -}}
-{{- concat $local $global | toYaml -}}
-{{- end -}}
-
-{{- define "merged.extraVolumeMounts" -}}
-{{- $local := include "common.tplvalues.render" ( dict "value" .Values.extraVolumeMounts "context" . ) | fromYamlArray | default (list) -}}
-{{- $global := include "common.tplvalues.render" ( dict "value" .Values.global.extraVolumeMounts "context" . ) | fromYamlArray | default (list) -}}
-{{- concat $local $global | toYaml -}}
-{{- end -}}
-
-{{- define "merged.metrics" -}}
-{{- include "common.tplvalues.merge" ( dict "values" ( list .Values.env.metrics .Values.global.metrics ) "context" . ) }}
-{{- end -}}
-
-{{- define "merged.tracing" -}}
-{{- include "common.tplvalues.merge" ( dict "values" ( list .Values.env.tracing .Values.global.tracing ) "context" . ) }}
 {{- end -}}

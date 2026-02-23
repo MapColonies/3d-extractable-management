@@ -1,16 +1,15 @@
 {{- $fullName := include "extractable-management.fullname" . -}}
 {{- $postgres := (include "merged.postgres" . ) | fromYaml }}
-{{- $ca := (include "merged.ca" . ) | fromYaml }}
 {{- $tracingUrl := include "extractable-management.tracingUrl" . -}}
 {{- $metricsUrl := include "extractable-management.metricsUrl" . -}}
 {{- if .Values.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-configmap" (include "extractable-management.fullname" .) }}
-  labels:
-    {{- include "extractable-management.labels" . | nindent 4 }}
+  name: {{ printf "%s-configmap" $fullName }}
 data:
+  REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
+  RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
   LOG_LEVEL: {{ .Values.env.logLevel | quote }}
   LOG_PRETTY_PRINT_ENABLED: {{ .Values.env.logPrettyPrintEnabled | quote }}
   {{ if .Values.env.tracing.enabled }}
@@ -34,8 +33,6 @@ data:
   EXTRACTABLE_ROUTES: {{ .pairs | toJson | quote }}
   {{- end }}
   {{- end }}
-  REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
-  RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
   PAGINATION_MAX_RECORDS: {{ .Values.env.pagination.maxConfiguredBatchSize | quote }}
   DB_TYPE: "postgres"
   DB_HOST: {{ quote $postgres.host }}
@@ -45,11 +42,4 @@ data:
   DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
   DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
   DB_ENABLE_SSL_AUTH: {{ $postgres.ssl.enabled | quote }}
-  NODE_CONFIG_DIR: /etc/config
-  NODE_ENV: production
-  SUPPRESS_NO_CONFIG_WARNING: 'false'
-  {{- if $ca.enabled }}
-  REQUESTS_CA_BUNDLE: {{ printf "%s/%s" $ca.path $ca.key | quote }}
-  NODE_EXTRA_CA_CERTS: {{ printf "%s/%s" $ca.path $ca.key | quote }}
-  {{- end }}
 {{- end }}
