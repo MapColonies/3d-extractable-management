@@ -81,6 +81,7 @@ describe('records', function () {
             recordName: 'rec_test',
             authorizedBy: recordInstance.authorizedBy,
             action: IAuditAction.CREATE,
+            remarks: recordInstance.remarks,
           }),
         ])
       );

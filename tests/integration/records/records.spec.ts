@@ -78,6 +78,7 @@ describe('records', function () {
         recordName: 'rec_happy_create',
         authorizedBy: recordInstance.authorizedBy,
         data: recordInstance.data,
+        remarks: recordInstance.remarks,
       });
     });
 
