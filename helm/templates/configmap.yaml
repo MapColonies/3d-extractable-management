@@ -1,7 +1,5 @@
 {{- $fullName := include "extractable-management.fullname" . -}}
 {{- $postgres := (include "merged.postgres" . ) | fromYaml }}
-{{- $fullName := include "extractable-management.fullname" . -}}
-{{- $postgres := (include "merged.postgres" . ) | fromYaml }}
 {{- $tracingUrl := include "extractable-management.tracingUrl" . -}}
 {{- $metricsUrl := include "extractable-management.metricsUrl" . -}}
 {{- if .Values.enabled -}}
