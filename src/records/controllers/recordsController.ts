@@ -110,7 +110,7 @@ export class RecordsController {
   public deleteRecord: TypedRequestHandlers['DELETE /records/{recordName}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     const { recordName } = req.params;
-    const { username, password } = req.body;
+    const { username, password, remarks } = req.body;
 
     try {
       this.logger.info({ msg: 'Delete record requested, starts validation', logContext });
@@ -123,7 +123,7 @@ export class RecordsController {
       }
 
       this.logger.info({ msg: 'Delete record continues, starts deletion', logContext });
-      const deleted = await this.manager.deleteRecord(recordName);
+      const deleted = await this.manager.deleteRecord(recordName, remarks?.toString() ?? '');
 
       if (!deleted) {
         this.requestsCounter.inc({ status: '404' });

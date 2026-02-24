@@ -152,6 +152,8 @@ export type components = {
       /** @enum {string} */
       action: 'CREATE' | 'DELETE';
       authorizedAt?: string;
+      /** @description Remarks stored in extractable_records.remarks */
+      remarks?: string;
     };
     /** @description Paginated response containing extractable records. */
     paginatedExtractableRecords: {
@@ -372,6 +374,8 @@ export interface operations {
           password: string;
           /** @description User authorizing this deletion */
           authorizedBy: string;
+          /** @description Optional remarks field */
+          remarks?: string;
         };
       };
     };

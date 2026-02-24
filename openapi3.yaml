@@ -297,6 +297,9 @@ paths:
                 authorizedBy:
                   type: string
                   description: User authorizing this deletion
+                remarks:
+                  type: string
+                  description: Optional remarks field
       responses:
         '204':
           description: Record deleted successfully
@@ -568,12 +571,14 @@ paths:
                         authorizedBy: john_doe
                         action: CREATE
                         authorizedAt: '2026-02-04T16:26:18.055Z'
+                        remarks: instance remarks
                       - id: 2
                         recordName: rec_A
                         username: username
                         authorizedBy: jane_doe
                         action: DELETE
                         authorizedAt: '2026-02-05T16:26:18.055Z'
+                        remarks: instance remarks
                 empty:
                   summary: No audit logs found
                   value:
@@ -768,6 +773,9 @@ components:
           enum: [CREATE, DELETE]
         authorizedAt:
           type: string
+        remarks:
+          type: string
+          description: Remarks stored in extractable_records.remarks
 
     paginatedExtractableRecords:
       type: object

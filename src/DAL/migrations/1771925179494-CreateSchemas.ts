@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateSchemas1770305673603 implements MigrationInterface {
+export class CreateSchemas1771925179494 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // --- Extractable Records Table ---
     await queryRunner.query(`
@@ -41,6 +41,7 @@ export class CreateSchemas1770305673603 implements MigrationInterface {
         "authorized_by" character varying NOT NULL,
         "action" character varying NOT NULL,
         "authorized_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+        "remarks" character varying,
         CONSTRAINT "PK_audit_log_id" PRIMARY KEY ("id")
       )
     `);
