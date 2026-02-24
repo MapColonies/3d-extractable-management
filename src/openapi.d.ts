@@ -142,6 +142,8 @@ export type components = {
       data?: {
         [key: string]: unknown;
       };
+      /** @description Remarks stored in extractable_records.remarks */
+      remarks?: string;
     };
     'audit-log': {
       /** Format: int64 */
@@ -152,7 +154,7 @@ export type components = {
       /** @enum {string} */
       action: 'CREATE' | 'DELETE';
       authorizedAt?: string;
-      /** @description Remarks stored in extractable_records.remarks */
+      /** @description Remarks stored in audit_log.remarks */
       remarks?: string;
     };
     /** @description Paginated response containing extractable records. */
@@ -307,6 +309,8 @@ export interface operations {
           data?: {
             [key: string]: unknown;
           };
+          /** @description Optional remarks field */
+          remarks?: string;
         };
       };
     };

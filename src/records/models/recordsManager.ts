@@ -45,9 +45,10 @@ export class RecordsManager {
     username: string;
     authorizedBy: string;
     data?: Record<string, unknown>;
+    remarks?: string;
   }): Promise<IExtractableRecord> {
     const logContext = { ...this.logContext, function: this.createRecord.name };
-    const { recordName, username, authorizedBy, data } = params;
+    const { recordName, username, authorizedBy, data, remarks } = params;
 
     this.logger.info({ msg: `starting to create extractable record '${recordName}'`, recordName, logContext });
 
@@ -59,6 +60,7 @@ export class RecordsManager {
         username,
         authorized_by: authorizedBy,
         data,
+        remarks,
       });
 
       const saved = await extractableRepo.save(record);
@@ -69,6 +71,7 @@ export class RecordsManager {
           username: record.username,
           authorized_by: record.authorized_by,
           action: IAuditAction.CREATE,
+          remarks: record.remarks,
         })
       );
 
@@ -80,7 +83,7 @@ export class RecordsManager {
     return savedRecord;
   }
 
-  public async deleteRecord(recordName: string, deleteRecordRemarks: string): Promise<boolean> {
+  public async deleteRecord(recordName: string, deleteRecordRemarks?: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     this.logger.info({ msg: `starting to delete extractable record '${recordName}'`, recordName, logContext });
 

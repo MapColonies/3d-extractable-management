@@ -197,6 +197,9 @@ paths:
                   type: object
                   additionalProperties: true
                   description: Optional metadata for the record
+                remarks:
+                  type: string
+                  description: Optional remarks field
       responses:
         '201':
           description: Record created successfully
@@ -215,6 +218,7 @@ paths:
                     authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
+                    remarks: instance remarks
         '400':
           description: Validation failed – call POST /records/validate first
           content:
@@ -750,6 +754,9 @@ components:
           type: object
           additionalProperties: true
           description: Metadata stored in extractable_records.data
+        remarks:
+          type: string
+          description: Remarks stored in extractable_records.remarks
 
     audit-log:
       type: object
@@ -775,7 +782,7 @@ components:
           type: string
         remarks:
           type: string
-          description: Remarks stored in extractable_records.remarks
+          description: Remarks stored in audit_log.remarks
 
     paginatedExtractableRecords:
       type: object

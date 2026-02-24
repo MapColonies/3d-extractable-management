@@ -187,6 +187,7 @@ describe('RecordsManager & ValidationsManager', () => {
         username: dbRecord.username,
         authorizedBy: dbRecord.authorized_by,
         data: dbRecord.data,
+        remarks: 'instance remarks',
       });
 
       expect(result).toEqual(mapExtractableRecordToCamelCase(dbRecord));
