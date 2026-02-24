@@ -9,6 +9,7 @@ export const recordInstance: IExtractableRecord = {
     resolution: '4K' as never,
     source: 'drone_scan' as never,
   },
+  remarks: 'test remarks',
 };
 
 export const validCredentials: IAuthPayloadWithRecord = {

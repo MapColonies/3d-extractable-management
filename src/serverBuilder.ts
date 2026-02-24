@@ -10,12 +10,12 @@ import httpLogger from '@map-colonies/express-access-log-middleware';
 import { getTraceContexHeaderMiddleware } from '@map-colonies/telemetry';
 import { collectMetricsExpressMiddleware } from '@map-colonies/telemetry/prom-metrics';
 import { Registry } from 'prom-client';
+import cors from 'cors';
 import type { ConfigType } from '@common/config';
 import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
 import { USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
 import { AUDIT_ROUTER_SYMBOL } from './audit_logs/routes/auditRouter';
-import cors from 'cors';
 
 @injectable()
 export class ServerBuilder {
