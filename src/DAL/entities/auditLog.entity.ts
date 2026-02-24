@@ -25,4 +25,7 @@ export class AuditLog {
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   public authorized_at?: Date;
+
+  @Column({ type: 'varchar', nullable: true, default: '' })
+  public remarks?: string;
 }

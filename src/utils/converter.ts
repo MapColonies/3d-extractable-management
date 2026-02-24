@@ -9,6 +9,7 @@ export const mapAuditLogToCamelCase = (record: AuditLog): IAuditLog => ({
   authorizedBy: record.authorized_by,
   action: record.action,
   authorizedAt: record.authorized_at?.toISOString(),
+  remarks: record.remarks,
 });
 
 export const mapExtractableRecordToCamelCase = (record: ExtractableRecord): IExtractableRecord => ({
@@ -18,4 +19,5 @@ export const mapExtractableRecordToCamelCase = (record: ExtractableRecord): IExt
   authorizedBy: record.authorized_by,
   data: record.data,
   authorizedAt: record.authorized_at?.toISOString(),
+  remarks: record.remarks,
 });

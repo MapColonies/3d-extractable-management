@@ -24,4 +24,7 @@ export class ExtractableRecord {
 
   @Column({ type: 'jsonb', nullable: true })
   public data?: Record<string, unknown>;
+
+  @Column({ type: 'varchar', nullable: true, default: '' })
+  public remarks?: string;
 }

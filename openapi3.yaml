@@ -200,6 +200,9 @@ paths:
                   type: object
                   additionalProperties: true
                   description: Optional metadata for the record
+                remarks:
+                  type: string
+                  description: Optional remarks field
       responses:
         '201':
           description: Record created successfully
@@ -218,6 +221,7 @@ paths:
                     authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
                       kuku: 'kuku random data'
+                    remarks: instance remarks
         '400':
           description: Validation failed – call POST /records/validate first
           content:
@@ -300,6 +304,9 @@ paths:
                 authorizedBy:
                   type: string
                   description: User authorizing this deletion
+                remarks:
+                  type: string
+                  description: Optional remarks field
       responses:
         '204':
           description: Record deleted successfully
@@ -571,12 +578,14 @@ paths:
                         authorizedBy: john_doe
                         action: CREATE
                         authorizedAt: '2026-02-04T16:26:18.055Z'
+                        remarks: instance remarks
                       - id: 2
                         recordName: rec_A
                         username: username
                         authorizedBy: jane_doe
                         action: DELETE
                         authorizedAt: '2026-02-05T16:26:18.055Z'
+                        remarks: instance remarks
                 empty:
                   summary: No audit logs found
                   value:
@@ -757,6 +766,9 @@ components:
           type: object
           additionalProperties: true
           description: Metadata stored in extractable_records.data
+        remarks:
+          type: string
+          description: Remarks stored in extractable_records.remarks
 
     audit-log:
       type: object
@@ -780,6 +792,9 @@ components:
           enum: [CREATE, DELETE]
         authorizedAt:
           type: string
+        remarks:
+          type: string
+          description: Remarks stored in audit_log.remarks
 
     paginatedExtractableRecords:
       type: object
