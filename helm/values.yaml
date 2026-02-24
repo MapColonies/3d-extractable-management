@@ -150,10 +150,9 @@ ingress:
     enabled: true
     origin: '*'
 
-usersSecret:
-  name: extractable-management-users-secret
-  key: users-json
-users:
-  - username: "username"
-    password: "password"
-
+user:
+  useExternal: false
+  secretName: extractable-management-users-secret
+  users:
+    - username: username
+      password: password

@@ -88,15 +88,20 @@ spec:
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ default (printf "%s-db-secret" $fullname) $postgres.user.secretName }}
+                  name: {{ default (printf "%s-db-secrets" $fullname) $postgres.user.secretName }}
                   key: username
             {{- if $postgres.user.requirePassword }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ default (printf "%s-db-secret" $fullname) $postgres.user.secretName }}
+                  name: {{ default (printf "%s-db-secrets" $fullname) $postgres.user.secretName }}
                   key: password
             {{- end }}
+            - name: USERS_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.user.secretName }}
+                  key: users-json
           envFrom:
             - configMapRef:
                 name: {{ printf "%s-configmap" $fullname }}

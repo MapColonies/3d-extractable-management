@@ -15,6 +15,7 @@ import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
 import { USERS_ROUTER_SYMBOL } from './users/routes/usersRouter';
 import { AUDIT_ROUTER_SYMBOL } from './audit_logs/routes/auditRouter';
+import cors from 'cors';
 
 @injectable()
 export class ServerBuilder {
@@ -57,6 +58,7 @@ export class ServerBuilder {
   }
 
   private registerPreRoutesMiddleware(): void {
+    this.serverInstance.use(cors());
     this.serverInstance.use(collectMetricsExpressMiddleware({ registry: this.metricsRegistry }));
     this.serverInstance.use(httpLogger({ logger: this.logger, ignorePaths: ['/metrics'] }));
 
