@@ -47,5 +47,4 @@ data:
   DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
   DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
   DB_ENABLE_SSL_AUTH: {{ $postgres.ssl.enabled | quote }}
-  USERS_JSON: {{ .Values.user.users | toJson | quote }}
 {{- end }}
