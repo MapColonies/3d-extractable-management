@@ -10,7 +10,6 @@ import httpLogger from '@map-colonies/express-access-log-middleware';
 import { getTraceContexHeaderMiddleware } from '@map-colonies/telemetry';
 import { collectMetricsExpressMiddleware } from '@map-colonies/telemetry/prom-metrics';
 import { Registry } from 'prom-client';
-import cors from 'cors';
 import type { ConfigType } from '@common/config';
 import { SERVICES } from '@common/constants';
 import { RECORDS_ROUTER_SYMBOL } from './records/routes/recordsRouter';
@@ -58,7 +57,6 @@ export class ServerBuilder {
   }
 
   private registerPreRoutesMiddleware(): void {
-    this.serverInstance.use(cors());
     this.serverInstance.use(collectMetricsExpressMiddleware({ registry: this.metricsRegistry }));
     this.serverInstance.use(httpLogger({ logger: this.logger, ignorePaths: ['/metrics'] }));
 
