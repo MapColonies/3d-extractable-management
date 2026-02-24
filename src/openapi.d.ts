@@ -113,7 +113,14 @@ export type components = {
       isValid: boolean;
       message: string;
       /** @enum {string} */
-      code: 'SUCCESS' | 'MISSING_CREDENTIALS' | 'INVALID_CREDENTIALS' | 'INVALID_RECORD_NAME' | 'INTERNAL_ERROR';
+      code:
+        | 'SUCCESS'
+        | 'MISSING_CREDENTIALS'
+        | 'INVALID_CREDENTIALS'
+        | 'INVALID_RECORD_NAME'
+        | 'INTERNAL_ERROR'
+        | 'INVALID_START_POSITION'
+        | 'INVALID_MAX_RECORDS';
     };
     'auth-payload': {
       username: string;
@@ -146,6 +153,46 @@ export type components = {
       action: 'CREATE' | 'DELETE';
       authorizedAt?: string;
     };
+    /** @description Paginated response containing extractable records. */
+    paginatedExtractableRecords: {
+      /**
+       * @description Total number of extractable records available in the system.
+       * @example 60
+       */
+      numberOfRecords: number;
+      /**
+       * @description Number of records included in this response page.
+       * @example 50
+       */
+      numberOfRecordsReturned: number;
+      /**
+       * @description 1-based index of the next record to request for pagination. 0 if there are no more records available.
+       * @example 51
+       */
+      nextRecord?: number;
+      /** @description List of extractable records for the current page. */
+      records: components['schemas']['extractable-record'][];
+    };
+    /** @description Paginated response containing audit log entries for a specific record. */
+    paginatedAuditLogs: {
+      /**
+       * @description Total number of audit log entries available for the specified record.
+       * @example 12
+       */
+      numberOfRecords: number;
+      /**
+       * @description Number of audit log entries included in this response page.
+       * @example 5
+       */
+      numberOfRecordsReturned: number;
+      /**
+       * @description 1-based index of the next audit log entry to request. 0 if there are no more audit logs available.
+       * @example 6
+       */
+      nextRecord?: number;
+      /** @description List of audit log entries for the current page. */
+      records: components['schemas']['audit-log'][];
+    };
   };
   responses: never;
   parameters: never;
@@ -157,7 +204,12 @@ export type $defs = Record<string, never>;
 export interface operations {
   getRecords: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description 1-based index of first record to return */
+        startPosition?: number;
+        /** @description Maximum number of records to return */
+        maxRecords?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -170,7 +222,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['extractable-record'][];
+          'application/json': components['schemas']['paginatedExtractableRecords'];
         };
       };
       /** @description Bad request */
@@ -497,7 +549,10 @@ export interface operations {
   };
   getAudit: {
     parameters: {
-      query?: never;
+      query?: {
+        startPosition?: number;
+        maxRecords?: number;
+      };
       header?: never;
       path: {
         /** @description The recordName to fetch audit logs for */
@@ -513,7 +568,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['audit-log'][];
+          'application/json': components['schemas']['paginatedAuditLogs'];
         };
       };
       /** @description Invalid recordName or request parameters */

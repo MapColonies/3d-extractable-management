@@ -1,21 +1,18 @@
-import config from 'config';
 import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES, IAuthPayloadWithRecord } from '@common/constants';
+import { SERVICES, IAuthPayloadWithRecord, IExtractableRecord } from '@common/constants';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import { invalidCredentials, recordInstance, validCredentials } from '@tests/mocks/generalMocks';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
-import { getTestDbConfig } from '@tests/configurations/testConfig';
-import { configureIntegrationConfigMock, getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
+import { getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
 
 jest.mock('axios');
-jest.mock('config');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -26,8 +23,6 @@ jest.mock('@src/externalServices/catalog/catalogCall', () => ({
   })),
 }));
 
-const mockedConfig = config as jest.Mocked<typeof config>;
-
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
@@ -35,15 +30,6 @@ describe('records', function () {
     mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
 
     await initConfig(true);
-
-    const dbConfig = getTestDbConfig();
-
-    configureIntegrationConfigMock(mockedConfig, {
-      dbConfig,
-      userCredentials: validCredentials,
-      catalogUrl: 'http://127.0.0.1:8080',
-      routes: [{ url: 'https://linl-to-env1' }, { url: 'https://linl-to-env12' }],
-    });
 
     console.log('✅ ConnectionManager DataSource initialized.');
 
@@ -111,20 +97,79 @@ describe('records', function () {
     });
 
     it('should return 200 and the available records', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([recordInstance]);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 1,
+        numberOfRecordsReturned: 1,
+        nextRecord: 0,
+        records: [recordInstance],
+      });
       const response = await requestSender.getRecords();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([recordInstance]);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
+      expect(body.numberOfRecords).toBe(1);
+      expect(body.numberOfRecordsReturned).toBe(1);
+      expect(body.nextRecord).toBe(0);
     });
 
     it('should return 200 and empty array when no records exist', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce([]);
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 0,
+        numberOfRecordsReturned: 0,
+        nextRecord: 0,
+        records: [],
+      });
       const response = await requestSender.getRecords();
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body).toEqual([]);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: IExtractableRecord[] };
+      expect(body.numberOfRecords).toBe(0);
+      expect(body.numberOfRecordsReturned).toBe(0);
+      expect(body.nextRecord).toBe(0);
+      expect(body.records).toEqual([]);
+    });
+
+    it('should return 200 with default pagination parameters when not provided', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 2,
+        numberOfRecordsReturned: 2,
+        nextRecord: 0,
+        records: [recordInstance],
+      });
+      const response = await requestSender.getRecords();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
+      expect(body.numberOfRecords).toBe(2);
+      expect(body.numberOfRecordsReturned).toBe(2);
+      expect(body.nextRecord).toBe(0);
+    });
+
+    it('should return 200 with pagination parameters', async function () {
+      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+        numberOfRecords: 50,
+        numberOfRecordsReturned: 10,
+        nextRecord: 11,
+        records: [recordInstance],
+      });
+      const response = await requestSender.getRecords({
+        queryParams: { startPosition: 1, maxRecords: 10 },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      const body = response.body as {
+        numberOfRecords: number;
+        numberOfRecordsReturned: number;
+        nextRecord: number;
+        records: (typeof recordInstance)[];
+      };
+      expect(body.numberOfRecords).toBe(50);
+      expect(body.numberOfRecordsReturned).toBe(10);
+      expect(body.nextRecord).toBe(11);
+      expect(Array.isArray(body.records)).toBe(true);
     });
 
     it('should return 200 when credentials are valid', async function () {
@@ -158,6 +203,38 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+    });
+  });
+
+  describe('Bad Path - Validation Failures', function () {
+    it('should return 400 if startPosition is invalid', async () => {
+      const response = await requestSender.getRecords({
+        queryParams: { startPosition: -5 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: 'request/query/startPosition must be >= 1',
+      });
+    });
+
+    it('should return 400 and appropriate message from the openapi if maxRecords is invalid for getRecords', async function () {
+      const response = await requestSender.getRecords({
+        queryParams: { maxRecords: 0 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: 'request/query/maxRecords must be >= 1',
+      });
+    });
+
+    it('should cap maxRecords to configured max', async () => {
+      const response = await requestSender.getRecords({
+        queryParams: { maxRecords: 999999 },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 

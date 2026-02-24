@@ -1,15 +1,16 @@
 {{- $releaseName := .Release.Name -}}
 {{- $chartName := include "extractable-management.name" . -}}
+{{- $fullname := include "extractable-management.fullname" . -}}
 {{- $cloudProviderFlavor := include "extractable-management.cloudProviderFlavor" . -}}
 {{- $cloudProviderDockerRegistryUrl := include "extractable-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "extractable-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "extractable-management.tag" . -}}
-{{- $postgres := include "merged.postgres" . | fromYaml }}
+{{- $postgres := include "merged.postgres" . | fromYaml -}}
 {{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-deployment" (include "extractable-management.fullname" .) }}
+  name: {{ printf "%s-deployment" $fullname }}
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
@@ -67,6 +68,11 @@ spec:
             {{- if .Values.extraVolumeMounts -}}
               {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
+            {{- if $postgres.ssl.enabled }}
+            - name: cert-conf
+              mountPath: /tmp/certs
+              readOnly: true
+            {{- end }}
           env:
             - name: SERVER_PORT
               value: {{ .Values.env.targetPort | quote }}
@@ -78,10 +84,27 @@ spec:
             {{- end }}
             {{- if .Values.extraEnvVars }}
             {{- toYaml .Values.extraEnvVars | nindent 12 }}
-            {{- end }}            
+            {{- end }}
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-db-secrets" $fullname) $postgres.user.secretName }}
+                  key: username
+            {{- if $postgres.user.requirePassword }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-db-secrets" $fullname) $postgres.user.secretName }}
+                  key: password
+            {{- end }}
+            - name: USERS_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.user.secretName }}
+                  key: users-json
           envFrom:
             - configMapRef:
-                name: {{ printf "%s-configmap" (include "extractable-management.fullname" .) }}
+                name: {{ printf "%s-configmap" $fullname }}
           ports:
             - name: http
               containerPort: {{ .Values.env.targetPort }}
@@ -115,6 +138,11 @@ spec:
         - name: nginx-config
           configMap:
             name: 'nginx-extra-configmap'
+        {{- if and $postgres.enabled $postgres.ssl.enabled }}
+        - name: cert-conf
+          secret:
+            secretName: {{ $postgres.ssl.secretName }}
+        {{- end }}
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:

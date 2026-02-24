@@ -1,10 +1,12 @@
+{{- $fullName := include "extractable-management.fullname" . -}}
+{{- $postgres := (include "merged.postgres" . ) | fromYaml }}
 {{- $tracingUrl := include "extractable-management.tracingUrl" . -}}
 {{- $metricsUrl := include "extractable-management.metricsUrl" . -}}
 {{- if .Values.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-configmap" (include "extractable-management.fullname" .) }}
+  name: {{ printf "%s-configmap" $fullName }}
 data:
   REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
   RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
@@ -14,15 +16,30 @@ data:
   TELEMETRY_TRACING_ENABLED: 'true'
   TELEMETRY_TRACING_URL: {{ $tracingUrl }}
   {{ end }}
-  {{ if .Values.env.metrics.enabled }}
+  {{- if .Values.env.metrics.enabled }}
   TELEMETRY_METRICS_ENABLED: 'true'
   TELEMETRY_METRICS_URL: {{ $metricsUrl }}
-  {{ end }}
+  {{- end }}
   npm_config_cache: /tmp/
   {{- with .Values.configManagement }}
   CONFIG_NAME: {{ .name| quote }}
   CONFIG_VERSION: {{ .version | quote }}
   CONFIG_OFFLINE_MODE: {{ .offlineMode | quote }}
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
-  {{- end -}}
+  {{- end }}
+  CATALOG_URL: {{ .Values.env.externalServices.catalog | quote }}
+  {{- if .Values.env.externalServices.publicExtractableRoutes.enabled }}
+  {{- with .Values.env.externalServices.publicExtractableRoutes }}
+  EXTRACTABLE_ROUTES: {{ .pairs | toJson | quote }}
+  {{- end }}
+  {{- end }}
+  PAGINATION_MAX_RECORDS: {{ .Values.env.pagination.maxConfiguredBatchSize | quote }}
+  DB_TYPE: "postgres"
+  DB_HOST: {{ quote $postgres.host }}
+  DB_PORT: {{ quote $postgres.port }}
+  DB_NAME: {{ $postgres.name | quote }}
+  DB_CERT_PATH: /tmp/certs/{{ $postgres.ssl.certFileName }}
+  DB_KEY_PATH: /tmp/certs/{{ $postgres.ssl.keyFileName }}
+  DB_CA_PATH: /tmp/certs/{{ $postgres.ssl.caFileName }}
+  DB_ENABLE_SSL_AUTH: {{ $postgres.ssl.enabled | quote }}
 {{- end }}
