@@ -6,12 +6,10 @@ info:
   license:
     name: 3d-extractable-management repo link
     url: https://github.com/MapColonies/3d-extractable-management/
-
 security:
   - {}
   - apiKey: []
   - token: []
-
 tags:
   - name: records
     description: Record extractability management
@@ -21,7 +19,6 @@ tags:
     description: Internal records extractability management
   - name: internal - users
     description: Internal users authentication and validation
-
 paths:
   /records:
     get:
@@ -67,14 +64,14 @@ paths:
                         authorizedBy: john_doe
                         authorizedAt: '2026-02-04T16:26:18.055Z'
                         data:
-                          kuku: 'kuku random data'
+                          kuku: kuku random data
                       - id: 124
                         recordName: rec_B
                         username: another_user
                         authorizedBy: jane_doe
                         authorizedAt: '2026-02-05T10:12:11.000Z'
                         data:
-                          field: 'value'
+                          field: value
                 empty:
                   summary: No records found
                   value:
@@ -82,7 +79,6 @@ paths:
                     numberOfRecordsReturned: 0
                     nextRecord: 0
                     records: []
-
         '400':
           description: Bad request
           content:
@@ -94,8 +90,8 @@ paths:
                   summary: Bad request
                   value:
                     isValid: false
-                    message: 'Bad request – invalid query or parameters'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Bad request – invalid query or parameters
+                    code: MISSING_CREDENTIALS
         '500':
           description: Internal server error
           content:
@@ -107,9 +103,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
   /records/{recordName}:
     get:
       tags:
@@ -139,7 +134,7 @@ paths:
                     authorizedBy: john_doe
                     authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
-                      kuku: 'kuku random data'
+                      kuku: kuku random data
         '404':
           description: Record not found
           content:
@@ -151,8 +146,8 @@ paths:
                   summary: Record does not exist
                   value:
                     isValid: false
-                    message: "Record with name 'rec_X' not found"
-                    code: 'INVALID_RECORD_NAME'
+                    message: Record with name 'rec_X' not found
+                    code: INVALID_RECORD_NAME
         '500':
           description: Internal server error
           content:
@@ -164,9 +159,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
     post:
       tags:
         - internal - records
@@ -220,7 +214,7 @@ paths:
                     authorizedBy: john_doe
                     authorizedAt: '2026-02-04T16:26:18.055Z'
                     data:
-                      kuku: 'kuku random data'
+                      kuku: kuku random data
                     remarks: instance remarks
         '400':
           description: Validation failed – call POST /records/validate first
@@ -233,8 +227,8 @@ paths:
                   summary: Validation missing
                   value:
                     isValid: false
-                    message: 'Cannot create record – validation required'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Cannot create record – validation required
+                    code: MISSING_CREDENTIALS
         '401':
           description: Unauthorized – invalid username or password
           content:
@@ -246,8 +240,8 @@ paths:
                   summary: Invalid credentials
                   value:
                     isValid: false
-                    message: 'Invalid username or password'
-                    code: 'INVALID_CREDENTIALS'
+                    message: Invalid username or password
+                    code: INVALID_CREDENTIALS
         '404':
           description: Record not found
           content:
@@ -259,8 +253,8 @@ paths:
                   summary: Record does not exist
                   value:
                     isValid: false
-                    message: "Record with name 'rec_X' not found"
-                    code: 'INVALID_RECORD_NAME'
+                    message: Record with name 'rec_X' not found
+                    code: INVALID_RECORD_NAME
         '500':
           description: Internal server error
           content:
@@ -272,9 +266,8 @@ paths:
                   summary: Unexpected error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
     delete:
       tags:
         - internal - records
@@ -310,19 +303,6 @@ paths:
       responses:
         '204':
           description: Record deleted successfully
-        '404':
-          description: Record not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/validateResponse'
-              examples:
-                not_found:
-                  summary: Record missing
-                  value:
-                    isValid: false
-                    message: "Cannot delete – record 'rec_X' not found"
-                    code: 'INVALID_RECORD_NAME'
         '400':
           description: Validation failed – deletion not allowed
           content:
@@ -334,8 +314,8 @@ paths:
                   summary: Validation failed
                   value:
                     isValid: false
-                    message: 'Deletion not allowed for this record'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Deletion not allowed for this record
+                    code: MISSING_CREDENTIALS
         '401':
           description: Unauthorized
           content:
@@ -347,8 +327,21 @@ paths:
                   summary: Invalid credentials
                   value:
                     isValid: false
-                    message: 'Invalid username or password'
-                    code: 'INVALID_CREDENTIALS'
+                    message: Invalid username or password
+                    code: INVALID_CREDENTIALS
+        '404':
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                not_found:
+                  summary: Record missing
+                  value:
+                    isValid: false
+                    message: Cannot delete – record 'rec_X' not found
+                    code: INVALID_RECORD_NAME
         '500':
           description: Internal server error
           content:
@@ -360,9 +353,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
   /records/validateCreate:
     post:
       tags:
@@ -381,8 +373,9 @@ paths:
                     multiSiteValidation:
                       type: boolean
                       description: >
-                        When true, performs remote (multi-site) validation.
-                        When false or omitted, validation is performed only on local site.
+                        When true, performs remote (multi-site) validation. When
+                        false or omitted, validation is performed only on local
+                        site.
                       default: true
       responses:
         '200':
@@ -396,21 +389,8 @@ paths:
                   summary: Can create
                   value:
                     isValid: true
-                    message: 'Record can be created'
-                    code: 'SUCCESS'
-        '401':
-          description: Unauthorized – invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/validateResponse'
-              examples:
-                invalid_credentials:
-                  summary: Invalid credentials
-                  value:
-                    isValid: false
-                    message: 'Invalid username or password'
-                    code: 'INVALID_CREDENTIALS'
+                    message: Record can be created
+                    code: SUCCESS
         '400':
           description: Validation failed – missing fields
           content:
@@ -422,8 +402,21 @@ paths:
                   summary: Missing credentials or recordName
                   value:
                     isValid: false
-                    message: 'Username, password, and recordName are required'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Username, password, and recordName are required
+                    code: MISSING_CREDENTIALS
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: Invalid username or password
+                    code: INVALID_CREDENTIALS
         '404':
           description: Validation error – already exists
           content:
@@ -435,8 +428,8 @@ paths:
                   summary: Inappropriate recordName
                   value:
                     isValid: false
-                    message: "Record 'rec_name' already exists"
-                    code: 'INVALID_RECORD_NAME'
+                    message: Record 'rec_name' already exists
+                    code: INVALID_RECORD_NAME
         '500':
           description: Internal server error
           content:
@@ -448,9 +441,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
   /records/validateDelete:
     post:
       tags:
@@ -475,21 +467,8 @@ paths:
                   summary: Can delete
                   value:
                     isValid: true
-                    message: 'Record can be deleted'
-                    code: 'SUCCESS'
-        '401':
-          description: Unauthorized – invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/validateResponse'
-              examples:
-                invalid_credentials:
-                  summary: Invalid credentials
-                  value:
-                    isValid: false
-                    message: 'Invalid username or password'
-                    code: 'INVALID_CREDENTIALS'
+                    message: Record can be deleted
+                    code: SUCCESS
         '400':
           description: Validation failed – missing fields
           content:
@@ -501,8 +480,21 @@ paths:
                   summary: Missing credentials or recordName
                   value:
                     isValid: false
-                    message: 'Username, password, and recordName are required'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Username, password, and recordName are required
+                    code: MISSING_CREDENTIALS
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid credentials
+                  value:
+                    isValid: false
+                    message: Invalid username or password
+                    code: INVALID_CREDENTIALS
         '404':
           description: Validation error – doesn't exists
           content:
@@ -514,8 +506,8 @@ paths:
                   summary: Inappropriate recordName
                   value:
                     isValid: false
-                    message: "Record 'rec_name' doesn't exists"
-                    code: 'INVALID_RECORD_NAME'
+                    message: Record 'rec_name' doesn't exists
+                    code: INVALID_RECORD_NAME
         '500':
           description: Internal server error
           content:
@@ -527,9 +519,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
   /audit/{recordName}:
     get:
       tags:
@@ -604,8 +595,8 @@ paths:
                   summary: Invalid recordName
                   value:
                     isValid: false
-                    message: 'Invalid recordName provided'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Invalid recordName provided
+                    code: MISSING_CREDENTIALS
         '500':
           description: Internal server error
           content:
@@ -617,9 +608,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
   /users/validate:
     post:
       tags:
@@ -644,8 +634,8 @@ paths:
                   summary: Credentials valid
                   value:
                     isValid: true
-                    message: 'User credentials are valid'
-                    code: 'SUCCESS'
+                    message: User credentials are valid
+                    code: SUCCESS
         '400':
           description: Missing username or password
           content:
@@ -657,8 +647,8 @@ paths:
                   summary: Missing credentials
                   value:
                     isValid: false
-                    message: 'Username and password are required'
-                    code: 'MISSING_CREDENTIALS'
+                    message: Username and password are required
+                    code: MISSING_CREDENTIALS
         '401':
           description: Unauthorized – invalid credentials
           content:
@@ -670,8 +660,8 @@ paths:
                   summary: Invalid credentials
                   value:
                     isValid: false
-                    message: 'Invalid username or password'
-                    code: 'INVALID_CREDENTIALS'
+                    message: Invalid username or password
+                    code: INVALID_CREDENTIALS
         '500':
           description: Internal server error
           content:
@@ -683,9 +673,8 @@ paths:
                   summary: Unexpected server error
                   value:
                     isValid: false
-                    message: 'Internal server error, please try again later'
-                    code: 'INTERNAL_ERROR'
-
+                    message: Internal server error, please try again later
+                    code: INTERNAL_ERROR
 components:
   securitySchemes:
     token:
@@ -718,7 +707,6 @@ components:
             - INTERNAL_ERROR
             - INVALID_START_POSITION
             - INVALID_MAX_RECORDS
-
     auth-payload:
       type: object
       required:
@@ -729,7 +717,6 @@ components:
           type: string
         password:
           type: string
-
     auth-payload-with-record:
       type: object
       required:
@@ -743,7 +730,6 @@ components:
           type: string
         recordName:
           type: string
-
     extractable-record:
       type: object
       required:
@@ -769,7 +755,6 @@ components:
         remarks:
           type: string
           description: Remarks stored in extractable_records.remarks
-
     audit-log:
       type: object
       required:
@@ -789,13 +774,14 @@ components:
           type: string
         action:
           type: string
-          enum: [CREATE, DELETE]
+          enum:
+            - CREATE
+            - DELETE
         authorizedAt:
           type: string
         remarks:
           type: string
           description: Remarks stored in audit_log.remarks
-
     paginatedExtractableRecords:
       type: object
       description: Paginated response containing extractable records.
@@ -815,15 +801,14 @@ components:
         nextRecord:
           type: integer
           description: >
-            1-based index of the next record to request for pagination.
-            0 if there are no more records available.
+            1-based index of the next record to request for pagination. 0 if
+            there are no more records available.
           example: 51
         records:
           type: array
           description: List of extractable records for the current page.
           items:
             $ref: '#/components/schemas/extractable-record'
-
     paginatedAuditLogs:
       type: object
       description: Paginated response containing audit log entries for a specific record.
@@ -834,7 +819,9 @@ components:
       properties:
         numberOfRecords:
           type: integer
-          description: Total number of audit log entries available for the specified record.
+          description: >-
+            Total number of audit log entries available for the specified
+            record.
           example: 12
         numberOfRecordsReturned:
           type: integer
@@ -843,8 +830,8 @@ components:
         nextRecord:
           type: integer
           description: >
-            1-based index of the next audit log entry to request.
-            0 if there are no more audit logs available.
+            1-based index of the next audit log entry to request. 0 if there are
+            no more audit logs available.
           example: 6
         records:
           type: array
