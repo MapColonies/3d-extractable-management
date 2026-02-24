@@ -7,7 +7,10 @@ info:
     name: 3d-extractable-management repo link
     url: https://github.com/MapColonies/3d-extractable-management/
 
-security: []
+security:
+  - {}
+  - apiKey: []
+  - token: []
 
 tags:
   - name: records
@@ -675,6 +678,15 @@ paths:
                     code: 'INTERNAL_ERROR'
 
 components:
+  securitySchemes:
+    token:
+      type: apiKey
+      in: query
+      name: token
+    apiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
   schemas:
     validateResponse:
       type: object
