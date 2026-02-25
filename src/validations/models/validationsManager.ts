@@ -69,11 +69,17 @@ export class ValidationsManager {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {
             try {
-              const url = `${route.url}${REMOTE_VALIDATE_CREATE_PATH}${route.token !== undefined ? `?token=${encodeURIComponent(route.token)}` : ''}`;
-              const response = await axios.post<IValidateResponse>(url, {
-                ...payload,
-                multiSiteValidation: false,
-              });
+              const url = `${route.url}${REMOTE_VALIDATE_CREATE_PATH}`;
+              const tokenQuery = route.token !== undefined ? { params: { token: route.token } } : undefined;
+
+              const response = await axios.post<IValidateResponse>(
+                url,
+                {
+                  ...payload,
+                  multiSiteValidation: false,
+                },
+                tokenQuery
+              );
 
               return response.data.isValid;
             } catch {
