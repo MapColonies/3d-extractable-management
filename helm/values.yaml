@@ -114,6 +114,7 @@ env:
       pairs:
       - name: service1
         url: http://service1:8080
+        token: token-instance1
 
 resources:
   enabled: true

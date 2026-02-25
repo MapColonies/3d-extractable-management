@@ -42,3 +42,8 @@ export interface IPaginationResponse<T> {
   nextRecord: number;
   records: T[];
 }
+
+export interface IPublicExtractableRoute {
+  url: string;
+  token?: string;
+}
