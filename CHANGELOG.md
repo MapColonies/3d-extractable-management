@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/MapColonies/3d-extractable-management/compare/v1.0.1...v1.1.0) (2026-02-25)
+
+
+### Features
+
+* added token to external service route validation request (MAPCO-9992) ([#48](https://github.com/MapColonies/3d-extractable-management/issues/48)) ([9159365](https://github.com/MapColonies/3d-extractable-management/commit/9159365fe6aa3197bf2a3f874b60c6bee1a5ae8d))
+
+
+### Bug Fixes
+
+* fix build and push (MAPCO-9559) ([#49](https://github.com/MapColonies/3d-extractable-management/issues/49)) ([ffc25f5](https://github.com/MapColonies/3d-extractable-management/commit/ffc25f5b074142fa7b9fc5f7653d28cee924b75d))
+
 ## [1.0.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.0.0...v1.0.1) (2026-02-25)
 
 
