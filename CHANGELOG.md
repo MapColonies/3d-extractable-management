@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.0...v1.1.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* fix chart name (MAPCO-9559) ([#51](https://github.com/MapColonies/3d-extractable-management/issues/51)) ([e3a29e0](https://github.com/MapColonies/3d-extractable-management/commit/e3a29e078053e94d29fb42a163cd58abd6c40d9f))
+
 ## [1.1.0](https://github.com/MapColonies/3d-extractable-management/compare/v1.0.1...v1.1.0) (2026-02-25)
 
 
