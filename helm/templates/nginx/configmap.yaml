@@ -1,6 +1,6 @@
 {{- if .Values.nginx.enabled -}}
-{{- $chartName := include "extractable-management.name" . -}}
-{{- $environment := include "extractable-management.environment" . -}}
+{{- $chartName := include "3d-extractable-management.name" . -}}
+{{- $environment := include "3d-extractable-management.environment" . -}}
 {{- $releaseName := .Release.Name -}}
 apiVersion: v1
 kind: ConfigMap

@@ -45,7 +45,7 @@ fullnameOverride: ""
 
 configManagement:
   offlineMode: true
-  name: 'extractable-management'
+  name: '3d-extractable-management'
   version: 'latest'
   serverUrl: 'http://localhost:8080/api'
 
@@ -88,7 +88,7 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: extractable-management
+  repository: 3d-extractable-management
   tag:
 
 env:
@@ -178,7 +178,7 @@ nginx:
   extraVolumes:
     - name: nginx-config
       configMap:
-        name: "{{ .Release.Name }}-extractable-management-nginx-configmap"
+        name: "{{ .Release.Name }}-3d-extractable-management-nginx-configmap"
 
   extraVolumeMounts:
     - name: nginx-config
@@ -217,7 +217,7 @@ nginx:
 
 user:
   useExternal: false
-  secretName: extractable-management-users-secret
+  secretName: 3d-extractable-management-users-secret
   users:
     - username: username
       password: password
