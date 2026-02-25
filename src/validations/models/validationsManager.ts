@@ -13,7 +13,7 @@ import { CatalogCall } from '../../externalServices/catalog/catalogCall';
 export class ValidationsManager {
   private readonly logContext: LogContext;
   private readonly users: IAuthPayload[];
-  private readonly routesConfig: { url: string; token?: string }[];
+  private readonly routesConfig: { url: string }[];
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -25,7 +25,7 @@ export class ValidationsManager {
     this.users = this.loadUsers();
 
     try {
-      this.routesConfig = this.config.get<{ url: string; token?: string }[]>('externalServices.publicExtractableRoutes');
+      this.routesConfig = this.config.get<{ url: string }[]>('externalServices.publicExtractableRoutes');
     } catch (err) {
       this.logger.error({ msg: 'Failed to load routes from config', err, logContext: this.logContext });
       this.routesConfig = [];
@@ -69,8 +69,7 @@ export class ValidationsManager {
         const results = await Promise.all(
           this.routesConfig.map(async (route) => {
             try {
-              const url = `${route.url}${REMOTE_VALIDATE_CREATE_PATH}${route.token !== undefined ? `?token=${encodeURIComponent(route.token)}` : ''}`;
-              const response = await axios.post<IValidateResponse>(url, {
+              const response = await axios.post<IValidateResponse>(`${route.url}${REMOTE_VALIDATE_CREATE_PATH}`, {
                 ...payload,
                 multiSiteValidation: false,
               });
