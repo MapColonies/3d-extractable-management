@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.0.0...v1.0.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* add domain (MAPCO-9559) ([#46](https://github.com/MapColonies/3d-extractable-management/issues/46)) ([4370a55](https://github.com/MapColonies/3d-extractable-management/commit/4370a55c26f924e28160bf843af193ea8a4569a3))
+
 ## 1.0.0 (2026-02-24)
 
 
