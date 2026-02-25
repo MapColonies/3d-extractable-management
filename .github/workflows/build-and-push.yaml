@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 env:
-  DOMAIN: 3d-extractable-management
+  DOMAIN: 3d
 
 jobs:
   push-docker-image:
