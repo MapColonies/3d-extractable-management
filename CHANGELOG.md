@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.1...v1.1.2) (2026-02-26)
+
+
+### Bug Fixes
+
+* fix multisite validation when creating a new record ([#58](https://github.com/MapColonies/3d-extractable-management/issues/58)) ([18d1bce](https://github.com/MapColonies/3d-extractable-management/commit/18d1bce73776fdd731e40e197f56439a4823c567))
+* fix the audit creation in delete ([#57](https://github.com/MapColonies/3d-extractable-management/issues/57)) ([437dfcf](https://github.com/MapColonies/3d-extractable-management/commit/437dfcf48803ad2e716a7ff7967c9acf38690035))
+
 ## [1.1.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.0...v1.1.1) (2026-02-25)
 
 
