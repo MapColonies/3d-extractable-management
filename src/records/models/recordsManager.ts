@@ -83,7 +83,7 @@ export class RecordsManager {
     return savedRecord;
   }
 
-  public async deleteRecord(recordName: string, deleteRecordRemarks?: string): Promise<boolean> {
+  public async deleteRecord(recordName: string, username: string, authorizedBy: string, deleteRecordRemarks?: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.deleteRecord.name };
     this.logger.info({ msg: `starting to delete extractable record '${recordName}'`, recordName, logContext });
 
@@ -102,8 +102,8 @@ export class RecordsManager {
       await auditRepo.save(
         auditRepo.create({
           record_name: record.record_name,
-          username: record.username,
-          authorized_by: record.authorized_by,
+          username: username,
+          authorized_by: authorizedBy,
           action: IAuditAction.DELETE,
           remarks: deleteRecordRemarks,
         })

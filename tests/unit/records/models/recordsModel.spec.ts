@@ -211,14 +211,14 @@ describe('RecordsManager & ValidationsManager', () => {
       const deleteResult: DeleteResult = { raw: null, affected: 1 };
       mockExtractableDelete.mockResolvedValueOnce(deleteResult);
 
-      const result = await recordsManager.deleteRecord(dbRecord.record_name, 'delete remarks');
+      const result = await recordsManager.deleteRecord(dbRecord.record_name, 'test-user', 'test-authorizer', 'delete remarks');
       expect(result).toBe(true);
     });
 
     it('should return false when record does not exist', async () => {
       mockExtractableFindOne.mockResolvedValueOnce(null);
 
-      const result = await recordsManager.deleteRecord(invalidCredentials.recordName, 'delete remarks');
+      const result = await recordsManager.deleteRecord(invalidCredentials.recordName, 'test-user', 'test-authorizer', 'delete remarks');
       expect(result).toBe(false);
     });
   });
