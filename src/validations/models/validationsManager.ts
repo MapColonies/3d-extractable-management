@@ -91,7 +91,7 @@ export class ValidationsManager {
         const validOnOtherSites = results.every(Boolean);
         if (!validOnOtherSites) {
           this.logger.debug({ msg: 'record validation failed on another site', recordName: payload.recordName, logContext });
-          return { isValid: false, message: 'Record validation failed on another site', code: 'INTERNAL_ERROR' };
+          return { isValid: false, message: 'Record validation failed on another site', code: 'INVALID_RECORD_NAME_ANOTHER_SITE' };
         }
       } catch (err) {
         this.logger.warn({ msg: 'remote validation unavailable', recordName: payload.recordName, logContext, err });

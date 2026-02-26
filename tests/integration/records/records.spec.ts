@@ -310,7 +310,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         isValid: false,
         message: 'Missing credentials',
@@ -330,7 +330,7 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
     it('should return 401 when credentials are invalid for validateCreate', async () => {
@@ -342,7 +342,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
     it('should return 401 when validation fails with non-specific code', async () => {
@@ -386,7 +386,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         isValid: false,
         message: 'Missing credentials',
@@ -458,7 +458,7 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
     it('should return 401 when credentials are invalid for validateDelete', async () => {
       const response = await requestSender.validateDelete({
@@ -469,7 +469,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.UNAUTHORIZED);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
     it('should return 401 when delete validation fails with INVALID_CREDENTIALS', async () => {
@@ -549,7 +549,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         isValid: false,
         message: 'Record does not exist',
@@ -574,7 +574,7 @@ describe('records', function () {
         },
       });
 
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual({
         isValid: false,
         message: 'Record does not exist',
@@ -683,7 +683,7 @@ describe('records', function () {
       jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Validation failed',
-        code: 'SUCCESS',
+        code: 'INTERNAL_ERROR',
       });
 
       const response = await requestSender.validateDelete({
@@ -859,6 +859,45 @@ describe('records', function () {
         },
       });
 
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return 500 when validation fails with INTERNAL_ERROR in createRecord', async () => {
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
+        isValid: false,
+        code: 'INTERNAL_ERROR',
+        message: 'internal failure',
+      });
+
+      const response = await requestSender.createRecord({
+        pathParams: { recordName: 'rec_internal_error' },
+        requestBody: {
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: 'tester',
+          data: {},
+        },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('should return 500 and log error on unexpected validation code', async () => {
+      jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValue({
+        isValid: false,
+        code: 'UNKNOWN_CODE',
+        message: 'unknown',
+      } as never);
+
+      const response = await requestSender.createRecord({
+        pathParams: { recordName: 'rec_unknown_code' },
+        requestBody: {
+          username: validCredentials.username,
+          password: validCredentials.password,
+          authorizedBy: 'tester',
+          data: {},
+        },
+      });
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     });
   });

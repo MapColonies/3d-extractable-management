@@ -183,7 +183,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INTERNAL_ERROR');
+        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
       });
 
       it('should return false for remote site when fetch fails', async () => {
@@ -206,7 +206,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INTERNAL_ERROR');
+        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
       });
 
       it('should handle remote validation config retrieval failure (routes load failure at construction)', async () => {
@@ -247,7 +247,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INTERNAL_ERROR');
+        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
       });
     });
   });
