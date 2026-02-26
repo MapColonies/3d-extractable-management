@@ -3,7 +3,7 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
-import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS } from '@common/constants';
+import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS, IAuthPayloadWithRecord } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import type { IConfig, LogContext } from '@src/common/interfaces';
 import { RecordsManager } from '../models/recordsManager';
@@ -82,7 +82,13 @@ export class RecordsController {
 
     try {
       this.logger.info({ msg: 'Create record requested, starts validation', logContext });
-      const validation = await this.validationsManager.validateCreate({ recordName, username, password });
+      const validationPayload: IAuthPayloadWithRecord = {
+        recordName,
+        username,
+        password,
+        multiSiteValidation: true, // Indicate that this validation is for a create operation which may involve multiple sites
+      };
+      const validation = await this.validationsManager.validateCreate(validationPayload);
 
       if (!validation.isValid) {
         const status = this.getStatusForValidationRequest(validation);
