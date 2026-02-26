@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.2...v1.1.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* change validation return context and changed status to not found on other side (MAPCO-10006) ([#60](https://github.com/MapColonies/3d-extractable-management/issues/60)) ([522faac](https://github.com/MapColonies/3d-extractable-management/commit/522faac6e8fa19a05fdfafdb38982045faaf089a))
+
 ## [1.1.2](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.1...v1.1.2) (2026-02-26)
 
 
