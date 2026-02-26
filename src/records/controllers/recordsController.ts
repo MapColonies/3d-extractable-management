@@ -27,7 +27,7 @@ export class RecordsController {
       labelNames: ['status'],
       registers: [this.metricsRegistry],
     });
-    this.logContext = { fileName: __filename, class: RecordsManager.name };
+    this.logContext = { fileName: __filename, class: RecordsController.name };
     this.maxConfiguredBatchSize = this.config.get<number>('pagination.maxConfiguredBatchSize');
   }
 
@@ -91,7 +91,7 @@ export class RecordsController {
       const validation = await this.validationsManager.validateCreate(validationPayload);
 
       if (!validation.isValid) {
-        const status = this.getStatusFromValidation(validation);
+        const status = this.getStatusForValidationRequest(validation);
         this.requestsCounter.inc({ status: String(status) });
         return res.status(status).json(validation);
       }
@@ -124,7 +124,7 @@ export class RecordsController {
       const validation = await this.validationsManager.validateDelete({ recordName, username, password });
 
       if (!validation.isValid) {
-        const status = this.getStatusFromValidation(validation);
+        const status = this.getStatusForValidationRequest(validation);
         this.requestsCounter.inc({ status: String(status) });
         return res.status(status).json(validation);
       }
@@ -179,6 +179,13 @@ export class RecordsController {
   };
 
   private getStatusFromValidation(result: { isValid: boolean; code?: string }): number {
+    if (result.code === 'INTERNAL_ERROR') {
+      return httpStatus.INTERNAL_SERVER_ERROR;
+    }
+    return httpStatus.OK;
+  }
+
+  private getStatusForValidationRequest(result: { isValid: boolean; code?: string }): number {
     if (result.isValid) {
       return httpStatus.OK;
     }
@@ -188,6 +195,7 @@ export class RecordsController {
       case 'MISSING_CREDENTIALS':
         return httpStatus.BAD_REQUEST;
       case 'INVALID_RECORD_NAME':
+      case 'INVALID_RECORD_NAME_ANOTHER_SITE':
         return httpStatus.NOT_FOUND;
       case 'INVALID_CREDENTIALS':
         return httpStatus.UNAUTHORIZED;

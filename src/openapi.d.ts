@@ -118,6 +118,7 @@ export type components = {
         | 'MISSING_CREDENTIALS'
         | 'INVALID_CREDENTIALS'
         | 'INVALID_RECORD_NAME'
+        | 'INVALID_RECORD_NAME_ANOTHER_SITE'
         | 'INTERNAL_ERROR'
         | 'INVALID_START_POSITION'
         | 'INVALID_MAX_RECORDS';
