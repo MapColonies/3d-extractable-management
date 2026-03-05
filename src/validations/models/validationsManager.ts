@@ -8,6 +8,7 @@ import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse, REMO
 import { UsersSchema } from '@src/users/utils/userSchema';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { CatalogCall } from '../../externalServices/catalog/catalogCall';
+import e from 'express';
 
 @injectable()
 export class ValidationsManager {
@@ -30,6 +31,9 @@ export class ValidationsManager {
       this.logger.error({ msg: 'Failed to load routes from config', err, logContext: this.logContext });
       this.routesConfig = [];
     }
+    this.routesConfig.map((route) => {
+      this.logger.info({ msg: 'Loaded route config', routeUrl: route.url, logContext: this.logContext });
+    });
   }
 
   public async validateCreate(payload: IAuthPayloadWithRecord): Promise<IValidateResponse> {
@@ -64,14 +68,16 @@ export class ValidationsManager {
       return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
     }
 
+    this.logger.debug({ msg: `multiSiteValidation ${payload.multiSiteValidation}`, logContext });
     if (payload.multiSiteValidation === true) {
       try {
         const results = await Promise.all(
           this.routesConfig.map(async (route: IPublicExtractableRoute) => {
             try {
               const url = `${route.url}${REMOTE_VALIDATE_CREATE_PATH}`;
-              const tokenQuery = route.token !== undefined ? { params: { token: route.token } } : undefined;
 
+              const tokenQuery = route.token !== undefined ? { params: { token: route.token } } : undefined;
+              this.logger.debug({ msg: `Searching in url ${url}`, tokenQuery, logContext });
               const response = await axios.post<IValidateResponse>(
                 url,
                 {
@@ -80,9 +86,10 @@ export class ValidationsManager {
                 },
                 tokenQuery
               );
-
+              this.logger.debug({ msg: `Response: ${response.data.isValid} `, response: response.data, logContext });
               return response.data.isValid;
-            } catch {
+            } catch (err) {
+              this.logger.warn({ msg: 'Failed to validate record on remote site', recordName: payload.recordName, logContext, err });
               return false;
             }
           })

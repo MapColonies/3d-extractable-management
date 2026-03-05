@@ -31,6 +31,7 @@ export class CatalogCall {
 
     try {
       const payload: IFindPublishedRecordsPayload = { productName: recordName };
+      this.logger.debug({ msg: `Searching in catalog ${this.catalog}/metadata/find`, payload, logContext });
       const response = await axios.post<Record3D[]>(`${this.catalog}/metadata/find`, payload);
 
       if (response.status !== StatusCodes.OK.valueOf()) {
