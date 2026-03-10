@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.5](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.4...v1.1.5) (2026-03-10)
+
+
+### Bug Fixes
+
+* added fixed migrations.Dockerfile (MAPCO-10130) ([#70](https://github.com/MapColonies/3d-extractable-management/issues/70)) ([9171ba8](https://github.com/MapColonies/3d-extractable-management/commit/9171ba815fd741135f09a20b5e7f8a0395c7d4c2))
+* fix NODE_EXTRA_CA_CERTS ([#67](https://github.com/MapColonies/3d-extractable-management/issues/67)) ([95c16b8](https://github.com/MapColonies/3d-extractable-management/commit/95c16b88124fc8d5a8673db03a06fe3e775e42e0))
+
 ## [1.1.4](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.3...v1.1.4) (2026-03-05)
 
 
