@@ -18,6 +18,23 @@ export type paths = {
     patch?: never;
     trace?: never;
   };
+  '/records/byCoordinate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get extractable records by geographic coordinate */
+    get: operations['getRecordsByCoordinate'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/records/{recordName}': {
     parameters: {
       query?: never;
@@ -116,6 +133,7 @@ export type components = {
       code:
         | 'SUCCESS'
         | 'MISSING_CREDENTIALS'
+        | 'MISSING_COORDINATES'
         | 'INVALID_CREDENTIALS'
         | 'INVALID_RECORD_NAME'
         | 'INVALID_RECORD_NAME_ANOTHER_SITE'
@@ -231,6 +249,51 @@ export interface operations {
         };
       };
       /** @description Bad request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['validateResponse'];
+        };
+      };
+    };
+  };
+  getRecordsByCoordinate: {
+    parameters: {
+      query: {
+        /** @description Longitude of the coordinate range between -180 to 180 */
+        longitude: number;
+        /** @description Latitude of the coordinate range between -90 and 90 */
+        latitude: number;
+        /** @description Distance in meters from the coordinate to include records */
+        distance?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of extractable records near the specified coordinate */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['extractable-record'][];
+        };
+      };
+      /** @description Bad request – invalid query or parameters */
       400: {
         headers: {
           [name: string]: unknown;

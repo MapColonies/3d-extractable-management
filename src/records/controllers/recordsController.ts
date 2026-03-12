@@ -56,6 +56,32 @@ export class RecordsController {
     }
   };
 
+  public getRecordsByCoordinate: TypedRequestHandlers['GET /records/byCoordinate'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.getRecordsByCoordinate.name };
+
+    if (!req.query.longitude || !req.query.latitude) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ isValid: false, message: 'Missing longitude or latitude query parameters', code: 'MISSING_COORDINATES' });
+    }
+    const longitude = Number(req.query.longitude);
+    const latitude = Number(req.query.latitude);
+    const distance = req.query.distance !== undefined ? Number(req.query.distance) : 1;
+
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+      this.logger.warn({ msg: 'Invalid longitude or latitude provided', longitude, latitude, logContext });
+      return res.status(httpStatus.BAD_REQUEST).json({ isValid: false, message: 'Invalid longitude or latitude', code: 'MISSING_CREDENTIALS' });
+    }
+
+    try {
+      const records = await this.manager.getRecordsByCoordinate(longitude, latitude, distance);
+      return res.status(httpStatus.OK).json(records);
+    } catch (err) {
+      this.logger.error({ msg: 'Unexpected error getting records by coordinate', err, logContext });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
+    }
+  };
+
   public getRecord: TypedRequestHandlers['GET /records/{recordName}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getRecord.name };
     const { recordName } = req.params;
