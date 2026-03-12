@@ -8,7 +8,6 @@ import { SERVICES, IAuthPayloadWithRecord, IAuthPayload, IValidateResponse, REMO
 import { UsersSchema } from '@src/users/utils/userSchema';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
 import { CatalogCall } from '../../externalServices/catalog/catalogCall';
-import e from 'express';
 
 @injectable()
 export class ValidationsManager {

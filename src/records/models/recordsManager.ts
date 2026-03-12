@@ -115,6 +115,18 @@ export class RecordsManager {
     return result;
   }
 
+  public async getRecordsByCoordinate(longitude: number, latitude: number, distanceMeters?: number): Promise<IExtractableRecord[]> {
+    const logContext = { ...this.logContext, function: this.getRecordsByCoordinate.name };
+    this.logger.debug({ msg: 'getting records by coordinate', longitude, latitude, distanceMeters, logContext });
+
+    // TOOD: Create BBOX from coordinate and distance
+    // TOOD: check vs csw catalog with query by BBOX
+    // TOOD: get all productNames and query vs extractableRepo
+
+    const records = await this.extractableRepo.find({ order: { authorized_at: 'DESC' } });
+    return records.map(mapExtractableRecordToCamelCase);
+  }
+
   private getTransactionalRepos(manager: EntityManager): {
     extractableRepo: Repository<ExtractableRecord>;
     auditRepo: Repository<AuditLog>;

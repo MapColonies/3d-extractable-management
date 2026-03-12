@@ -105,6 +105,60 @@ paths:
                     isValid: false
                     message: Internal server error, please try again later
                     code: INTERNAL_ERROR
+  /records/byCoordinate:
+    get:
+      tags:
+        - records
+      summary: Get extractable records by geographic coordinate
+      operationId: getRecordsByCoordinate
+      parameters:
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            minimum: -180
+            maximum: 180
+            type: number
+            format: double
+          description: Longitude of the coordinate range between -180 to 180
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+            format: double
+          description: Latitude of the coordinate range between -90 and 90
+        - name: distance
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            default: 0
+          description: Distance in meters from the coordinate to include records
+      responses:
+        '200':
+          description: List of extractable records near the specified coordinate
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/extractable-record'
+        '400':
+          description: Bad request – invalid query or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validateResponse'
   /records/{recordName}:
     get:
       tags:
@@ -702,6 +756,7 @@ components:
           enum:
             - SUCCESS
             - MISSING_CREDENTIALS
+            - MISSING_COORDINATES
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME
             - INVALID_RECORD_NAME_ANOTHER_SITE
