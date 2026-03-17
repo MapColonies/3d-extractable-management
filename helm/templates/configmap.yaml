@@ -28,6 +28,8 @@ data:
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
   {{- end }}
   CATALOG_URL: {{ .Values.env.externalServices.catalog | quote }}
+  CSW_URL: {{ .Values.env.externalServices.csw.url | quote }}
+  CSW_TOKEN: {{ .Values.env.externalServices.csw.token | quote }}
   {{- if .Values.env.externalServices.publicExtractableRoutes.enabled }}
   {{- with .Values.env.externalServices.publicExtractableRoutes }}
   EXTRACTABLE_ROUTES: {{ .pairs | toJson | quote }}

@@ -50,6 +50,10 @@
   },
   "externalServices": {
     "catalog": "CATALOG_URL",
+    "csw": {
+      "url": "CSW_URL",
+      "token": "CSW_TOKEN"
+    },
     "publicExtractableRoutes": {
       "__name": "EXTRACTABLE_ROUTES",
       "__format": "json"

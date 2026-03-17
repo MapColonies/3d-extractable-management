@@ -35,6 +35,10 @@
   },
   "externalServices": {
     "catalog": "http://127.0.0.1:8080",
+    "csw": {
+      "url": "http://127.0.0.1:8080/csw",
+      "token": ""
+    },
     "publicExtractableRoutes": []
   },
   "users": [{ "username": "username", "password": "password" }],

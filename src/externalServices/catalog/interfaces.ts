@@ -12,3 +12,15 @@ export interface Record3D extends Layer3DMetadata {
 export interface IFindPublishedRecordsPayload {
   productName: string;
 }
+
+export interface CswRecord {
+  productName: string;
+  productId: string;
+}
+
+export interface CSWResponse {
+  nextRecord: number;
+  recordsMatched: number;
+  recordsReturned: number;
+  records: CswRecord[];
+}
