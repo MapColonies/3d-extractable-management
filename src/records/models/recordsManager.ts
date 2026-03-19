@@ -1,8 +1,8 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { Repository, EntityManager } from 'typeorm';
-import { Feature, Polygon } from 'geojson';
-import { bbox, bboxPolygon, circle, isNumber, point } from '@turf/turf';
+import { BBox } from 'geojson';
+import { bbox, circle, isNumber, point } from '@turf/turf';
 import { StatusCodes } from 'http-status-codes';
 import type { Tracer } from '@opentelemetry/api';
 import { withSpanAsyncV4 } from '@map-colonies/telemetry';
@@ -141,21 +141,25 @@ export class RecordsManager {
   public async getRecordsByCoordinate(longitude: number, latitude: number, distanceMeters: number = 1): Promise<IExtractableRecord[]> {
     const logContext = { ...this.logContext, function: this.getRecordsByCoordinate.name };
     this.logger.debug({ msg: 'getting records by coordinate', longitude, latitude, distanceMeters, logContext });
+
     this.validatePointAndRadius(longitude, latitude, distanceMeters);
-    const polygon = this.getPolygonByPointAndRadius([longitude, latitude], distanceMeters);
-    const catalogRecords = await this.cswClient.getAllRecords(polygon.bbox!, 'ASC', 'mc:productName');
+
+    const bbox = this.getPolygonByPointAndRadius([longitude, latitude], distanceMeters);
+    const catalogRecords = await this.cswClient.getAllRecords(bbox, 'ASC', 'mc:productName');
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const recordsFromExtractable = await this.extractableRepo.find({ order: { record_name: 'ASC' } });
     const recordsUnion = recordsFromExtractable.filter((extractableRecord) => {
       const record = catalogRecords.find((recordFromcatalog) => recordFromcatalog.productName === extractableRecord.record_name);
       return !!record;
     });
-    return recordsUnion.map(mapExtractableRecordToCamelCase);
+    const response = recordsUnion.map(mapExtractableRecordToCamelCase);
+    return response;
   }
 
   private validatePointAndRadius(longitude: number, latitude: number, distanceMeters: number): void {
     if (!isNumber(longitude) || !isNumber(latitude)) {
-      throw new AppError('Invalid coordinates', StatusCodes.BAD_REQUEST, 'Invalid Coordinates', false);
+      throw new AppError('Invalid coordinates', StatusCodes.BAD_REQUEST, 'Invalid coordinates', false);
     }
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
@@ -167,12 +171,11 @@ export class RecordsManager {
     }
   }
 
-  private getPolygonByPointAndRadius(coordinates: [number, number], radiusInMeters = 1): Feature<Polygon> {
+  private getPolygonByPointAndRadius(coordinates: [number, number], radiusInMeters = 1): BBox {
     const tPoint = point(coordinates);
     const circ = circle(tPoint, radiusInMeters, { units: 'meters' });
     const bb = bbox(circ) as [number, number, number, number];
-    const poly = bboxPolygon(bb);
-    return poly;
+    return bb;
   }
 
   private getTransactionalRepos(manager: EntityManager): {

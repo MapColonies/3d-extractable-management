@@ -136,8 +136,8 @@ paths:
           schema:
             type: number
             format: double
-            default: 0
-          description: Distance in meters from the coordinate to include records
+            default: 1
+          description: Distance in meters from the coordinate to include records range is >= 1
       responses:
         '200':
           description: List of extractable records near the specified coordinate
@@ -757,6 +757,7 @@ components:
             - SUCCESS
             - MISSING_CREDENTIALS
             - MISSING_COORDINATES
+            - INVALID_COORDINATES_OR_DISTANCE
             - INVALID_CREDENTIALS
             - INVALID_RECORD_NAME
             - INVALID_RECORD_NAME_ANOTHER_SITE

@@ -4,14 +4,12 @@ import { inject, injectable } from 'tsyringe';
 import type { Tracer } from '@opentelemetry/api';
 import { withSpanAsyncV4 } from '@map-colonies/telemetry';
 import type { BBox } from 'geojson';
-
 import { XMLParser } from 'fast-xml-parser';
 import { StatusCodes } from 'http-status-codes';
 import type { IConfig, LogContext } from '../../common/interfaces';
 import { AppError } from '../../utils/appError';
 import { SERVICES } from '../../common/constants';
-
-import type { CSWResponse, CswRecord } from './interfaces';
+import type { CSWResponse, CSWRecord } from './interfaces';
 import { options, namespaceString, DEFAULT_MAX_RECORDS, DEFAULT_START_POSITION } from './cswHelpers';
 
 @injectable()
@@ -37,10 +35,10 @@ export class CswClient {
     sortColumn: string,
     startPosition = DEFAULT_START_POSITION,
     maxRecords = DEFAULT_MAX_RECORDS
-  ): Promise<CswRecord[]> {
+  ): Promise<CSWRecord[]> {
     const logContext = { ...this.logContext, function: this.getAllRecords.name };
 
-    const aggregated: CswRecord[] = [];
+    const aggregated: CSWRecord[] = [];
     let currentStart = startPosition;
 
     try {
@@ -57,7 +55,7 @@ export class CswClient {
   }
 
   @withSpanAsyncV4
-  public async getRecords(
+  private async getRecords(
     bbox: BBox,
     sortOrder: 'DESC' | 'ASC',
     sortColumn: string,
@@ -76,20 +74,18 @@ export class CswClient {
       const jsonObj = parser.parse(res.data as string);
       const result = jsonObj['csw:GetRecordsResponse']['csw:SearchResults'];
       if (result != undefined && Number(result.numberOfRecordsMatched) === 0) {
-        return { nextRecord: 0, recordsMatched: 0, recordsReturned: 0, records: [] };
+        return { nextRecord: 0, records: [] };
       }
       const records =
         result['mc:MC3DRecord'] === undefined
           ? []
           : // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-            result['mc:MC3DRecord'].map((record: any) => ({
+            result['mc:MC3DRecord'].map((record: { 'mc:productName': string; 'mc:productId': string }) => ({
               productName: record['mc:productName'],
               productId: record['mc:productId'],
             }));
       return {
         nextRecord: Number(result['nextRecord']),
-        recordsMatched: Number(result['numberOfRecordsMatched']),
-        recordsReturned: Number(result['numberOfRecordsReturned']),
         records,
       };
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

@@ -1,4 +1,5 @@
 import { Layer3DMetadata } from '@map-colonies/mc-model-types';
+import { IPaginationResponse } from '@src/common/interfaces';
 
 export interface MetadataParams {
   identifier: string;
@@ -13,14 +14,9 @@ export interface IFindPublishedRecordsPayload {
   productName: string;
 }
 
-export interface CswRecord {
+export interface CSWRecord {
   productName: string;
   productId: string;
 }
 
-export interface CSWResponse {
-  nextRecord: number;
-  recordsMatched: number;
-  recordsReturned: number;
-  records: CswRecord[];
-}
+export type CSWResponse = Omit<IPaginationResponse<CSWRecord>, 'numberOfRecords' | 'numberOfRecordsReturned'>;

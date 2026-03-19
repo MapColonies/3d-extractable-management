@@ -1,11 +1,12 @@
 import type { Logger } from '@map-colonies/js-logger';
-import httpStatus from 'http-status-codes';
+import httpStatus, { StatusCodes } from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS, IAuthPayloadWithRecord } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import type { IConfig, LogContext } from '@src/common/interfaces';
+import { AppError } from '@src/utils/appError';
 import { RecordsManager } from '../models/recordsManager';
 
 @injectable()
@@ -77,6 +78,10 @@ export class RecordsController {
       const records = await this.manager.getRecordsByCoordinate(longitude, latitude, distance);
       return res.status(httpStatus.OK).json(records);
     } catch (err) {
+      const error: AppError = err as AppError;
+      if (error.status === StatusCodes.BAD_REQUEST) {
+        return res.status(httpStatus.BAD_REQUEST).json({ isValid: false, message: error.message, code: 'INVALID_COORDINATES_OR_DISTANCE' });
+      }
       this.logger.error({ msg: 'Unexpected error getting records by coordinate', err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
     }

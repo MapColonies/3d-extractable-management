@@ -134,6 +134,7 @@ export type components = {
         | 'SUCCESS'
         | 'MISSING_CREDENTIALS'
         | 'MISSING_COORDINATES'
+        | 'INVALID_COORDINATES_OR_DISTANCE'
         | 'INVALID_CREDENTIALS'
         | 'INVALID_RECORD_NAME'
         | 'INVALID_RECORD_NAME_ANOTHER_SITE'
@@ -275,7 +276,7 @@ export interface operations {
         longitude: number;
         /** @description Latitude of the coordinate range between -90 and 90 */
         latitude: number;
-        /** @description Distance in meters from the coordinate to include records */
+        /** @description Distance in meters from the coordinate to include records range is >= 1 */
         distance?: number;
       };
       header?: never;

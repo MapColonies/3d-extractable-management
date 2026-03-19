@@ -2,8 +2,5 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.eol": "\n",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "files.insertFinalNewline": true,
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  }
+  "files.insertFinalNewline": true
 }
