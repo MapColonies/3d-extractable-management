@@ -108,13 +108,13 @@ export class CswClient {
                 <ogc:PropertyName>mc:productType</ogc:PropertyName>
                 <ogc:Literal>3DPhotoRealistic</ogc:Literal>
               </ogc:PropertyIsEqualTo>
-              <ogc:Contains>
+              <ogc:Intersects>
                 <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
                 <gml:Envelope>
                   <gml:lowerCorner>${bbox[1]} ${bbox[0]}</gml:lowerCorner>
                   <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
                 </gml:Envelope>
-              </ogc:Contains>
+              </ogc:Intersects>
             </ogc:And>
           </ogc:Filter>
         </csw:Constraint>
