@@ -109,6 +109,9 @@ env:
     maxConfiguredBatchSize: 10000
   externalServices:
     catalog: 'http://ingestion-3d-catalog'
+    csw:
+      url: 'http://serving-3d-pycsw-nginx-service/csw'
+      token: ''
     publicExtractableRoutes:
       enabled: false
       pairs:

@@ -9,6 +9,7 @@ const recordsRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   router.get('/', controller.getRecords);
   router.post('/validateCreate', controller.validateCreate);
   router.post('/validateDelete', controller.validateDelete);
+  router.get('/byCoordinate', controller.getRecordsByCoordinate);
   router.get('/:recordName', controller.getRecord);
   router.post('/:recordName', controller.createRecord);
   router.delete('/:recordName', controller.deleteRecord);

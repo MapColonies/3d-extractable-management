@@ -1,11 +1,12 @@
 import type { Logger } from '@map-colonies/js-logger';
-import httpStatus from 'http-status-codes';
+import httpStatus, { StatusCodes } from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES, DEFAULT_START_POSITION, DEFAULT_MAX_RECORDS, IAuthPayloadWithRecord } from '@common/constants';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import type { IConfig, LogContext } from '@src/common/interfaces';
+import { AppError } from '@src/utils/appError';
 import { RecordsManager } from '../models/recordsManager';
 
 @injectable()
@@ -52,6 +53,36 @@ export class RecordsController {
       return res.status(httpStatus.OK).json(result);
     } catch (err) {
       this.logger.error({ msg: 'Unexpected error getting records', err, logContext });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
+    }
+  };
+
+  public getRecordsByCoordinate: TypedRequestHandlers['GET /records/byCoordinate'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.getRecordsByCoordinate.name };
+
+    if (!req.query.longitude || !req.query.latitude) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ isValid: false, message: 'Missing longitude or latitude query parameters', code: 'MISSING_COORDINATES' });
+    }
+    const longitude = Number(req.query.longitude);
+    const latitude = Number(req.query.latitude);
+    const distance = req.query.distance !== undefined ? Number(req.query.distance) : 1;
+
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+      this.logger.warn({ msg: 'Invalid longitude or latitude provided', longitude, latitude, logContext });
+      return res.status(httpStatus.BAD_REQUEST).json({ isValid: false, message: 'Invalid longitude or latitude', code: 'MISSING_CREDENTIALS' });
+    }
+
+    try {
+      const records = await this.manager.getRecordsByCoordinate(longitude, latitude, distance);
+      return res.status(httpStatus.OK).json(records);
+    } catch (err) {
+      const error: AppError = err as AppError;
+      if (error.status === StatusCodes.BAD_REQUEST) {
+        return res.status(httpStatus.BAD_REQUEST).json({ isValid: false, message: error.message, code: 'INVALID_COORDINATES_OR_DISTANCE' });
+      }
+      this.logger.error({ msg: 'Unexpected error getting records by coordinate', err, logContext });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ isValid: false, message: 'Failed to get records', code: 'INTERNAL_ERROR' });
     }
   };
