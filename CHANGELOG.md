@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.0...v1.2.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* change intersect to bbox (MAPCO-10202) ([#73](https://github.com/MapColonies/3d-extractable-management/issues/73)) ([9129cd6](https://github.com/MapColonies/3d-extractable-management/commit/9129cd6ea31f43e9278ddfb8f4f56774c9fca735))
+
 ## [1.2.0](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.4...v1.2.0) (2026-03-24)
 
 
