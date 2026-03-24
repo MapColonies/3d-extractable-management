@@ -91,7 +91,7 @@ export class CswClient {
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
     } catch (err) {
       this.logger.error({ msg: 'request to CSW catalog has failed', logContext, err });
-      throw new AppError('CSW catalog throw and error', StatusCodes.INTERNAL_SERVER_ERROR, 'CSW_CATALOG_ERROR', false);
+      throw new AppError('CSW catalog threw an error', StatusCodes.INTERNAL_SERVER_ERROR, 'CSW_CATALOG_ERROR', false);
     }
   }
 
@@ -108,20 +108,20 @@ export class CswClient {
                 <ogc:PropertyName>mc:productType</ogc:PropertyName>
                 <ogc:Literal>3DPhotoRealistic</ogc:Literal>
               </ogc:PropertyIsEqualTo>
-              <ogc:Intersects>
+              <ogc:BBOX>
                 <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
-                <gml:Envelope>
+                <gml:Envelope srsName="urn:ogc:def:crs:EPSG::4326">
                   <gml:lowerCorner>${bbox[1]} ${bbox[0]}</gml:lowerCorner>
                   <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
                 </gml:Envelope>
-              </ogc:Intersects>
+              </ogc:BBOX>
             </ogc:And>
           </ogc:Filter>
         </csw:Constraint>
         <ogc:SortBy>
           <ogc:SortProperty>
-              <ogc:PropertyName>${sortColumn}</ogc:PropertyName>
-              <ogc:SortOrder>${sortOrder}</ogc:SortOrder>
+            <ogc:PropertyName>${sortColumn}</ogc:PropertyName>
+            <ogc:SortOrder>${sortOrder}</ogc:SortOrder>
           </ogc:SortProperty>
         </ogc:SortBy>
       </csw:Query>
