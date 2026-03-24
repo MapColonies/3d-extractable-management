@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.4...v1.2.0) (2026-03-24)
+
+
+### Features
+
+* add get records by coordinate API (MAPCO-10202) ([#72](https://github.com/MapColonies/3d-extractable-management/issues/72)) ([d67bad1](https://github.com/MapColonies/3d-extractable-management/commit/d67bad1ab704ecb06a998bd1c9a56a6f519e9695))
+
+
+### Bug Fixes
+
+* added fixed migrations.Dockerfile (MAPCO-10130) ([#70](https://github.com/MapColonies/3d-extractable-management/issues/70)) ([9171ba8](https://github.com/MapColonies/3d-extractable-management/commit/9171ba815fd741135f09a20b5e7f8a0395c7d4c2))
+* fix NODE_EXTRA_CA_CERTS ([#67](https://github.com/MapColonies/3d-extractable-management/issues/67)) ([95c16b8](https://github.com/MapColonies/3d-extractable-management/commit/95c16b88124fc8d5a8673db03a06fe3e775e42e0))
+
 ## [1.1.4](https://github.com/MapColonies/3d-extractable-management/compare/v1.1.3...v1.1.4) (2026-03-05)
 
 
