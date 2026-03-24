@@ -76,17 +76,22 @@ export class CswClient {
       if (result != undefined && Number(result.numberOfRecordsMatched) === 0) {
         return { nextRecord: 0, records: [] };
       }
-      const records =
-        result['mc:MC3DRecord'] === undefined
-          ? []
-          : // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-            result['mc:MC3DRecord'].map((record: { 'mc:productName': string; 'mc:productId': string }) => ({
-              productName: record['mc:productName'],
-              productId: record['mc:productId'],
-            }));
+      let records: { 'mc:productName': string; 'mc:productId': string }[];
+      if (result['mc:MC3DRecord'] !== undefined && Array.isArray(result['mc:MC3DRecord'])) {
+        records = result['mc:MC3DRecord'];
+      } else if (result['mc:MC3DRecord'] !== undefined) {
+        records = [result['mc:MC3DRecord']];
+      } else {
+        records = [];
+      }
+
+      const cswRecords: CSWRecord[] = records.map((record: { 'mc:productName': string; 'mc:productId': string }) => ({
+        productName: record['mc:productName'],
+        productId: record['mc:productId'],
+      }));
       return {
         nextRecord: Number(result['nextRecord']),
-        records,
+        records: cswRecords,
       };
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
     } catch (err) {
@@ -110,7 +115,7 @@ export class CswClient {
               </ogc:PropertyIsEqualTo>
               <ogc:BBOX>
                 <ogc:PropertyName>ows:BoundingBox</ogc:PropertyName>
-                <gml:Envelope srsName="urn:ogc:def:crs:EPSG::4326">
+                <gml:Envelope xmlns:gml="http://www.opengis.net/gml">
                   <gml:lowerCorner>${bbox[1]} ${bbox[0]}</gml:lowerCorner>
                   <gml:upperCorner>${bbox[3]} ${bbox[2]}</gml:upperCorner>
                 </gml:Envelope>
