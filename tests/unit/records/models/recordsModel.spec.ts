@@ -2,6 +2,7 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
 import { Repository, DeleteResult, EntityManager } from 'typeorm';
+import { trace } from '@opentelemetry/api';
 import { RecordsManager } from '@src/records/models/recordsManager';
 import { ValidationsManager } from '@src/validations/models/validationsManager';
 import type { IConfig } from '@src/common/interfaces';
@@ -21,6 +22,7 @@ import {
 
 import { mapExtractableRecordToCamelCase } from '@src/utils/converter';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
+import { CswClient } from '@src/externalServices/catalog/cswClient';
 
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
@@ -67,13 +69,15 @@ describe('RecordsManager & ValidationsManager', () => {
       getRepository: fakeEntityManager.getRepository,
     };
 
+    const cswClient = new CswClient(mockConfig as unknown as IConfig, jsLogger({ enabled: false }), trace.getTracer('testTracer'));
+
     validationsManager = new ValidationsManager(
       jsLogger({ enabled: false }),
       mockConfig as unknown as IConfig,
       extractableRepo,
       mockCatalogCall as unknown as CatalogCall
     );
-    recordsManager = new RecordsManager(jsLogger({ enabled: false }), extractableRepo);
+    recordsManager = new RecordsManager(jsLogger({ enabled: false }), trace.getTracer('testTracer'), extractableRepo, cswClient);
   });
 
   afterEach(() => {
