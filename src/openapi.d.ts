@@ -276,7 +276,7 @@ export interface operations {
         longitude: number;
         /** @description Latitude of the coordinate range between -90 and 90 */
         latitude: number;
-        /** @description Distance in meters from the coordinate to include records range is >= 1 */
+        /** @description Distance in meters from the coordinate to include records range is >= 1 and <= 6371000(earth's radius) */
         distance?: number;
       };
       header?: never;
