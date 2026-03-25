@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.1...v1.2.2) (2026-03-25)
+
+
+### Bug Fixes
+
+* limit the max distance (MAPCO-10313) ([#75](https://github.com/MapColonies/3d-extractable-management/issues/75)) ([ac78ece](https://github.com/MapColonies/3d-extractable-management/commit/ac78ece2090876a5d700d0c5d677ab83dfec60b4))
+
 ## [1.2.1](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.0...v1.2.1) (2026-03-24)
 
 
