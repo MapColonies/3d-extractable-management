@@ -6,7 +6,7 @@ import { bbox, circle, isNumber, point } from '@turf/turf';
 import { StatusCodes } from 'http-status-codes';
 import type { Tracer } from '@opentelemetry/api';
 import { withSpanAsyncV4 } from '@map-colonies/telemetry';
-import { SERVICES, IExtractableRecord } from '@common/constants';
+import { SERVICES, IExtractableRecord, MAX_DISTANCE } from '@common/constants';
 import { LogContext, IAuditAction, IPaginationResponse } from '@common/interfaces';
 import { AuditLog } from '@src/DAL/entities/auditLog.entity';
 import { ExtractableRecord } from '@src/DAL/entities/extractableRecord.entity';
@@ -143,6 +143,7 @@ export class RecordsManager {
     this.logger.debug({ msg: 'getting records by coordinate', longitude, latitude, distanceMeters, logContext });
 
     this.validatePointAndRadius(longitude, latitude, distanceMeters);
+    distanceMeters = Math.min(distanceMeters, MAX_DISTANCE);
 
     const bbox = this.getPolygonByPointAndRadius([longitude, latitude], distanceMeters);
     const catalogRecords = await this.cswClient.getAllRecords(bbox, 'ASC', 'mc:productName');

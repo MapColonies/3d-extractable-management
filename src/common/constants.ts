@@ -40,3 +40,5 @@ export const REMOTE_VALIDATE_CREATE_PATH = '/records/validateCreate';
 export const DEFAULT_MAX_RECORDS = 50;
 
 export const DEFAULT_START_POSITION = 1;
+
+export const MAX_DISTANCE = 6371000;
