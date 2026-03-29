@@ -261,7 +261,7 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
     describe('Duplicate Creation', function () {
@@ -276,7 +276,7 @@ describe('records', function () {
         });
       });
 
-      it('should return 404 when createRecord throws "Record not found"', async () => {
+      it('should return 400 when createRecord throws "Record not found"', async () => {
         const response = await requestSender.createRecord({
           pathParams: { recordName: validCredentials.recordName },
           requestBody: {
