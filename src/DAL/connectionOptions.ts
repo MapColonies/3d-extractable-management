@@ -12,14 +12,15 @@ export const createConnectionOptions = (dbConfig: DbConfig): DataSourceOptions =
   const baseOptions: DataSourceOptions = { ...connectionOptions, entities: ENTITIES_DIRS, ssl: false };
 
   if (enableSslAuth === true && sslPaths) {
+    const rejectUnauthorized = process.env.NODE_ENV === 'production';
+
     return {
       ...baseOptions,
-      password: undefined,
       ssl: {
         key: readFileSync(sslPaths.key),
         cert: readFileSync(sslPaths.cert),
         ca: readFileSync(sslPaths.ca),
-        rejectUnauthorized: true,
+        rejectUnauthorized,
       },
     };
   }
