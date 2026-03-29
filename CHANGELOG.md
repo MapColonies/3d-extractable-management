@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.4](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.3...v1.2.4) (2026-03-29)
+
+
+### Bug Fixes
+
+* fix record exists status (MAPCO-10338) ([#80](https://github.com/MapColonies/3d-extractable-management/issues/80)) ([8aa4d63](https://github.com/MapColonies/3d-extractable-management/commit/8aa4d635f411e98651a0bc0aa850eb83d21c4bdf))
+* if record already exists expecet 400 ([dee4cee](https://github.com/MapColonies/3d-extractable-management/commit/dee4cee82ff17bf4fa81adbe217bc1671aea4b9f))
+* remove note ([#82](https://github.com/MapColonies/3d-extractable-management/issues/82)) ([f211cc2](https://github.com/MapColonies/3d-extractable-management/commit/f211cc25138e7e8e7dea36c5fb2ada844f719e1e))
+
 ## [1.2.3](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.2...v1.2.3) (2026-03-29)
 
 
