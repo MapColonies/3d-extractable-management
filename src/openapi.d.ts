@@ -132,13 +132,13 @@ export type components = {
       /** @enum {string} */
       code:
         | 'SUCCESS'
-        | 'RECORD_ALREADY_EXIST'
+        | 'RECORD_NAME_ALREADY_EXIST'
         | 'MISSING_CREDENTIALS'
         | 'MISSING_COORDINATES'
         | 'INVALID_COORDINATES_OR_DISTANCE'
         | 'INVALID_CREDENTIALS'
-        | 'INVALID_RECORD_NAME'
-        | 'INVALID_RECORD_NAME_ANOTHER_SITE'
+        | 'RECORD_NAME_NOT_FOUND'
+        | 'RECORD_NAME_NOT_FOUND_ANOTHER_SITE'
         | 'INTERNAL_ERROR'
         | 'INVALID_START_POSITION'
         | 'INVALID_MAX_RECORDS';

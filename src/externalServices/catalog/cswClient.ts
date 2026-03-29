@@ -65,7 +65,8 @@ export class CswClient {
     const logContext = { ...this.logContext, function: this.getRecords.name };
     const body = this.generateCswBody(bbox, sortOrder, sortColumn, startPosition, maxRecords);
     try {
-      const res = await axios.post(this.cswUrl, body, {
+      const res = await axios.post('/csw', body, {
+        baseURL: this.cswUrl,
         params: { token: this.cswToken == '' ? undefined : this.cswToken },
         headers: { 'Content-Type': 'text/xml' },
       });
