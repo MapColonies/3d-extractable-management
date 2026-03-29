@@ -286,11 +286,11 @@ describe('records', function () {
           },
         });
 
-        expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+        expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
         expect(response.body).toEqual({
           isValid: false,
           message: `Record 'rec_name' already exists`,
-          code: 'INVALID_RECORD_NAME',
+          code: 'RECORD_ALREADY_EXIST',
         });
       });
     });

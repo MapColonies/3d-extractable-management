@@ -51,7 +51,7 @@ export class ValidationsManager {
     const record = await this.extractableRepo.findOne({ where: { record_name: payload.recordName } });
     if (record) {
       this.logger.debug({ msg: 'record already exists for create', recordName: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'INVALID_RECORD_NAME' };
+      return { isValid: false, message: `Record '${payload.recordName}' already exists`, code: 'RECORD_ALREADY_EXIST' };
     }
 
     let existsAndPublishedInCatalog: boolean;
