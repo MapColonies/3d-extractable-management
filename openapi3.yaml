@@ -487,7 +487,7 @@ paths:
                   value:
                     isValid: false
                     message: Record 'rec_name' already exists
-                    code: RECORD_NAME_NOT_FOUND
+                    code: RECORD_NAME_ALREADY_EXIST
         '500':
           description: Internal server error
           content:
