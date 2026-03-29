@@ -1,4 +1,3 @@
-// Notice: The following file is used only for running loacl migration from CLI
 /* istanbul ignore file */
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { DbConfig } from '@src/common/interfaces';
