@@ -1,11 +1,9 @@
 // Notice: The following file is used only for running loacl migration from CLI
 /* istanbul ignore file */
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { DbConfig } from '@src/common/interfaces';
-import { ExtractableRecord } from './entities/extractableRecord.entity';
-import { AuditLog } from './entities/auditLog.entity';
+import { createConnectionOptions } from './connectionOptions';
 
-// Get DB config from environment variables (used for CLI migrations)
 const dbConfig: DbConfig = {
   type: 'postgres',
   host: process.env.DB_HOST ?? 'localhost',
@@ -13,18 +11,21 @@ const dbConfig: DbConfig = {
   username: process.env.DB_USERNAME ?? 'postgres',
   password: process.env.DB_PASSWORD ?? 'postgres',
   database: process.env.DB_NAME ?? '3d-extractable-management',
+  enableSslAuth: process.env.DB_ENABLE_SSL?.toLowerCase() === 'true',
+  sslPaths: {
+    key: process.env.DB_SSL_KEY_PATH ?? '',
+    cert: process.env.DB_SSL_CERT_PATH ?? '',
+    ca: process.env.DB_SSL_CA_PATH ?? '',
+  },
+};
+
+const buildConnectionOptions = (): DataSourceOptions => {
+  const options = createConnectionOptions(dbConfig);
+  return {
+    ...options,
+    migrations: ['src/DAL/migrations/*.ts'],
+  };
 };
 
 /* eslint-disable @typescript-eslint/naming-convention */
-export const ExtractabledDataSource = new DataSource({
-  type: dbConfig.type,
-  host: dbConfig.host,
-  port: dbConfig.port,
-  username: dbConfig.username,
-  password: dbConfig.password,
-  database: dbConfig.database,
-  entities: [ExtractableRecord, AuditLog],
-  migrations: ['src/DAL/migrations/*.ts'],
-  synchronize: false,
-  logging: false,
-});
+export const ExtractabledDataSource = new DataSource(buildConnectionOptions());
