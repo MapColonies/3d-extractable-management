@@ -22,7 +22,6 @@ module.exports = {
     '!**/controllers/**',
     '!**/routes/**',
     '!<rootDir>/src/*',
-    '!<rootDir>/src/externalServices/catalog/cswClient.ts',
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   reporters: [
