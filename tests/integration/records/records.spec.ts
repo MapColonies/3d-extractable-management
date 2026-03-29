@@ -290,7 +290,7 @@ describe('records', function () {
         expect(response.body).toEqual({
           isValid: false,
           message: `Record 'rec_name' already exists`,
-          code: 'RECORD_ALREADY_EXIST',
+          code: 'RECORD_NAME_ALREADY_EXIST',
         });
       });
     });

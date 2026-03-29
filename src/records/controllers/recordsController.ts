@@ -224,7 +224,7 @@ export class RecordsController {
     const code = result.code ?? 'UNKNOWN';
     switch (code) {
       case 'MISSING_CREDENTIALS':
-      case 'RECORD_ALREADY_EXIST':
+      case 'RECORD_NAME_ALREADY_EXIST':
         return httpStatus.BAD_REQUEST;
       case 'RECORD_NAME_NOT_FOUND':
       case 'RECORD_NAME_NOT_FOUND_ANOTHER_SITE':

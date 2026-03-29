@@ -132,7 +132,7 @@ export type components = {
       /** @enum {string} */
       code:
         | 'SUCCESS'
-        | 'RECORD_ALREADY_EXIST'
+        | 'RECORD_NAME_ALREADY_EXIST'
         | 'MISSING_CREDENTIALS'
         | 'MISSING_COORDINATES'
         | 'INVALID_COORDINATES_OR_DISTANCE'

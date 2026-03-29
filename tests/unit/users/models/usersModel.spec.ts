@@ -97,7 +97,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe("Record 'existingRecord' already exists");
-      expect(result.code).toBe('RECORD_ALREADY_EXIST');
+      expect(result.code).toBe('RECORD_NAME_ALREADY_EXIST');
     });
 
     describe('Remote Validation', () => {
