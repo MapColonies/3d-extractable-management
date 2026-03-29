@@ -273,7 +273,7 @@ describe('RecordsManager & ValidationsManager', () => {
           code: 'INTERNAL_ERROR',
         });
       });
-      it('should return INVALID_RECORD_NAME if catalog does not contain record', async () => {
+      it('should return RECORD_NAME_NOT_FOUND if catalog does not contain record', async () => {
         (mockCatalogCall as unknown as CatalogCall).findPublishedRecord = jest.fn().mockResolvedValueOnce(false);
 
         const result = await validationsManager.validateCreate({
@@ -284,7 +284,7 @@ describe('RecordsManager & ValidationsManager', () => {
         expect(result).toEqual({
           isValid: false,
           message: "Record 'missingRecord' is missing from the catalog",
-          code: 'INVALID_RECORD_NAME',
+          code: 'RECORD_NAME_NOT_FOUND',
         });
       });
     });
