@@ -64,7 +64,7 @@ export class ValidationsManager {
 
     if (!existsAndPublishedInCatalog) {
       this.logger.debug({ msg: 'record does not exist in catalog', recordName: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'INVALID_RECORD_NAME' };
+      return { isValid: false, message: `Record '${payload.recordName}' is missing from the catalog`, code: 'RECORD_NAME_NOT_FOUND' };
     }
 
     this.logger.debug({ msg: `multiSiteValidation ${payload.multiSiteValidation}`, logContext });
@@ -97,7 +97,7 @@ export class ValidationsManager {
         const validOnOtherSites = results.every(Boolean);
         if (!validOnOtherSites) {
           this.logger.debug({ msg: 'record validation failed on another site', recordName: payload.recordName, logContext });
-          return { isValid: false, message: 'Record validation failed on another site', code: 'INVALID_RECORD_NAME_ANOTHER_SITE' };
+          return { isValid: false, message: 'Record validation failed on another site', code: 'RECORD_NAME_NOT_FOUND_ANOTHER_SITE' };
         }
       } catch (err) {
         this.logger.warn({ msg: 'remote validation unavailable', recordName: payload.recordName, logContext, err });
@@ -125,7 +125,7 @@ export class ValidationsManager {
     const record = await this.extractableRepo.findOne({ where: { record_name: payload.recordName } });
     if (!record) {
       this.logger.debug({ msg: 'record not found for delete', record_name: payload.recordName, logContext });
-      return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'INVALID_RECORD_NAME' };
+      return { isValid: false, message: `Record '${payload.recordName}' not found`, code: 'RECORD_NAME_NOT_FOUND' };
     }
 
     this.logger.debug({ msg: 'delete validation successful', recordName: payload.recordName, logContext });

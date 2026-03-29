@@ -95,7 +95,7 @@ export class RecordsController {
       const record = await this.manager.getRecord(recordName);
 
       if (!record) {
-        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
+        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'RECORD_NAME_NOT_FOUND' });
       }
 
       return res.status(httpStatus.OK).json(record);
@@ -165,7 +165,7 @@ export class RecordsController {
 
       if (!deleted) {
         this.requestsCounter.inc({ status: '404' });
-        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'INVALID_RECORD_NAME' });
+        return res.status(httpStatus.NOT_FOUND).json({ isValid: false, message: `Record ${recordName} not found`, code: 'RECORD_NAME_NOT_FOUND' });
       }
 
       this.requestsCounter.inc({ status: '204' });
@@ -226,8 +226,8 @@ export class RecordsController {
       case 'MISSING_CREDENTIALS':
       case 'RECORD_ALREADY_EXIST':
         return httpStatus.BAD_REQUEST;
-      case 'INVALID_RECORD_NAME':
-      case 'INVALID_RECORD_NAME_ANOTHER_SITE':
+      case 'RECORD_NAME_NOT_FOUND':
+      case 'RECORD_NAME_NOT_FOUND_ANOTHER_SITE':
         return httpStatus.NOT_FOUND;
       case 'INVALID_CREDENTIALS':
         return httpStatus.UNAUTHORIZED;

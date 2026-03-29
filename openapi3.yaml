@@ -205,7 +205,7 @@ paths:
                   value:
                     isValid: false
                     message: Record with name 'rec_X' not found
-                    code: INVALID_RECORD_NAME
+                    code: RECORD_NAME_NOT_FOUND
         '500':
           description: Internal server error
           content:
@@ -312,7 +312,7 @@ paths:
                   value:
                     isValid: false
                     message: Record with name 'rec_X' not found
-                    code: INVALID_RECORD_NAME
+                    code: RECORD_NAME_NOT_FOUND
         '500':
           description: Internal server error
           content:
@@ -399,7 +399,7 @@ paths:
                   value:
                     isValid: false
                     message: Cannot delete – record 'rec_X' not found
-                    code: INVALID_RECORD_NAME
+                    code: RECORD_NAME_NOT_FOUND
         '500':
           description: Internal server error
           content:
@@ -487,7 +487,7 @@ paths:
                   value:
                     isValid: false
                     message: Record 'rec_name' already exists
-                    code: INVALID_RECORD_NAME
+                    code: RECORD_NAME_NOT_FOUND
         '500':
           description: Internal server error
           content:
@@ -565,7 +565,7 @@ paths:
                   value:
                     isValid: false
                     message: Record 'rec_name' doesn't exists
-                    code: INVALID_RECORD_NAME
+                    code: RECORD_NAME_NOT_FOUND
         '500':
           description: Internal server error
           content:
@@ -764,8 +764,8 @@ components:
             - MISSING_COORDINATES
             - INVALID_COORDINATES_OR_DISTANCE
             - INVALID_CREDENTIALS
-            - INVALID_RECORD_NAME
-            - INVALID_RECORD_NAME_ANOTHER_SITE
+            - RECORD_NAME_NOT_FOUND
+            - RECORD_NAME_NOT_FOUND_ANOTHER_SITE
             - INTERNAL_ERROR
             - INVALID_START_POSITION
             - INVALID_MAX_RECORDS

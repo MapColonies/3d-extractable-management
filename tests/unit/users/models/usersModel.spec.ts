@@ -167,7 +167,7 @@ describe('ValidationsManager - User & Record Validation', () => {
         const routes = [{ url: 'http://site1.com' }, { url: 'http://site2.com' }];
         mockedAxios.post
           .mockResolvedValueOnce({ data: { isValid: true, code: 'SUCCESS', message: 'Valid' } })
-          .mockResolvedValueOnce({ data: { isValid: false, code: 'INVALID_RECORD_NAME', message: 'Invalid' } });
+          .mockResolvedValueOnce({ data: { isValid: false, code: 'RECORD_NAME_NOT_FOUND', message: 'Invalid' } });
 
         validationsManager = createValidationsManager({
           get: (key: string) => {
@@ -183,7 +183,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
+        expect(result.code).toBe('RECORD_NAME_NOT_FOUND_ANOTHER_SITE');
       });
 
       it('should return false for remote site when fetch fails', async () => {
@@ -206,7 +206,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
+        expect(result.code).toBe('RECORD_NAME_NOT_FOUND_ANOTHER_SITE');
       });
 
       it('should handle remote validation config retrieval failure (routes load failure at construction)', async () => {
@@ -247,7 +247,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
         expect(result.isValid).toBe(false);
         expect(result.message).toBe('Record validation failed on another site');
-        expect(result.code).toBe('INVALID_RECORD_NAME_ANOTHER_SITE');
+        expect(result.code).toBe('RECORD_NAME_NOT_FOUND_ANOTHER_SITE');
       });
     });
   });
@@ -272,7 +272,7 @@ describe('ValidationsManager - User & Record Validation', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.message).toBe("Record 'nonExistingRecord' not found");
-      expect(result.code).toBe('INVALID_RECORD_NAME');
+      expect(result.code).toBe('RECORD_NAME_NOT_FOUND');
     });
   });
 });
