@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.2...v1.2.3) (2026-03-29)
+
+
+### Bug Fixes
+
+* added ssl configuration to migrations handler (MAPCO-10130) ([#77](https://github.com/MapColonies/3d-extractable-management/issues/77)) ([f9eea51](https://github.com/MapColonies/3d-extractable-management/commit/f9eea513e2114adaceac8626ab2a623bec94cb3d))
+
 ## [1.2.2](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.1...v1.2.2) (2026-03-25)
 
 

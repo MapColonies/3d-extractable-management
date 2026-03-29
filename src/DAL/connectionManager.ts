@@ -1,6 +1,5 @@
 /* istanbul ignore file */
-import { readFileSync } from 'fs';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, singleton } from 'tsyringe';
@@ -9,8 +8,7 @@ import { AppError } from '@src/utils/appError';
 import { DB_TIMEOUT, MAX_CONNECT_RETRIES, SERVICES } from '../common/constants';
 import { DbConfig, LogContext } from '../common/interfaces';
 import type { ConfigType } from '../common/config';
-import { ExtractableRecord } from './entities/extractableRecord.entity';
-import { AuditLog } from './entities/auditLog.entity';
+import { createConnectionOptions } from './connectionOptions';
 
 @singleton()
 export class ConnectionManager {
@@ -59,7 +57,7 @@ export class ConnectionManager {
 
     while (retries < MAX_CONNECT_RETRIES && !connectionSuccess) {
       try {
-        const ds = new DataSource(this.createConnectionOptions(this.dbConfig));
+        const ds = new DataSource(createConnectionOptions(this.dbConfig));
         await ds.initialize();
         this.dataSource = ds;
 
@@ -106,26 +104,4 @@ export class ConnectionManager {
       throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, `Failed to shut down database`, false);
     }
   }
-
-  private readonly createConnectionOptions = (dbConfig: DbConfig): DataSourceOptions => {
-    const ENTITIES_DIRS = [ExtractableRecord, AuditLog, 'src/DAL/entities/*.ts'];
-    const { enableSslAuth, sslPaths, ...connectionOptions } = dbConfig;
-
-    const baseOptions: DataSourceOptions = { ...connectionOptions, entities: ENTITIES_DIRS, ssl: false };
-
-    if (enableSslAuth === true && sslPaths) {
-      return {
-        ...baseOptions,
-        password: undefined,
-        ssl: {
-          key: readFileSync(sslPaths.key),
-          cert: readFileSync(sslPaths.cert),
-          ca: readFileSync(sslPaths.ca),
-          rejectUnauthorized: true,
-        },
-      };
-    }
-
-    return baseOptions;
-  };
 }
