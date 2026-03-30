@@ -28,8 +28,8 @@ import { CSWRecord } from '@src/externalServices/catalog/interfaces';
 let recordsManager: RecordsManager;
 let validationsManager: ValidationsManager;
 
-export const cswClientMock = {
-  getRecordsByCoordinate: jest.fn(),
+const cswClientMock = {
+  getRecords: jest.fn(),
   getAllRecords: jest.fn(),
 };
 
@@ -232,75 +232,87 @@ describe('RecordsManager & ValidationsManager', () => {
   });
 
   describe('#getRecordsByCoordinate', () => {
-    it('should return records from CSW client', async () => {
-      const cswRecords: CSWRecord[] = [
-        {
-          productId: 'prod_123',
-          productName: 'rec_happy_create',
-        },
-        {
-          productId: 'prod_12344',
-          productName: 'found_but_not_in_extractable',
-        },
-      ];
-
-      const extractableRecord: ExtractableRecord[] = [
-        {
-          id: 1,
-          record_name: 'rec_happy_create',
-          username: validCredentials.username,
-          authorized_by: recordInstance.authorizedBy,
-          data: recordInstance.data,
-          remarks: recordInstance.remarks,
-        },
-      ];
-
-      const cswResponse = {
-        numberOfRecords: 1,
-        numberOfRecordsReturned: 1,
-        nextRecord: 0,
-        records: cswRecords,
-      };
-      cswClientMock.getAllRecords.mockResolvedValueOnce(cswRecords);
-      cswClientMock.getRecordsByCoordinate.mockResolvedValueOnce(cswRecords);
-      mockExtractableFind.mockResolvedValueOnce(extractableRecord);
-      const result = await recordsManager.getRecordsByCoordinate(1, 2, 3);
-      expect(result).toEqual([
-        {
-          id: extractableRecord[0]!.id,
-          recordName: extractableRecord[0]!.record_name,
-          username: extractableRecord[0]!.username,
-          authorizedBy: extractableRecord[0]!.authorized_by,
-          authorizedAt: undefined,
-          data: extractableRecord[0]!.data,
-          remarks: extractableRecord[0]!.remarks,
-        },
-      ]);
-    });
-
     it.each([
-      { lon: undefined, lat: 34, errorMessage: 'Invalid coordinates' },
-      { lon: 34, lat: undefined, errorMessage: 'Invalid coordinates' },
-      { lon: -181, lat: 34, errorMessage: 'Coordinates Out Of Range' },
-      { lon: 181, lat: 34, errorMessage: 'Coordinates Out Of Range' },
-      { lon: 35, lat: -91, errorMessage: 'Coordinates Out Of Range' },
-      { lon: 35, lat: 91, errorMessage: 'Coordinates Out Of Range' },
+      { lon: 35, lat: 34, distanceMeters: 1 },
+      { lon: 35, lat: 34, distanceMeters: undefined },
     ])(
-      'should check if coordinate is valid and return false for invalid %p',
-      async (testInput: { lon: number | undefined; lat: number | undefined; errorMessage: string }) => {
-        const getResponse = recordsManager.getRecordsByCoordinate(testInput.lon as number, testInput.lat as number, 1);
-        await expect(getResponse).rejects.toThrow(testInput.errorMessage);
+      'should return records from CSW client %p',
+      async (testInput: { lon: number | undefined; lat: number | undefined; distanceMeters: number | undefined }) => {
+        const cswRecords: CSWRecord[] = [
+          {
+            productId: 'prod_123',
+            productName: 'rec_happy_create',
+          },
+          {
+            productId: 'prod_12344',
+            productName: 'found_but_not_in_extractable',
+          },
+        ];
+
+        const extractableRecord: ExtractableRecord[] = [
+          {
+            id: 1,
+            record_name: 'rec_happy_create',
+            username: validCredentials.username,
+            authorized_by: recordInstance.authorizedBy,
+            data: recordInstance.data,
+            remarks: recordInstance.remarks,
+          },
+        ];
+
+        const cswResponse = {
+          numberOfRecords: 1,
+          numberOfRecordsReturned: 1,
+          nextRecord: 0,
+          records: cswRecords,
+        };
+        cswClientMock.getAllRecords.mockResolvedValueOnce(cswRecords);
+        cswClientMock.getRecords.mockResolvedValueOnce(cswResponse);
+        mockExtractableFind.mockResolvedValueOnce(extractableRecord);
+        const result = await recordsManager.getRecordsByCoordinate(
+          testInput.lon as number,
+          testInput.lat as number,
+          testInput.distanceMeters as number
+        );
+        expect(result).toEqual([
+          {
+            id: extractableRecord[0]!.id,
+            recordName: extractableRecord[0]!.record_name,
+            username: extractableRecord[0]!.username,
+            authorizedBy: extractableRecord[0]!.authorized_by,
+            authorizedAt: undefined,
+            data: extractableRecord[0]!.data,
+            remarks: extractableRecord[0]!.remarks,
+          },
+        ]);
       }
     );
 
     it.each([
-      { distanceMeters: undefined, errorMessage: 'Invalid Distance' },
-      { distanceMeters: 0, errorMessage: 'Invalid Distance' },
+      { lon: undefined, lat: 34, distanceMeters: 1, errorMessage: 'Invalid coordinates' },
+      { lon: 34, lat: undefined, distanceMeters: 1, errorMessage: 'Invalid coordinates' },
+      { lon: -181, lat: 34, distanceMeters: 1, errorMessage: 'Coordinates Out Of Range' },
+      { lon: 181, lat: 34, distanceMeters: 1, errorMessage: 'Coordinates Out Of Range' },
+      { lon: 35, lat: -91, distanceMeters: 1, errorMessage: 'Coordinates Out Of Range' },
+      { lon: 35, lat: 91, distanceMeters: 1, errorMessage: 'Coordinates Out Of Range' },
+      { lon: 35, lat: 35, distanceMeters: 0, errorMessage: 'Invalid Distance' },
     ])(
-      'should check if distance is valid and return false for invalid %p',
-      async (testInput: { distanceMeters: number | undefined; errorMessage: string }) => {
+      'should check if coordinate is valid and return false for invalid %p',
+      async (testInput: { lon: number | undefined; lat: number | undefined; distanceMeters: number | undefined; errorMessage: string }) => {
+        const cswResponse = {
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+          records: [],
+        };
+        cswClientMock.getAllRecords.mockResolvedValueOnce([]);
+        cswClientMock.getRecords.mockResolvedValueOnce(cswResponse);
         mockExtractableFind.mockResolvedValueOnce([]);
-        const getResponse = recordsManager.getRecordsByCoordinate(35, 34, testInput.distanceMeters as number);
+        const getResponse = recordsManager.getRecordsByCoordinate(
+          testInput.lon as number,
+          testInput.lat as number,
+          testInput.distanceMeters as number
+        );
         await expect(getResponse).rejects.toThrow(testInput.errorMessage);
       }
     );
