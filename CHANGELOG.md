@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.4...v1.2.5) (2026-03-31)
+
+
+### Bug Fixes
+
+* change the proxy_read_timeout duration ([#85](https://github.com/MapColonies/3d-extractable-management/issues/85)) ([bc2badf](https://github.com/MapColonies/3d-extractable-management/commit/bc2badf9003d1a5d9f9cd3a30e16ee9c73191898))
+
 ## [1.2.4](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.3...v1.2.4) (2026-03-29)
 
 
