@@ -77,6 +77,7 @@ export class CswClient {
       if (result != undefined && Number(result.numberOfRecordsMatched) === 0) {
         return { nextRecord: 0, records: [] };
       }
+
       let records: { 'mc:productName': string; 'mc:productId': string }[];
       if (result['mc:MC3DRecord'] !== undefined && Array.isArray(result['mc:MC3DRecord'])) {
         records = result['mc:MC3DRecord'];
@@ -90,6 +91,7 @@ export class CswClient {
         productName: record['mc:productName'],
         productId: record['mc:productId'],
       }));
+
       return {
         nextRecord: Number(result['nextRecord']),
         records: cswRecords,
