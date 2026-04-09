@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.6](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.5...v1.2.6) (2026-04-09)
+
+
+### Helm Changes
+
+* fix deploy docker tag with v ([#87](https://github.com/MapColonies/3d-extractable-management/issues/87)) ([01a8224](https://github.com/MapColonies/3d-extractable-management/commit/01a82246bded13108b6d2d382056af776b67c0c3))
+* fix release-please configuration ([#88](https://github.com/MapColonies/3d-extractable-management/issues/88)) ([7239341](https://github.com/MapColonies/3d-extractable-management/commit/723934133b928f9842e5246b3c6689b3cae11966))
+
 ## [1.2.5](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.4...v1.2.5) (2026-03-31)
 
 
