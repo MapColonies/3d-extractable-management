@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.2.6](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.5...v1.2.6) (2026-04-09)
+
+
+### Helm Changes
+
+* fix deploy docker tag with v ([#87](https://github.com/MapColonies/3d-extractable-management/issues/87)) ([01a8224](https://github.com/MapColonies/3d-extractable-management/commit/01a82246bded13108b6d2d382056af776b67c0c3))
+* fix release-please configuration ([#88](https://github.com/MapColonies/3d-extractable-management/issues/88)) ([7239341](https://github.com/MapColonies/3d-extractable-management/commit/723934133b928f9842e5246b3c6689b3cae11966))
+
+## [1.2.5](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.4...v1.2.5) (2026-03-31)
+
+
+### Bug Fixes
+
+* change the proxy_read_timeout duration ([#85](https://github.com/MapColonies/3d-extractable-management/issues/85)) ([bc2badf](https://github.com/MapColonies/3d-extractable-management/commit/bc2badf9003d1a5d9f9cd3a30e16ee9c73191898))
+
+## [1.2.4](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.3...v1.2.4) (2026-03-29)
+
+
+### Bug Fixes
+
+* fix record exists status (MAPCO-10338) ([#80](https://github.com/MapColonies/3d-extractable-management/issues/80)) ([8aa4d63](https://github.com/MapColonies/3d-extractable-management/commit/8aa4d635f411e98651a0bc0aa850eb83d21c4bdf))
+* if record already exists expecet 400 ([dee4cee](https://github.com/MapColonies/3d-extractable-management/commit/dee4cee82ff17bf4fa81adbe217bc1671aea4b9f))
+* remove note ([#82](https://github.com/MapColonies/3d-extractable-management/issues/82)) ([f211cc2](https://github.com/MapColonies/3d-extractable-management/commit/f211cc25138e7e8e7dea36c5fb2ada844f719e1e))
+
+## [1.2.3](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.2...v1.2.3) (2026-03-29)
+
+
+### Bug Fixes
+
+* added ssl configuration to migrations handler (MAPCO-10130) ([#77](https://github.com/MapColonies/3d-extractable-management/issues/77)) ([f9eea51](https://github.com/MapColonies/3d-extractable-management/commit/f9eea513e2114adaceac8626ab2a623bec94cb3d))
+
 ## [1.2.2](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.1...v1.2.2) (2026-03-25)
 
 

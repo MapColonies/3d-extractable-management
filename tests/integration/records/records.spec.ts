@@ -265,7 +265,7 @@ describe('records', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
     describe('Duplicate Creation', function () {
@@ -280,7 +280,7 @@ describe('records', function () {
         });
       });
 
-      it('should return 404 when createRecord throws "Record not found"', async () => {
+      it('should return 400 when createRecord throws "Record not found"', async () => {
         const response = await requestSender.createRecord({
           pathParams: { recordName: validCredentials.recordName },
           requestBody: {
@@ -290,11 +290,11 @@ describe('records', function () {
           },
         });
 
-        expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+        expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
         expect(response.body).toEqual({
           isValid: false,
           message: `Record 'rec_name' already exists`,
-          code: 'INVALID_RECORD_NAME',
+          code: 'RECORD_NAME_ALREADY_EXIST',
         });
       });
     });
@@ -525,7 +525,7 @@ describe('records', function () {
       expect(response.body).toEqual({
         isValid: false,
         message: `Record ${invalidCredentials.recordName} not found`,
-        code: 'INVALID_RECORD_NAME',
+        code: 'RECORD_NAME_NOT_FOUND',
       });
     });
 
@@ -538,11 +538,11 @@ describe('records', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     });
 
-    it('should return 404 when validateCreate returns INVALID_RECORD_NAME', async () => {
+    it('should return 404 when validateCreate returns RECORD_NAME_NOT_FOUND', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateCreate').mockResolvedValueOnce({
         isValid: false,
         message: 'Record does not exist',
-        code: 'INVALID_RECORD_NAME',
+        code: 'RECORD_NAME_NOT_FOUND',
       });
 
       const response = await requestSender.validateCreate({
@@ -557,17 +557,17 @@ describe('records', function () {
       expect(response.body).toEqual({
         isValid: false,
         message: 'Record does not exist',
-        code: 'INVALID_RECORD_NAME',
+        code: 'RECORD_NAME_NOT_FOUND',
       });
 
       jest.restoreAllMocks();
     });
 
-    it('should return 404 when validateDelete returns INVALID_RECORD_NAME', async () => {
+    it('should return 404 when validateDelete returns RECORD_NAME_NOT_FOUND', async () => {
       jest.spyOn(ValidationsManager.prototype, 'validateDelete').mockResolvedValueOnce({
         isValid: false,
         message: 'Record does not exist',
-        code: 'INVALID_RECORD_NAME',
+        code: 'RECORD_NAME_NOT_FOUND',
       });
 
       const response = await requestSender.validateDelete({
@@ -582,7 +582,7 @@ describe('records', function () {
       expect(response.body).toEqual({
         isValid: false,
         message: 'Record does not exist',
-        code: 'INVALID_RECORD_NAME',
+        code: 'RECORD_NAME_NOT_FOUND',
       });
 
       jest.restoreAllMocks();

@@ -175,6 +175,33 @@ Via env variables:
 docker run -it -e DB_USERNAME=VALUE  -e DB_PASSWORD=VALUE -e DB_NAME=VALUE -e DB_TYPE=VALUE -e DB_HOST=VALUE -e DB_PORT=VALUE --rm --network host 3d-extractable-management-migration:latest
 ```
 
+#### SSL/TLS Configuration
+
+For secure database connections using SSL certificates:
+
+**Environment Variables:**
+- `DB_ENABLE_SSL` - Set to `true` to enable SSL (default: `false`)
+- `DB_SSL_KEY_PATH` - Path to client private key file
+- `DB_SSL_CERT_PATH` - Path to client certificate file
+- `DB_SSL_CA_PATH` - Path to CA certificate file
+
+**Example with SSL:**
+```sh
+docker run -it \
+  -e DB_HOST=your-db-host \
+  -e DB_PORT=5432 \
+  -e DB_USERNAME=postgres \
+  -e DB_PASSWORD=postgres \
+  -e DB_NAME=3d-extractable-management \
+  -e DB_ENABLE_SSL=true \
+  -e DB_SSL_KEY_PATH=/app/certs/client-key.pem \
+  -e DB_SSL_CERT_PATH=/app/certs/client-cert.pem \
+  -e DB_SSL_CA_PATH=/app/certs/ca.pem \
+  -v /path/to/certs:/app/certs:ro \
+  --rm --network host \
+  3d-extractable-management-migration:latest
+```
+
 Via injecting a config file, assuming you want to run the migration on your production:
 
 production.json:
