@@ -53,128 +53,71 @@ describe('records', function () {
     }
   });
 
-  describe('Happy Path', function () {
-    beforeAll(async () => {
-      await requestSender.createRecord({
-        pathParams: { recordName: 'rec_happy_path' },
-        requestBody: {
-          ...recordInstance,
-          username: validCredentials.username,
-          password: validCredentials.password,
-        },
+  describe('Post /records/{identifier}', function () {
+    describe('Happy Path 🙂', function () {
+      beforeAll(async () => {
+        await requestSender.createRecord({
+          pathParams: { recordName: 'rec_happy_path' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
+      });
+
+      it('should create record and return 201 when recordName is valid', async function () {
+        const response = await requestSender.createRecord({
+          pathParams: { recordName: 'rec_happy_create' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+
+        expect(response.body).toMatchObject({
+          recordName: 'rec_happy_create',
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+          remarks: recordInstance.remarks,
+        });
       });
     });
 
-    it('should return 201 when recordName is valid', async function () {
-      const response = await requestSender.createRecord({
-        pathParams: { recordName: 'rec_happy_create' },
-        requestBody: {
-          ...recordInstance,
-          username: validCredentials.username,
-          password: validCredentials.password,
-        },
+    describe('Bad Path 😡', function () {
+      beforeAll(async () => {
+        await requestSender.createRecord({
+          pathParams: { recordName: 'rec_bad_path' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
       });
 
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.CREATED);
+      it('should return 400 when recordName is duplicated', async function () {
+        const response = await requestSender.createRecord({
+          pathParams: { recordName: 'rec_bad_path' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
 
-      expect(response.body).toMatchObject({
-        recordName: 'rec_happy_create',
-        authorizedBy: recordInstance.authorizedBy,
-        data: recordInstance.data,
-        remarks: recordInstance.remarks,
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+        expect(response.body).toEqual({
+          isValid: false,
+          message: `Record 'rec_bad_path' already exists`,
+          code: 'RECORD_NAME_ALREADY_EXIST',
+        });
       });
-    });
-
-    it('should return 200 and the record', async function () {
-      const response = await requestSender.getRecord({
-        pathParams: { recordName: 'rec_happy_path' },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-
-      expect(response.body).toMatchObject({
-        recordName: 'rec_happy_path',
-        authorizedBy: recordInstance.authorizedBy,
-        data: recordInstance.data,
-      });
-    });
-
-    it('should return 200 and the available records', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 1,
-        numberOfRecordsReturned: 1,
-        nextRecord: 0,
-        records: [recordInstance],
-      });
-      const response = await requestSender.getRecords();
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
-      expect(body.numberOfRecords).toBe(1);
-      expect(body.numberOfRecordsReturned).toBe(1);
-      expect(body.nextRecord).toBe(0);
-    });
-
-    it('should return 200 and empty array when no records exist', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 0,
-        numberOfRecordsReturned: 0,
-        nextRecord: 0,
-        records: [],
-      });
-      const response = await requestSender.getRecords();
-
-      expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: IExtractableRecord[] };
-      expect(body.numberOfRecords).toBe(0);
-      expect(body.numberOfRecordsReturned).toBe(0);
-      expect(body.nextRecord).toBe(0);
-      expect(body.records).toEqual([]);
-    });
-
-    it('should return 200 with default pagination parameters when not provided', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 2,
-        numberOfRecordsReturned: 2,
-        nextRecord: 0,
-        records: [recordInstance],
-      });
-      const response = await requestSender.getRecords();
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
-      expect(body.numberOfRecords).toBe(2);
-      expect(body.numberOfRecordsReturned).toBe(2);
-      expect(body.nextRecord).toBe(0);
-    });
-
-    it('should return 200 with pagination parameters', async function () {
-      jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
-        numberOfRecords: 50,
-        numberOfRecordsReturned: 10,
-        nextRecord: 11,
-        records: [recordInstance],
-      });
-      const response = await requestSender.getRecords({
-        queryParams: { startPosition: 1, maxRecords: 10 },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      const body = response.body as {
-        numberOfRecords: number;
-        numberOfRecordsReturned: number;
-        nextRecord: number;
-        records: (typeof recordInstance)[];
-      };
-      expect(body.numberOfRecords).toBe(50);
-      expect(body.numberOfRecordsReturned).toBe(10);
-      expect(body.nextRecord).toBe(11);
-      expect(Array.isArray(body.records)).toBe(true);
     });
 
     it('should return 200 when credentials are valid', async function () {
@@ -208,6 +151,127 @@ describe('records', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+    });
+  });
+
+  describe('Get /record/{recordName}', function () {
+    describe('Happy Path 🙂', function () {
+      beforeAll(async () => {
+        await requestSender.createRecord({
+          pathParams: { recordName: 'rec_happy_path' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
+      });
+
+      it('should get record and return 200 when recordName is valid', async function () {
+        const response = await requestSender.getRecord({
+          pathParams: { recordName: 'rec_happy_path' },
+        });
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.OK);
+
+        expect(response.body).toMatchObject({
+          recordName: 'rec_happy_path',
+          authorizedBy: recordInstance.authorizedBy,
+          data: recordInstance.data,
+        });
+      });
+    });
+  });
+
+  describe('Get /records', function () {
+    describe('Happy Path 🙂', function () {
+      beforeAll(async () => {
+        await requestSender.createRecord({
+          pathParams: { recordName: 'rec_happy_path' },
+          requestBody: {
+            ...recordInstance,
+            username: validCredentials.username,
+            password: validCredentials.password,
+          },
+        });
+      });
+
+      it('should return 200 and the available records', async function () {
+        jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+          numberOfRecords: 1,
+          numberOfRecordsReturned: 1,
+          nextRecord: 0,
+          records: [recordInstance],
+        });
+        const response = await requestSender.getRecords();
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.OK);
+        const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
+        expect(body.numberOfRecords).toBe(1);
+        expect(body.numberOfRecordsReturned).toBe(1);
+        expect(body.nextRecord).toBe(0);
+      });
+
+      it('should return 200 and empty array when no records exist', async function () {
+        jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+          numberOfRecords: 0,
+          numberOfRecordsReturned: 0,
+          nextRecord: 0,
+          records: [],
+        });
+        const response = await requestSender.getRecords();
+
+        expect(response.status).toBe(httpStatusCodes.OK);
+        const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number; records: IExtractableRecord[] };
+        expect(body.numberOfRecords).toBe(0);
+        expect(body.numberOfRecordsReturned).toBe(0);
+        expect(body.nextRecord).toBe(0);
+        expect(body.records).toEqual([]);
+      });
+
+      it('should return 200 with default pagination parameters when not provided', async function () {
+        jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+          numberOfRecords: 2,
+          numberOfRecordsReturned: 2,
+          nextRecord: 0,
+          records: [recordInstance],
+        });
+        const response = await requestSender.getRecords();
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.OK);
+        const body = response.body as { numberOfRecords: number; numberOfRecordsReturned: number; nextRecord: number };
+        expect(body.numberOfRecords).toBe(2);
+        expect(body.numberOfRecordsReturned).toBe(2);
+        expect(body.nextRecord).toBe(0);
+      });
+
+      it('should return 200 with pagination parameters', async function () {
+        jest.spyOn(RecordsManager.prototype, 'getRecords').mockResolvedValueOnce({
+          numberOfRecords: 50,
+          numberOfRecordsReturned: 10,
+          nextRecord: 11,
+          records: [recordInstance],
+        });
+        const response = await requestSender.getRecords({
+          queryParams: { startPosition: 1, maxRecords: 10 },
+        });
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.OK);
+        const body = response.body as {
+          numberOfRecords: number;
+          numberOfRecordsReturned: number;
+          nextRecord: number;
+          records: (typeof recordInstance)[];
+        };
+        expect(body.numberOfRecords).toBe(50);
+        expect(body.numberOfRecordsReturned).toBe(10);
+        expect(body.nextRecord).toBe(11);
+        expect(Array.isArray(body.records)).toBe(true);
+      });
     });
   });
 
@@ -252,50 +316,6 @@ describe('records', function () {
           username: validCredentials.username,
           password: validCredentials.password,
         },
-      });
-    });
-    it('should return 404 when recordName is invalid', async function () {
-      const response = await requestSender.createRecord({
-        pathParams: { recordName: 'rec_bad_path' },
-        requestBody: {
-          ...recordInstance,
-          username: validCredentials.username,
-          password: validCredentials.password,
-        },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    });
-
-    describe('Duplicate Creation', function () {
-      beforeAll(async () => {
-        await requestSender.createRecord({
-          pathParams: { recordName: validCredentials.recordName },
-          requestBody: {
-            username: validCredentials.username,
-            password: validCredentials.password,
-            authorizedBy: recordInstance.authorizedBy,
-          },
-        });
-      });
-
-      it('should return 400 when createRecord throws "Record not found"', async () => {
-        const response = await requestSender.createRecord({
-          pathParams: { recordName: validCredentials.recordName },
-          requestBody: {
-            username: validCredentials.username,
-            password: validCredentials.password,
-            authorizedBy: recordInstance.authorizedBy,
-          },
-        });
-
-        expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-        expect(response.body).toEqual({
-          isValid: false,
-          message: `Record 'rec_name' already exists`,
-          code: 'RECORD_NAME_ALREADY_EXIST',
-        });
       });
     });
 
