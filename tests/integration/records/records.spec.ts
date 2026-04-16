@@ -1,5 +1,7 @@
+import jsLogger from '@map-colonies/js-logger';
+import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
-import axios from 'axios';
+import mockAxios from 'jest-mock-axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
@@ -11,29 +13,31 @@ import { invalidCredentials, recordInstance, validCredentials } from '@tests/moc
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
+import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 
-jest.mock('axios');
-
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
-jest.mock('@src/externalServices/catalog/catalogCall', () => ({
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  CatalogCall: jest.fn().mockImplementation(() => ({
-    findPublishedRecord: jest.fn().mockResolvedValue(true),
-  })),
-}));
+// ensure modules that import 'axios' get the jest-mock-axios instance
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
+jest.mock('axios', () => require('@tests/mocks/axios').default);
 
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
-    mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
+    // prevent real network calls to catalog service during tests
+    jest.spyOn(CatalogCall.prototype, 'findPublishedRecord').mockResolvedValue(true);
+    mockAxios.post.mockResolvedValue(getAxiosPostMockResponse());
 
     await initConfig(true);
 
     console.log('✅ ConnectionManager DataSource initialized.');
 
-    const [app] = await getApp({ useChild: false });
+    const [app] = await getApp({
+      useChild: false,
+      override: [
+        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+      ],
+    });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
