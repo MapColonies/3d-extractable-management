@@ -139,9 +139,6 @@ nginx:
   caPath: '/usr/local/share/ca-certificates'
   caKey: 'ca.crt'
 
-  image:
-    repository: nginx
-    tag: 'latest' 
   port: 8080
   targetPort: 8080
   nodePort: 30001
