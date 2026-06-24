@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.7](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.6...v1.2.7) (2026-06-24)
+
+
+### Helm Changes
+
+* upgrade nginx version (MAPCO-10878) ([#93](https://github.com/MapColonies/3d-extractable-management/issues/93)) ([94ecce4](https://github.com/MapColonies/3d-extractable-management/commit/94ecce49f1df8ee9a7e0b9f9d03bec7801b48668))
+
 ## [1.2.6](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.5...v1.2.6) (2026-04-09)
 
 
