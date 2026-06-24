@@ -18,15 +18,7 @@ module.exports = {
   testMatch: ['<rootDir>/tests/integration/**/*.spec.ts'],
 
   collectCoverage: true,
-  collectCoverageFrom: [
-    '<rootDir>/src/**/*.ts',
-    '!*/node_modules/',
-    '!/vendor/**',
-    '!*/common/**',
-    '!**/models/**',
-    '!<rootDir>/src/*',
-    '!<rootDir>/src/externalServices/catalog/cswClient.ts',
-  ],
+  collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!*/node_modules/', '!/vendor/**', '!*/common/**', '!**/models/**', '!<rootDir>/src/*'],
 
   coverageReporters: ['text', 'html'],
   coverageDirectory: '<rootDir>/coverage/integration',
