@@ -12,7 +12,5 @@ metadata:
     environment: {{ $environment }}
     release: {{ $releaseName }}
 data:
-  log_format.conf: {{ tpl (.Files.Get "config/nginx/log_format.conf") . | quote }}
-  default.conf: {{ tpl (.Files.Get "config/nginx/default.conf") . | quote }}
-  nginx.conf: {{ tpl (.Files.Get "config/nginx/nginx.conf") . | quote }}
+  default.conf: {{ tpl (.Files.Get "config/default.conf") . | quote }}
 {{- end }}
