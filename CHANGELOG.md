@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.8](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.7...v1.2.8) (2026-07-26)
+
+
+### Helm Changes
+
+* remove unncessary config files (MAPCO-108780) ([#96](https://github.com/MapColonies/3d-extractable-management/issues/96)) ([e7839d0](https://github.com/MapColonies/3d-extractable-management/commit/e7839d0fe9584f3fc95b3f382e321fe64c8879d1))
+
 ## [1.2.7](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.6...v1.2.7) (2026-06-24)
 
 
