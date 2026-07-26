@@ -130,6 +130,10 @@ resources:
       memory: 128Mi
 
 nginx:
+  mclabels:
+    partOf: extractable
+    owner: 3d
+    gisDomain: 3d
   nginx:
     maxAge: 1728000
   enabled: true
@@ -174,22 +178,6 @@ nginx:
       requests:
         cpu: 100m
         memory: 128Mi
-
-  extraVolumes:
-    - name: nginx-config
-      configMap:
-        name: "{{ .Release.Name }}-3d-extractable-management-nginx-configmap"
-
-  extraVolumeMounts:
-    - name: nginx-config
-      mountPath: "/etc/nginx/conf.d/default.conf"
-      subPath: default.conf
-    - name: nginx-config
-      mountPath: "/etc/nginx/nginx.conf"
-      subPath: nginx.conf
-    - name: nginx-config
-      mountPath: "/etc/nginx/log_format.conf"
-      subPath: log_format.conf
 
   env:
     opentelemetry:
