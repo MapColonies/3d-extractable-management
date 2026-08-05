@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.9](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.8...v1.2.9) (2026-08-05)
+
+
+### Helm Changes
+
+* update ngixn version ([#99](https://github.com/MapColonies/3d-extractable-management/issues/99)) ([66feda8](https://github.com/MapColonies/3d-extractable-management/commit/66feda87cd82e2bf701beb26e8b7033f4f6e8498))
+
 ## [1.2.8](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.7...v1.2.8) (2026-07-26)
 
 
