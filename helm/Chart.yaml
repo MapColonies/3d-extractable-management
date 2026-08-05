@@ -9,5 +9,5 @@ dependencies:
     version: 1.0.1
     repository: oci://acrarolibotnonprod.azurecr.io/helm/infra
   - name: nginx
-    version: 2.2.1
+    version: 2.3.1
     repository: oci://acrarolibotnonprod.azurecr.io/helm/common
