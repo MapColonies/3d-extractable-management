@@ -154,6 +154,10 @@ nginx:
     token:
       queryName: token
 
+  backend:
+    host: localhost
+    port: 8080
+
   route:
     enabled: true
     # routesMapping:
