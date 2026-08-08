@@ -1,3 +1,5 @@
+import jsLogger from '@map-colonies/js-logger';
+import { trace } from '@opentelemetry/api';
 import { container as tsyringeContainer } from 'tsyringe';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
@@ -17,7 +19,13 @@ describe('users', function () {
 
     console.log('✅ ConnectionManager DataSource initialized.');
 
-    const [app] = await getApp({ useChild: false });
+    const [app] = await getApp({
+      useChild: false,
+      override: [
+        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+      ],
+    });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
