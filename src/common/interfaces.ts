@@ -20,7 +20,7 @@ export interface DbConfig extends PostgresConnectionOptions {
   database: string;
   enableSslAuth?: boolean;
   sslPaths?: {
-    ca: string;
+    ca?: string;
     cert: string;
     key: string;
   };
