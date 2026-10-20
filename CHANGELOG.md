@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.10](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.9...v1.2.10) (2026-10-20)
+
+
+### Code Refactoring
+
+* support certificate optional (MAPCO-10935) ([#102](https://github.com/MapColonies/3d-extractable-management/issues/102)) ([c654e78](https://github.com/MapColonies/3d-extractable-management/commit/c654e784b4d184a3038c4b1acfb8cfb2e9fa3a80))
+
 ## [1.2.9](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.8...v1.2.9) (2026-08-05)
 
 
