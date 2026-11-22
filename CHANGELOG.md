@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.11](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.10...v1.2.11) (2026-11-22)
+
+
+### Helm Changes
+
+* set cpu limit to 4x request (MAPCO-11865) ([#104](https://github.com/MapColonies/3d-extractable-management/issues/104)) ([d1f0b9f](https://github.com/MapColonies/3d-extractable-management/commit/d1f0b9f854a461a0b20da63b5fb6b6b4728e7c87))
+
 ## [1.2.10](https://github.com/MapColonies/3d-extractable-management/compare/v1.2.9...v1.2.10) (2026-10-20)
 
 
