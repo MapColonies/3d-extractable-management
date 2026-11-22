@@ -32,7 +32,6 @@ spec:
         release: {{ $releaseName }}
         run: {{ $releaseName }}-{{ $chartName }}
         {{- include "3d-extractable-management.labels" . | nindent 8 }}
-        {{- include "mclabels.labels" . | nindent 8 }}
       annotations:
         {{ include "mclabels.annotations" . | nindent 8 }}
       {{- if .Values.resetOnConfigChange }}
