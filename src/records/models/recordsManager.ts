@@ -172,7 +172,7 @@ export class RecordsManager {
     }
   }
 
-  private getPolygonByPointAndRadius(coordinates: [number, number], radiusInMeters = 1): BBox {
+  private getPolygonByPointAndRadius(coordinates: [number, number], radiusInMeters: number): BBox {
     const tPoint = point(coordinates);
     const circ = circle(tPoint, radiusInMeters, { units: 'meters' });
     const bb = bbox(circ) as [number, number, number, number];

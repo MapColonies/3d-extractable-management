@@ -6,7 +6,7 @@ module.exports = {
     '^.+\\.(ts|js)$': ['@swc/jest'],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(@map-colonies/mc-model-types|concaveman|@turf/convex|@turf/turf|@turf/clusters-dbscan|geokdbush|kdbush|tinyqueue|rbush|quickselect|robust-predicates)/)',
+    '/node_modules/(?!(@map-colonies/mc-model-types|concaveman|@faker-js/faker|@turf/convex|@turf/turf|@turf/clusters-dbscan|geokdbush|kdbush|tinyqueue|rbush|quickselect|robust-predicates)/)',
   ],
   moduleNameMapper: pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, {
     prefix: '<rootDir>/',
@@ -22,7 +22,6 @@ module.exports = {
     '!**/controllers/**',
     '!**/routes/**',
     '!<rootDir>/src/*',
-    '!<rootDir>/src/externalServices/catalog/cswClient.ts',
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   reporters: [
@@ -43,10 +42,10 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   coverageThreshold: {
     global: {
-      branches: 66,
+      branches: 80,
       functions: 80,
       lines: 80,
-      statements: -30,
+      statements: -10,
     },
   },
 };

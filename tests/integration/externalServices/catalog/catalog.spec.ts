@@ -1,29 +1,30 @@
-import axios from 'axios';
+import { trace } from '@opentelemetry/api';
+import mockAxios from 'jest-mock-axios';
 import { StatusCodes } from 'http-status-codes';
 import { RecordStatus } from '@map-colonies/mc-model-types';
 import type { IConfig } from '@src/common/interfaces';
 import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 import { AppError } from '@src/utils/appError';
-import { createTracerMock, createLoggerMock } from '@tests/mocks/integrationMocks';
+import { createLoggerMock } from '@tests/mocks/integrationMocks';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// ensure modules that import 'axios' get the jest-mock-axios instance
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
+jest.mock('axios', () => require('@tests/mocks/axios').default);
 
 describe('CatalogCall Integration (axios mocked)', () => {
   let catalogCall: CatalogCall;
   const loggerMock = createLoggerMock();
-  const tracerMock = createTracerMock();
   const configMock = {
     get: jest.fn().mockReturnValue('http://mock-catalog-service'),
   } as unknown as jest.Mocked<IConfig>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    catalogCall = new CatalogCall(configMock, loggerMock, tracerMock);
+    catalogCall = new CatalogCall(configMock, loggerMock, trace.getTracer('testTracer'));
   });
 
   it('should throw AppError for axios rejection', async () => {
-    mockedAxios.post.mockRejectedValueOnce(new Error('Network error'));
+    mockAxios.post.mockRejectedValueOnce(new Error('Network error'));
 
     await expect(catalogCall.findPublishedRecord('rec_fail')).rejects.toThrow(AppError);
 
@@ -33,7 +34,7 @@ describe('CatalogCall Integration (axios mocked)', () => {
   });
 
   it('should throw AppError for unexpected status', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
+    mockAxios.post.mockResolvedValueOnce({
       status: StatusCodes.BAD_REQUEST,
       data: [],
     });
@@ -46,7 +47,7 @@ describe('CatalogCall Integration (axios mocked)', () => {
   });
 
   it('should return false when record exists but not published', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
+    mockAxios.post.mockResolvedValueOnce({
       status: StatusCodes.OK,
       data: [{ id: '123', name: 'rec_unpublished', productStatus: 'draft' }],
     });
@@ -60,7 +61,7 @@ describe('CatalogCall Integration (axios mocked)', () => {
   });
 
   it('should return true when record exists and is published', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
+    mockAxios.post.mockResolvedValueOnce({
       status: StatusCodes.OK,
       data: [{ id: '123', name: 'rec_published', productStatus: RecordStatus.PUBLISHED }],
     });
@@ -74,7 +75,7 @@ describe('CatalogCall Integration (axios mocked)', () => {
   });
 
   it('should return false when no records are found', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
+    mockAxios.post.mockResolvedValueOnce({
       status: StatusCodes.OK,
       data: [],
     });

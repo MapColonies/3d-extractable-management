@@ -1,9 +1,12 @@
+import jsLogger from '@map-colonies/js-logger';
+import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
-import axios from 'axios';
+import mockAxios from 'jest-mock-axios';
 import { container as tsyringeContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
+import { CatalogCall } from '@src/externalServices/catalog/catalogCall';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { ConnectionManager } from '@src/DAL/connectionManager';
@@ -11,29 +14,29 @@ import { IAuditAction } from '@src/common/interfaces';
 import { AuditManager } from '@src/audit_logs/models/auditManager';
 import { validCredentials, recordInstance } from '@tests/mocks/generalMocks';
 import { getAxiosPostMockResponse } from '@tests/mocks/integrationMocks';
-
-jest.mock('axios');
-
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
-jest.mock('@src/externalServices/catalog/catalogCall', () => ({
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  CatalogCall: jest.fn().mockImplementation(() => ({
-    findPublishedRecord: jest.fn().mockResolvedValue(true),
-  })),
-}));
+// ensure modules that import 'axios' get the jest-mock-axios instance
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
+jest.mock('axios', () => require('@tests/mocks/axios').default);
 
 describe('records', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async () => {
-    mockedAxios.post.mockResolvedValue(getAxiosPostMockResponse());
+    mockAxios.post.mockResolvedValue(getAxiosPostMockResponse());
+    // prevent real network calls to catalog service during tests
+    jest.spyOn(CatalogCall.prototype, 'findPublishedRecord').mockResolvedValue(true);
 
     await initConfig(true);
 
     console.log('✅ ConnectionManager DataSource initialized.');
 
-    const [app] = await getApp({ useChild: false });
+    const [app] = await getApp({
+      useChild: false,
+      override: [
+        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+      ],
+    });
 
     requestSender = await createRequestSender('openapi3.yaml', app);
   });
@@ -147,7 +150,7 @@ describe('records', function () {
         authorizedAt: new Date().toISOString(),
       };
 
-      jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
+      const getAuditLogsSpy = jest.spyOn(AuditManager.prototype, 'getAuditLogs').mockResolvedValueOnce({
         numberOfRecords: 50,
         numberOfRecordsReturned: 10,
         nextRecord: 11,
@@ -170,7 +173,6 @@ describe('records', function () {
       expect(body.numberOfRecordsReturned).toBe(10);
       expect(body.nextRecord).toBe(11);
       expect(Array.isArray(body.records)).toBe(true);
-      const getAuditLogsSpy = jest.spyOn(AuditManager.prototype, 'getAuditLogs');
       expect(getAuditLogsSpy).toHaveBeenCalledWith('rec_pagination_test', 1, 10);
     });
   });
